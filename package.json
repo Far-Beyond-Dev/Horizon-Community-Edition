@@ -1,0 +1,12 @@
+{
+  "name": "horizon-server",
+  "version": "0.0.1-a",
+  "description": "Easily Scalable game server",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "dev": ""
+  },
+  "author": "Trident_For_U",
+  "license": "ISC"
+}
