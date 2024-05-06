@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "test",
-    "dev": ""
+    "start": "node index.js"
   },
   "author": "Trident_For_U",
   "license": "ISC"
