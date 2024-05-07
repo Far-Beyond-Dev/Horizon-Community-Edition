@@ -7,6 +7,6 @@ edition = "2021"
 axum = { version = "0.7.5", features = ["tokio", "http1"] }
 serde_json = "1.0.116"
 socketioxide = "0.13.0"
-tokio = { version = "1.37.0, features = ["rt", "net", "rt-multi-thread"]}
+tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
