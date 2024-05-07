@@ -5,6 +5,31 @@ use socketioxide::{
 };
 use tracing::info;
 
+/// Helpes append .route to a specific **mutable** variable so you don't have to.
+///
+/// The first parameter is the variable itself; the value of `axum::Router::new()`.
+/// The second value is the endpoint, eg "/".
+/// The third value is what to return back.
+///
+/// # Example
+///
+/// ```rust
+/// let mut app = axum::Router::new()
+/// .layer(layer);
+///
+/// define_routes!(app,
+///                "/", "Hello, World!",
+///                "/goodbye", "Goodbye, World!",
+///                "/function", function());
+/// ```
+macro_rules! define_routes {
+     ($app:expr, $($path:expr, $handler:expr),* $(,)?) => {
+        $(
+            $app = $app.route($path, get(|| async { $handler }));
+        )*
+     };
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (layer, io) = SocketIo::new_layer();
@@ -17,9 +42,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         });
     });
 
-    let app = axum::Router::new()
-    .route("/", get(|| async { "Hello, World!" }))
+    let mut app = axum::Router::new()
     .layer(layer);
+
+    define_routes!(app,
+                   "/", "Hello, World!");
 
     info!("Starting server");
 
