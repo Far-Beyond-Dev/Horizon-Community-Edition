@@ -8,5 +8,8 @@
     "start": "node index.js"
   },
   "author": "Trident_For_U",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "socket.io": "^4.7.5"
+  }
 }

@@ -1,42 +1,39 @@
 // gameServer.js
-const net = require('net');
+const socketio = require('socket.io');
 
 class GameServer {
     constructor(port) {
         this.port = port;
         this.clients = [];
-        this.server = null;
+        this.io = null;
     }
 
     start() {
-        this.server = net.createServer(socket => {
-            console.log('Client connected: ' + socket.remoteAddress);
+        this.io = socketio(this.port);
+
+        this.io.on('connection', socket => {
+            console.log('Client connected: ' + socket.id);
 
             this.clients.push(socket);
 
-            socket.on('data', data => {
-                this.broadcast(data, socket);
-            });
-
-            socket.on('end', () => {
-                console.log('Client disconnected: ' + socket.remoteAddress);
+            socket.on('disconnect', () => {
+                console.log('Client disconnected: ' + socket.id);
                 this.removeClient(socket);
             });
+
+            socket.on('data', data => {
+                console.log(data);
+                this.broadcast(data, socket);
+            });
         });
 
-        this.server.on('error', err => {
-            console.error('Game server error:', err);
-        });
-
-        this.server.listen(this.port, () => {
-            console.log('Game server listening on port ' + this.port);
-        });
+        console.log('Game server listening on port ' + this.port);
     }
 
     broadcast(data, sender) {
         this.clients.forEach(client => {
-            if (client !== sender && !client.destroyed) {
-                client.write(data);
+            if (client !== sender) {
+                client.emit('data', data);
             }
         });
     }
@@ -45,8 +42,8 @@ class GameServer {
         this.clients = this.clients.filter(client => client !== socket);
     }
 
-    stop(callback) {
-        this.server.close(callback);
+    stop() {
+        this.io.close();
     }
 }
 
