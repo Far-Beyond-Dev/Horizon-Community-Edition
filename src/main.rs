@@ -1,76 +1,47 @@
-use std::error::Error;
-use std::sync::{Arc, Mutex};
-use std::collections::HashMap;
-use socketio_rs::Server;
-use socketio_rs::Handshake;
-use socketio_rs::Transport;
+use axum::routing::get;
+use serde_json::Value;
+use socketioxide::SocketIo;
+use tracing::info;
+use tracing_subscriber::FmtSubscriber;
 
-// Define a trait for the adapter function
-trait AdapterTrait: Send + Sync + 'static {
-    fn handle_data(&mut self, data: Vec<u8>, sid: &str) -> Result<(), Box<dyn Error>>;
-}
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tracing::subscriber::set_global_default(FmtSubscriber::default())?;
 
-// Implement the trait for a struct that holds the adapter logic
-struct EchoAdapter;
+    let (layer, io) = SocketIo::new_layer();
+    io.ns("/", |socket, auth: Value| async move {
+        info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.sid);
+        socket.emit("auth", auth).ok();
 
-impl AdapterTrait for EchoAdapter {
-    fn handle_data(&mut self, data: Vec<u8>, sid: &str) -> Result<(), Box<dyn Error>> {
-        // Echo back the received data
-        println!("Received data from {}: {:?}", sid, data);
-        Ok(())
-    }
-}
-
-struct WebSocketServer {
-    server: Server<Mutex<HashMap<String, Box<dyn AdapterTrait + 'static>>>>,
-    max_clients: usize,
-}
-
-impl WebSocketServer {
-    fn new(address: &str, max_clients: usize) -> Result<Self, Box<dyn Error>> {
-        let mut server = Server::new(address);
-        server.register_handler(|handshake, transport| {
-            Self::handle_connection(handshake, transport)
+        socket.on("message", |socket, data: Value, bin, _| async move {
+            info!("Received event: {:?} {:?}", data, bin);
+            socket.bin(bin).emit("message-back", data).ok();
         });
 
-        Ok(WebSocketServer {
-            server,
-            max_clients,
-        })
-    }
-
-    fn handle_connection(handshake: Handshake, transport: Transport) -> Result<(), Box<dyn Error>> {
-        let mut adapters = transport.get_payload::<Mutex<HashMap<String, Box<dyn AdapterTrait + 'static>>>>().lock().unwrap();
-        if adapters.len() >= transport.get_payload::<usize>() {
-            return Ok(());
-        }
-
-        let sid = handshake.session_id().to_string();
-        let adapter: Box<dyn AdapterTrait + 'static> = Box::new(EchoAdapter {});
-        adapters.insert(sid.clone(), adapter);
-
-        transport.on_data(move |data| {
-            let mut adapters = transport.get_payload::<Mutex<HashMap<String, Box<dyn AdapterTrait + 'static>>>>().lock().unwrap();
-            if let Some(adapter) = adapters.get_mut(&sid) {
-                if let Err(err) = adapter.handle_data(data.to_vec(), &sid) {
-                    eprintln!("Error handling data: {}", err);
-                }
-            }
+        socket.on("message-with-ack", |_, data: Value, bin, ack| async move {
+            info!("Received event: {:?} {:?}", data, bin);
+            ack.bin(bin).send(data).ok();
         });
 
-        Ok(())
-    }
+        socket.on_disconnect(|socket, reason| async move {
+            info!("Socket.IO disconnected: {} {}", socket.sid, reason);
+        });
+    });
 
-    fn run(&self) -> Result<(), Box<dyn Error>> {
-        let payload = Arc::new(Mutex::new(HashMap::new()));
-        self.server.set_payload(payload.clone());
-        self.server.set_payload(self.max_clients);
-        self.server.run()
-    }
-}
+    io.ns("/custom", |socket, auth: Value| async move {
+        info!("Socket.IO connected on: {:?} {:?}", socket.ns(), socket.sid);
+        socket.emit("auth", auth).ok();
+    });
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let server = WebSocketServer::new("127.0.0.1:8080", 10)?;
-    server.run()?;
+    let app = axum::Router::new()
+        .route("/", get(|| async { "Hello, World!" }))
+        .layer(layer);
+
+    info!("Starting server");
+
+    Server::bind(&"127.0.0.1:3000".parse().unwrap())
+        .serve(app.into_make_service())
+        .await?;
+
     Ok(())
 }
