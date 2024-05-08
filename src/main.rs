@@ -3,7 +3,9 @@ use socketioxide::{
     extract::SocketRef,
     SocketIo,
 };
-use tracing::info;
+                                                                                
+
+// use tracing::info;
 
 /// Helpes append .route to a specific **mutable** variable so you don't have to.
 ///
@@ -32,6 +34,14 @@ macro_rules! define_routes {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!(",---.   ,--.                            ,-----.                                   ,--. ");
+    println!("   .-',-'  '-. ,--,--.,--.--. ,---.     |  |) /_  ,---. ,--. ,--.,---. ,--,--,  ,-|  | ");
+    println!("`  `-.'-.  .-'' ,-.  ||  .--'(  .-'     |  .-.  || .-. : |  '  /| .-. ||      |' .-. | ");
+    println!("-'    | |  |  | '-'  ||  |   .-'  `)    |  '--' /|   --.  |   ' ' '-' '|  ||  || `-' | ");
+    println!("-----'  `--'   `--`--'`--'   `----'     `------'  `----'.-'  /   `---' `--''--' `---'  ");
+    println!("                                                         `---'                         ");
+
+
     let (layer, io) = SocketIo::new_layer();
 
     // Register a handler for the default namespace
@@ -39,6 +49,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // For each "message" event received, send a "message-back" event with the "Hello World!" event
         s.on("message", |s: SocketRef| {
             s.emit("message-back", "Hello World!").ok();
+        });
+        s.on("ServerPrintToConsole", || {
+            println!("Server console print recieved from client");
         });
     });
 
@@ -48,10 +61,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     define_routes!(app,
                    "/", "Hello, World!");
 
-    info!("Starting server");
+    println!("Starting server");
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    println!("Stars Beyond dedicated server listening on all interfaces (0.0.0.0) via port 3000");
     axum::serve(listener, app).await.unwrap();
-    
+
     Ok(())
 }
