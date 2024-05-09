@@ -21,7 +21,7 @@ ENV OPENSSL_INCLUDE_DIR=/usr/include
 COPY Cargo.toml Cargo.lock ./
 
 # Copy the source code.
-COPY src/ ./src/
+COPY / ./
 
 # Build the application.
 # Leverage a cache mount to /usr/local/cargo/registry/
@@ -55,4 +55,4 @@ COPY --from=build /bin/server /bin/
 EXPOSE 3000
 
 # What the container should run when it is started.
-CMD ["/bin/server"]
+CMD ["ls"]
