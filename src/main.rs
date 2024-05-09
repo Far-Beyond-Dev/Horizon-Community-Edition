@@ -3,27 +3,8 @@ use socketioxide::{
     extract::SocketRef,
     SocketIo,
 };
-                                                                                
+use tracing::info;
 
-// use tracing::info;
-
-/// Helpes append .route to a specific **mutable** variable so you don't have to.
-///
-/// The first parameter is the variable itself; the value of `axum::Router::new()`.
-/// The second value is the endpoint, eg "/".
-/// The third value is what to return back.
-///
-/// # Example
-///
-/// ```rust
-/// let mut app = axum::Router::new()
-/// .layer(layer);
-///
-/// define_routes!(app,
-///                "/", "Hello, World!",
-///                "/goodbye", "Goodbye, World!",
-///                "/function", function());
-/// ```
 macro_rules! define_routes {
      ($app:expr, $($path:expr, $handler:expr),* $(,)?) => {
         $(
@@ -32,24 +13,59 @@ macro_rules! define_routes {
      };
 }
 
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!(",---.   ,--.                            ,-----.                                   ,--. ");
-    println!("   .-',-'  '-. ,--,--.,--.--. ,---.     |  |) /_  ,---. ,--. ,--.,---. ,--,--,  ,-|  | ");
-    println!("`  `-.'-.  .-'' ,-.  ||  .--'(  .-'     |  .-.  || .-. : |  '  /| .-. ||      |' .-. | ");
-    println!("-'    | |  |  | '-'  ||  |   .-'  `)    |  '--' /|   --.  |   ' ' '-' '|  ||  || `-' | ");
-    println!("-----'  `--'   `--`--'`--'   `----'     `------'  `----'.-'  /   `---' `--''--' `---'  ");
-    println!("                                                         `---'                         ");
 
+// +---------------------------------+
+// | Pretty-Print Server information |
+// +---------------------------------+
+
+    println!("+-----------------------------------------------------------------------------------------+");
+    println!("|  ,---.   ,--.                            ,-----.                                   ,--. |");
+    println!("| (   .-',-'  '-. ,--,--.,--.--. ,---.     |  |) /_  ,---. ,--. ,--.,---. ,--,--,  ,-|  | |");
+    println!("|  `  `-.'-.  .-'| ,-.  ||  .--'(  .-'     |  .-.  || .-. : |  '  /| .-. ||      |' .-. | |");
+    println!("|  _)   |  |  |  | '-'  ||  | .-'  `)      |  '--' /|   --.  |   ' ' '-' '|  ||  || `-' | |");
+    println!("| (____/   `--'   `--`--'`--  `----'       `------'  `----'.-'  /   `---' `--''--' `---'  |");
+    println!("|                                    V: 0.0.1-A            `---'                          |");
+    println!("+-----------------------------------------------------------------------------------------+");
+    println!("");
+    
+
+// +------------------------------+
+// | GOLANG Socket Event Handlers |
+// +------------------------------+
+
+//    // Emit a "update" event with transaction data to the Go server
+//    let tx_data = "Transaction data goes here";
+//    // socket.emit("update", &tx_data).await.expect("Failed to emit event");
+//
+//    let (layer, io) = SocketIo::new_layer();
+//    // Connect to the Socket.IO server running on Go
+//    let socket = ClientBuilder::new("http://localhost:3001")
+//        .connect()
+//        .expect("Failed to connect to server");
+//
+//    // Handle incoming events from the GOLANG server (if any)
+//    // socket.on("updateResult", |res| {
+//    //     println!("Received update result: {:?}", res);
+//    // });
+
+
+// +------------------------------+
+// |  UE5 Socket Event Handlers   |
+// +------------------------------+
 
     let (layer, io) = SocketIo::new_layer();
-
     // Register a handler for the default namespace
     io.ns("/", |s: SocketRef| {
+        
         // For each "message" event received, send a "message-back" event with the "Hello World!" event
         s.on("message", |s: SocketRef| {
             s.emit("message-back", "Hello World!").ok();
         });
+        
+        // An event for printing data to the server console from client
         s.on("ServerPrintToConsole", || {
             println!("Server console print recieved from client");
         });
@@ -58,8 +74,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut app = axum::Router::new()
     .layer(layer);
 
-    define_routes!(app,
-                   "/", "Hello, World!");
+
+// +--------------------------------+
+// | Setup server home page in http |
+// +--------------------------------+
+
+    define_routes!(app, "/", "Hello, World!");
 
     println!("Starting server");
 
