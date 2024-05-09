@@ -59,6 +59,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (layer, io) = SocketIo::new_layer();
     // Register a handler for the default namespace
     io.ns("/", |s: SocketRef| {
+        // Connection message
+        println!("New client connected!");
         
         // For each "message" event received, send a "message-back" event with the "Hello World!" event
         s.on("message", |s: SocketRef| {
