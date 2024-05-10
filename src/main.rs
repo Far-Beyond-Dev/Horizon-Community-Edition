@@ -3,6 +3,7 @@ use socketioxide::{
     extract::SocketRef,
     SocketIo,
 };
+
 use tracing::info;
 
 macro_rules! define_routes {
@@ -13,49 +14,47 @@ macro_rules! define_routes {
      };
 }
 
+    
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-
-// +---------------------------------+
-// | Pretty-Print Server information |
-// +---------------------------------+
-
+    // Spin off client and server functions
     println!("+-----------------------------------------------------------------------------------------+");
     println!("|  ,---.   ,--.                            ,-----.                                   ,--. |");
     println!("| (   .-',-'  '-. ,--,--.,--.--. ,---.     |  |) /_  ,---. ,--. ,--.,---. ,--,--,  ,-|  | |");
-    println!("|  `  `-.'-.  .-'| ,-.  ||  .--'(  .-'     |  .-.  || .-. : |  '  /| .-. ||      |' .-. | |");
-    println!("|  _)   |  |  |  | '-'  ||  | .-'  `)      |  '--' /|   --.  |   ' ' '-' '|  ||  || `-' | |");
+    println!("|  `  `-.'-.  .-'| ,-.  ||  .--'(  .-'     |  .-.  || (===) |  '  /| .-. ||  ,,  |' .-. | |");
+    println!("|  _)   |  |  |  | '-'  ||  | .-'  `)      |  '--' /|   --.  |   / ' '-' '|  ||  || `-' | |");
     println!("| (____/   `--'   `--`--'`--  `----'       `------'  `----'.-'  /   `---' `--''--' `---'  |");
     println!("|                                    V: 0.0.1-A            `---'                          |");
     println!("+-----------------------------------------------------------------------------------------+");
     println!("");
-    
 
-// +------------------------------+
-// | GOLANG Socket Event Handlers |
-// +------------------------------+
+    tokio::try_join!(/*run_client(),*/ run_server())?;
 
-//    // Emit a "update" event with transaction data to the Go server
-//    let tx_data = "Transaction data goes here";
-//    // socket.emit("update", &tx_data).await.expect("Failed to emit event");
-//
-//    let (layer, io) = SocketIo::new_layer();
-//    // Connect to the Socket.IO server running on Go
-//    let socket = ClientBuilder::new("http://localhost:3001")
-//        .connect()
-//        .expect("Failed to connect to server");
-//
-//    // Handle incoming events from the GOLANG server (if any)
-//    // socket.on("updateResult", |res| {
-//    //     println!("Received update result: {:?}", res);
-//    // });
+    Ok(())
+}
 
+    //async fn run_client() -> Result<(), Box<dyn std::error::Error>> {
+    //// Emit a "update" event with transaction data to the Go server
+    //let tx_data = "Transaction data goes here";
+    //// socket.emit("update", &tx_data).await.expect("Failed to emit event");
+    //
+    //let (layer, io) = SocketIo::new_layer();
+    //// Connect to the Socket.IO server running on Go
+    //let socket = sock::ClientBuilder::new("http://localhost:3001")
+    //    .connect()
+    //    .expect("Failed to connect to server");
+    //
+    //// Handle incoming events from the GOLANG server (if any)
+    //// socket.on("updateResult", |res| {
+    ////     println!("Received update result: {:?}", res);
+    //// });
 
-// +------------------------------+
-// |  UE5 Socket Event Handlers   |
-// +------------------------------+
+    //Ok(())
+    //}
 
+async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
+    // Set up Socket.IO server
     let (layer, io) = SocketIo::new_layer();
     // Register a handler for the default namespace
     io.ns("/", |s: SocketRef| {
@@ -69,25 +68,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         
         // An event for printing data to the server console from client
         s.on("ServerPrintToConsole", || {
-            println!("Server console print recieved from client");
+            println!("Server console print received from client");
         });
     });
 
-    let mut app = axum::Router::new()
-    .layer(layer);
-
-
-// +--------------------------------+
-// | Setup server home page in http |
-// +--------------------------------+
-
+    // Create Axum app
+    let mut app = axum::Router::new().layer(layer);
+    // Setup server home page in HTTP
     define_routes!(app, "/", "Hello, World!");
 
+    // Start the server
     println!("Starting server");
-
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
     println!("Stars Beyond dedicated server listening on all interfaces (0.0.0.0) via port 3000");
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app).await?;
 
     Ok(())
 }

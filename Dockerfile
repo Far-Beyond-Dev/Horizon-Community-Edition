@@ -55,4 +55,4 @@ COPY --from=build /bin/server /bin/
 EXPOSE 3000
 
 # What the container should run when it is started.
-CMD ["ls"]
+CMD ["/bin/server"]
