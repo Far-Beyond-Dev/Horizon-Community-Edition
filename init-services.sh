@@ -1,3 +1,5 @@
+#!/bin/sh
+
 ############################
 # Init GoLang Socet Server #
 ############################
@@ -19,4 +21,4 @@ cd ../Python-Daemon
 ##########################
 
 cd ../
-/bin/server &
+/bin/server

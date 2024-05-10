@@ -11,7 +11,7 @@ ARG APP_NAME
 WORKDIR /app
 
 # Install host build dependencies.
-RUN apk add --no-cache clang lld musl-dev git python3 openssl-dev
+RUN apk add --no-cache clang lld musl-dev git openssl-dev
 
 # Set environment variables for OpenSSL.
 ENV OPENSSL_LIB_DIR=/usr/lib
@@ -21,7 +21,7 @@ ENV OPENSSL_INCLUDE_DIR=/usr/include
 COPY Cargo.toml Cargo.lock ./
 
 # Copy the source code.
-COPY / ./
+COPY ./ ./
 
 # Build the application.
 # Leverage a cache mount to /usr/local/cargo/registry/
@@ -34,7 +34,7 @@ RUN cargo build --release && \
 ################################################################################
 # Create a new stage for running the application.
 
-FROM alpine:3.18 AS final
+FROM golang:1.22.3-alpine3.19 AS final
 
 # Create a non-privileged user that the app will run under.
 ARG UID=10001
@@ -46,6 +46,13 @@ RUN adduser \
     --no-create-home \
     --uid "${UID}" \
     appuser
+USER root
+
+# Copy the source code.
+COPY ./ ./
+
+RUN sh ./installers.sh
+
 USER appuser
 
 # Copy the executable from the "build" stage.
@@ -53,6 +60,7 @@ COPY --from=build /bin/server /bin/
 
 # Expose the port that the application listens on.
 EXPOSE 3000
+EXPOSE 3001
 
 # What the container should run when it is started.
-CMD ["/bin/server"]
+CMD ["./init-services.sh"]

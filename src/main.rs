@@ -20,6 +20,20 @@ macro_rules! define_routes {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Spin off client and server functions
+    println!("+------------------------------------------------------------------------------------------------------------------------------------+");
+    println!("|  __    __                      __                                       ______                                                     |");
+    println!("| |  |  |  |                    |  |                                     /      |                                                    |");
+    println!("| | $$  | $$  ______    ______   |$$ ________   ______   _______        |  $$$$$$|  ______    ______  __     __   ______    ______   |");
+    println!("| | $$__| $$ /      |  /      | |  ||        | /      | |       |       | $$___|$$ /      |  /      ||  |   /  | /      |  /      |  |");
+    println!("| | $$    $$|  $$$$$$||  $$$$$$|| $$ |$$$$$$$$|  $$$$$$|| $$$$$$$|       |$$    | |  $$$$$$||  $$$$$$||$$| /  $$|  $$$$$$||  $$$$$$| |");
+    println!("| | $$$$$$$$| $$  | $$| $$   |$$| $$  /    $$ | $$  | $$| $$  | $$       _|$$$$$$|| $$    $$| $$   |$$ |$$|  $$ | $$    $$| $$   |$$ |");
+    println!("| | $$  | $$| $$__/ $$| $$      | $$ /  $$$$_ | $$__/ $$| $$  | $$      |  |__| $$| $$$$$$$$| $$        |$$ $$  | $$$$$$$$| $$       |");
+    println!("| | $$  | $$ |$$    $$| $$      | $$|  $$    | |$$    $$| $$  | $$       |$$    $$ |$$     || $$         |$$$    |$$     || $$       |");
+    println!("|  |$$   |$$  |$$$$$$  |$$       |$$ |$$$$$$$$  |$$$$$$  |$$   |$$        |$$$$$$   |$$$$$$$ |$$          |$      |$$$$$$$ |$$       |");
+    println!("|                                                                 V: 0.0.1-A                                                         |");
+    println!("+------------------------------------------------------------------------------------------------------------------------------------+");
+    println!("");
+
     println!("+-----------------------------------------------------------------------------------------+");
     println!("|  ,---.   ,--.                            ,-----.                                   ,--. |");
     println!("| (   .-',-'  '-. ,--,--.,--.--. ,---.     |  |) /_  ,---. ,--. ,--.,---. ,--,--,  ,-|  | |");
@@ -35,16 +49,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-    async fn run_client() -> Result<(), Box<dyn std::error::Error>> {
-        let socket = ClientBuilder::new("http://localhost:4200")
-        .namespace("/admin")
-        .on("test", |message, _| eprintln!("Error: {:#?}", message))
-        .on("error", |err, _| eprintln!("Error: {:#?}", err))
+async fn run_client() -> Result<(), Box<dyn std::error::Error>> {
+    // use SocketIo as SocketIoClient;
+    use rust_socketio::asynchronous::{Client, ClientBuilder};
+    // Emit a "update" event with transaction data to the Go server
+    let tx_data = "Transaction data goes here";
+    // socket.emit("update", &tx_data).await.expect("Failed to emit event");
+    
+    let (layer, io) = SocketIo::new_layer();
+    // Connect to the Socket.IO server running on Go
+    // let socket = SocketIoClient::ClientBuilder::new("http://localhost:3001")
+    let socket = ClientBuilder::new("http://localhost:3001")
+    // let socket = <SocketIoClient<<_> as SocketIo>::ClientBuilder::new("http://localhost:3001")
+        .on("updateResult", |res, _| Box::pin(async move {
+            println!("Received update result: {:?}", res)
+        }))
         .connect()
-        .expect("Connection failed");
-
-        Ok(())
-    }
+        .await
+        .expect("Failed to connect to server");
+    // Handle incoming events from the GOLANG server (if any)
+    // socket.on("updateResult", |res| {
+    //     println!("Received update result: {:?}", res);
+    // });
+    Ok(())
+}
 
 async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
     // Set up Socket.IO server
