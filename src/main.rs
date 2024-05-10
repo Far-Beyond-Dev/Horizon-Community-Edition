@@ -1,10 +1,9 @@
-mod events;
-
 use axum::routing::get;
 use socketioxide::{
     extract::SocketRef,
     SocketIo,
 };
+use SocketIo as SocketIoClient
 
 use tracing::info;
 
@@ -36,24 +35,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-    //async fn run_client() -> Result<(), Box<dyn std::error::Error>> {
-    //// Emit a "update" event with transaction data to the Go server
-    //let tx_data = "Transaction data goes here";
-    //// socket.emit("update", &tx_data).await.expect("Failed to emit event");
-    //
-    //let (layer, io) = SocketIo::new_layer();
-    //// Connect to the Socket.IO server running on Go
-    //let socket = sock::ClientBuilder::new("http://localhost:3001")
-    //    .connect()
-    //    .expect("Failed to connect to server");
-    //
-    //// Handle incoming events from the GOLANG server (if any)
-    //// socket.on("updateResult", |res| {
-    ////     println!("Received update result: {:?}", res);
-    //// });
-
-    //Ok(())
-    //}
+    async fn run_client() -> Result<(), Box<dyn std::error::Error>> {
+    // Emit a "update" event with transaction data to the Go server
+    let tx_data = "Transaction data goes here";
+    // socket.emit("update", &tx_data).await.expect("Failed to emit event");
+    
+    let (layer, io) = SocketIoClient::new_layer();
+    // Connect to the Socket.IO server running on Go
+    let socket = SocketIoClient::ClientBuilder::new("http://localhost:3001")
+        .connect()
+        .expect("Failed to connect to server");
+    
+    // Handle incoming events from the GOLANG server (if any)
+    socket.on("updateResult", |res| {
+        println!("Received update result: {:?}", res);
+    })
+    Ok(())
+    }
 
 async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
     // Set up Socket.IO server
