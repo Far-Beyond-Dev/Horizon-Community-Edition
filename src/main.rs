@@ -1,3 +1,5 @@
+mod events;
+
 use axum::routing::get;
 use socketioxide::{
     extract::SocketRef,
