@@ -1,0 +1,14 @@
+# Use the official GoLang image
+FROM golang:latest
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the source code into the container
+COPY . .
+
+# Build the GoLang application
+RUN go build -o Horizon-Memory-DB .
+
+# Specify the command to run the GoLang application
+CMD ["./Horizon-Memory-DB"]
