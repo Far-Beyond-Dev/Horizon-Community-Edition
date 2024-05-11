@@ -8,5 +8,5 @@ WORKDIR /app
 COPY . .
 
 # Specify the command to run the Python script
-CMD ["pwd"]
+CMD ["sleep", "infinity"]
 # CMD ["python3", "python_socket_server.py"]

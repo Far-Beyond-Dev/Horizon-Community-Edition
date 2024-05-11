@@ -3,7 +3,6 @@ services:
   horizon-game-server:
     build:
       context: .
-      target: final
       dockerfile: Dockerfile.rust
     ports:
       - 3000:3000
