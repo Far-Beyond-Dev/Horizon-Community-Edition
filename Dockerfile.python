@@ -41,14 +41,15 @@ RUN adduser \
 RUN pip install virtualenv
 
 RUN cd /app/horizon-physics-engine/ \
-    && python -m venv physics_env
+    && python -m venv physics_env \
+    && bash /app/horizon-physics-engine/physics_env/bin/activate \
+    && cd /app/horizon-physics-engine/ \
+    && python -m pip install -r requirements.txt
 
-RUN bash /app/horizon-physics-engine/physics_env/bin/activate
-
-RUN cd /app/horizon-physics-engine/ \
-    --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt
+#RUN cd /app/horizon-physics-engine/ \
+   # --mount=type=cache,target=/root/.cache/pip \
+   # --mount=type=bind,source=requirements.txt,target=requirements.txt \
+   # python -m pip install -r requirements.txt
 
 # Switch to the non-privileged user to run the application.
 #USER appuser
