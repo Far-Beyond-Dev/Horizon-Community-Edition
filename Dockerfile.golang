@@ -1,0 +1,16 @@
+# Use the official GoLang image
+FROM golang:latest
+USER root
+
+# Set the working directory inside the container
+WORKDIR /
+
+# Copy the source code into the container
+COPY ./ /go
+
+# Build the GoLang application
+# RUN go build -o horizon-memory-db .
+
+# Specify the command to run the GoLang application
+#CMD ["go","run","/go/BuntBD/."]
+CMD ["sleep", "infinity"]

@@ -1,0 +1,12 @@
+# Use the official Python image
+FROM python:latest
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the source code into the container
+COPY . .
+
+# Specify the command to run the Python script
+CMD ["sleep", "infinity"]
+# CMD ["python3", "python_socket_server.py"]
