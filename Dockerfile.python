@@ -33,7 +33,7 @@ RUN adduser \
 # Copy the source code into the container.
     COPY . .
 
-    # Download dependencies as a separate step to take advantage of Docker's caching.
+# Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
 # Leverage a bind mount to requirements.txt to avoid having to copy them into
 # into this layer.
@@ -59,5 +59,5 @@ RUN cd /app/horizon-physics-engine/ \
 EXPOSE 3002
 
 # Run the application.
-#CMD ["python","/app/horizon-physics-engine/Daemon.py"]
-CMD ["sleep", "infinity"]
+CMD ["python","/app/horizon-physics-engine/Daemon.py"]
+#CMD ["sleep", "infinity"]

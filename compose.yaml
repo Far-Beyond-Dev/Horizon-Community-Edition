@@ -14,6 +14,8 @@ services:
     restart: always
     depends_on:
       - horizon-game-server
+    ports:
+      - 3001:3001
 
   horizon-physics-engine:
     build:
@@ -22,3 +24,5 @@ services:
     restart: always
     depends_on:
       - horizon-memory-db
+    ports:
+      - 3002:3002
