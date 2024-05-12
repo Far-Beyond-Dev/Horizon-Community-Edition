@@ -1,6 +1,6 @@
 ![horizon-server-high-resolution-logo-transparent](/branding/horizon-server-high-resolution-logo-transparent.png)
 
-## Table Of Centents
+## Table Of Contents
 
 - [1. Introduction](#1-introduction)
   * [Synchronized Game Server Architecture](#synchronized-game-server-architecture)
