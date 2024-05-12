@@ -82,9 +82,8 @@ async fn run_client_server() -> Result<(), Box<dyn std::error::Error>> {
         s.on("ServerPrintToConsole", || {
             println!("Server console print received from client");
         });
-        s.on("UpdatePlayerLocation", || {
-            println!("Client Location Updated: ");
-            println!("{}", s.message);
+        s.on("UpdatePlayerLocation", |s: SocketRef, Data::<String>(data)|  {
+            println!("Socket received event with data: {}", data);
         
             // Example JSON message received over the socket
             let json_message = r#"{ "data": [1.0, 2.0, 3.0] }"#;
