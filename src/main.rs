@@ -1,12 +1,9 @@
 use axum::routing::get;
+use socketioxide::{extract::*, socket, SocketIo};
+use serde_json::Value;
+use serde::{Serialize, Deserialize};
+// use tracing::info;
 
-use socketioxide::{
-    extract::SocketRef, socket::Socket, SocketIo
-};
-use serde_json::{json, Value};
-use serde::{Deserialize, Serialize};
-use tracing::info;
-use socket_io::MessageHandler;
 
 macro_rules! define_routes {
      ($app:expr, $($path:expr, $handler:expr),* $(,)?) => {
@@ -57,7 +54,7 @@ async fn run_internal_server() -> Result<(), Box<dyn std::error::Error>> {
     // Set up Socket.IO server for internal traffic on port 3001
     let (layer, io) = SocketIo::new_layer();
     
-    io.ns("DBUp", |s: SocketRef| {
+    io.ns("DBUp", |socket: SocketRef| {
         println!("Received update result");
     });
 
@@ -66,7 +63,7 @@ async fn run_internal_server() -> Result<(), Box<dyn std::error::Error>> {
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await?;
     println!("Internal server listening on port 3001");
     axum::serve(listener, axum::Router::new().layer(layer)).await?;
-
+    
     Ok(())
 }
 
@@ -74,49 +71,41 @@ async fn run_client_server() -> Result<(), Box<dyn std::error::Error>> {
     // Set up Socket.IO server for clients on port 3000
     let (layer, io) = SocketIo::new_layer();
     
-    io.ns("/", |s: SocketRef| {
+    io.ns("/", |socket: SocketRef| {
         println!("New client connected!");
         
-        s.on("message", |s: SocketRef| {
-            s.emit("message-back", "Hello World!").ok();
+        socket.on("message", |socket: SocketRef| {
+            socket.emit("message-back", "Hello World!").ok();
         });
         
-        s.on("ServerPrintToConsole", || {
+        socket.on("ServerPrintToConsole", || {
             println!("Server console print received from client");
         });
-
+        
         #[derive(Debug, Serialize, Deserialize)]
         struct MyData {
-            player_position: String,
+            player_location: String,
         }
-            
-        s.on("UpdatePlayerLocation", |s, data: serde_json::Value| {
-            // Client Location Updated:
-            if let Ok(parsed) = serde_json::from_value::<MyData>(data.clone()) {
-                println!("Player location updated to: {}", parsed.player_position);
-            } else {
-                println!("Failed to parse data into MyData");
-            }
-            // Example JSON message received over the socket
-            let json_message = r#"{ "data": [1.0, 2.0, 3.0] }"#;
-        
-            // Parse JSON message
-            if let Ok(parsed) = serde_json::from_str::<Value>(json_message) {
-                if let Some(data) = parsed.get("data") {
-                    if let Some(data_array) = data.as_array() {
-                        if data_array.len() == 3 {
-                            if let (Some(first), Some(second), Some(third)) = (
-                                data_array[0].as_f64(),
-                                data_array[1].as_f64(),
-                                data_array[2].as_f64(),
-                            ) {
-                                println!("Parsed data: {}, {}, {}", first, second, third);
-                            }
-                        }
-                    }
-                }
-            }
-        }) as MessageHandler<LocalAdapter, _>;
+
+        let (_, io) = SocketIo::new_svc();
+        io.ns("/", |socket: SocketRef| {
+            // Register an async handler for the "test" event and extract the data as a `MyData` struct
+            // Extract the binary payload as a `Vec<Bytes>` with the Bin extractor.
+            // It should be the last extractor because it consumes the request
+            socket.on("test", |socket: SocketRef, Data::<MyData>(data), ack: AckSender, Bin(bin)| async move {
+                println!("Received a test message {:?}", data);
+                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                ack.bin(bin).send(data).ok(); // The data received is sent back to the client through the ack
+                socket.emit("test-test", MyData {player_location: "Teste".to_string()}).ok(); // Emit a message to the client
+            });
+        });
+
+        //s.on("UpdatePlayerLocation", |socket: SocketRef, message: String| {
+            //println!("UpdatePlayerLocation: {}", message);
+        //});
+
+
+
     });
 
     // Create Axum app for client server
