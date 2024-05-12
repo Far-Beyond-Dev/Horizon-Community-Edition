@@ -3,7 +3,7 @@ use socketioxide::{
     extract::SocketRef,
     SocketIo,
 };
-
+use serde_json::{json, Value};
 use tracing::info;
 
 macro_rules! define_routes {
@@ -81,6 +81,30 @@ async fn run_client_server() -> Result<(), Box<dyn std::error::Error>> {
         
         s.on("ServerPrintToConsole", || {
             println!("Server console print received from client");
+        });
+        s.on("UpdatePlayerLocation", || {
+            println!("Client Location Updated: ");
+            println!("{}", s.message);
+        
+            // Example JSON message received over the socket
+            let json_message = r#"{ "data": [1.0, 2.0, 3.0] }"#;
+        
+            // Parse JSON message
+            if let Ok(parsed) = serde_json::from_str::<Value>(json_message) {
+                if let Some(data) = parsed.get("data") {
+                    if let Some(data_array) = data.as_array() {
+                        if data_array.len() == 3 {
+                            if let (Some(first), Some(second), Some(third)) = (
+                                data_array[0].as_f64(),
+                                data_array[1].as_f64(),
+                                data_array[2].as_f64(),
+                            ) {
+                                println!("Parsed data: {}, {}, {}", first, second, third);
+                            }
+                        }
+                    }
+                }
+            }
         });
     });
 
