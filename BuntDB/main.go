@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/googollee/go-socket.io"
+	socketio "github.com/zhouhui8915/go-socket.io-client"
 	"github.com/tidwall/buntdb"
 )
 
@@ -20,27 +20,36 @@ func main() {
 	})
 
 	// Listen on port 8000
-	ln, err := net.Listen("tcp", ":3001")
+	ln, err := net.Listen("tcp", ":3003")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer ln.Close()
 
 	// Initialize a new server
-	server := socketio.NewServer(nil)
+	server, err := socketio.NewClient([]string{"http://localhost:3001"}, nil)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Connected to Socket.IO server: ", err)
 	} else {
-		fmt.Println("Server listening on port 3001")
+		fmt.Println("Connected to Socket.IO server")
 	}
 
 	// Handle '/socket.io/' endpoint
-	http.Handle("/socket.io/", server)
+	go server.On("updateResult", func(data string) {
+		fmt.Println("Received update result:", data)
+	})
+
 	go http.Serve(ln, nil)
 
+	// Emit "DBUp" event
+	go func() {
+		time.Sleep(2 * time.Second) // Assuming 2 seconds for the server to start
+		server.Emit("DBUp", "")
+	}()
+
 	// Handle events
-	server.OnEvent("/", "update", func(s socketio.Conn, txData string) {
-		fmt.Println("Received update request:", txData)
+	server.On("update", func(data string) {
+		fmt.Println("Received update request:", data)
 
 		// Open the database (use in-memory for this example)
 		db, err := buntdb.Open(":memory:")
@@ -51,7 +60,7 @@ func main() {
 
 		start := time.Now()
 		err = db.Update(func(tx *buntdb.Tx) error {
-			// Perform transaction here based on txData
+			// Perform transaction here based on data
 			return nil
 		})
 		if err != nil {
@@ -61,7 +70,7 @@ func main() {
 		elapsed := time.Since(start)
 
 		// Emit performance measurement
-		s.Emit("updateResult", fmt.Sprintf("Update transaction took: %s", elapsed))
+		server.Emit("updateResult", fmt.Sprintf("Update transaction took: %s", elapsed))
 	})
 
 	// Run forever

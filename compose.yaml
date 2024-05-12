@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile.rust
     ports:
       - 3000:3000
+      - 3001:3001
 
   horizon-memory-db:
     build:
@@ -15,7 +16,7 @@ services:
     depends_on:
       - horizon-game-server
     ports:
-      - 3001:3001
+      - 3003:3003
 
   horizon-physics-engine:
     build:

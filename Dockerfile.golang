@@ -12,5 +12,4 @@ COPY ./ /go
 # RUN go build -o horizon-memory-db .
 
 # Specify the command to run the GoLang application
-#CMD ["go","run","/go/BuntBD/."]
-CMD ["sleep", "infinity"]
+CMD ["go","run","/go/BuntBD/."]
