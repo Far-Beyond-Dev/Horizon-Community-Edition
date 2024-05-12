@@ -1,10 +1,12 @@
 use axum::routing::get;
+
 use socketioxide::{
-    extract::SocketRef,
-    SocketIo,
+    extract::SocketRef, socket::Socket, SocketIo
 };
 use serde_json::{json, Value};
+use serde::{Deserialize, Serialize};
 use tracing::info;
+use socket_io::MessageHandler;
 
 macro_rules! define_routes {
      ($app:expr, $($path:expr, $handler:expr),* $(,)?) => {
@@ -82,10 +84,19 @@ async fn run_client_server() -> Result<(), Box<dyn std::error::Error>> {
         s.on("ServerPrintToConsole", || {
             println!("Server console print received from client");
         });
-        s.on("UpdatePlayerLocation", || {
-            println!("Client Location Updated: ");
-            println!("{}", s.message);
-        
+
+        #[derive(Debug, Serialize, Deserialize)]
+        struct MyData {
+            player_position: String,
+        }
+            
+        s.on("UpdatePlayerLocation", |s, data: serde_json::Value| {
+            // Client Location Updated:
+            if let Ok(parsed) = serde_json::from_value::<MyData>(data.clone()) {
+                println!("Player location updated to: {}", parsed.player_position);
+            } else {
+                println!("Failed to parse data into MyData");
+            }
             // Example JSON message received over the socket
             let json_message = r#"{ "data": [1.0, 2.0, 3.0] }"#;
         
@@ -105,7 +116,7 @@ async fn run_client_server() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
             }
-        });
+        }) as MessageHandler<LocalAdapter, _>;
     });
 
     // Create Axum app for client server
