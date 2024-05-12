@@ -1,4 +1,4 @@
-![horizon-server-high-resolution-logo-transparent](https://github.com/AstroVerse-Studios/Horizon/assets/34868944/07339c6e-4762-4362-9bef-f84158beaec2)
+![horizon-server-high-resolution-logo-transparent](branding\horizon-server-high-resolution-logo-transparent.png)
 ## 1. Introduction
 
 Horizon is a custom game server software designed to facilitate seamless interaction between Unreal Engine 5 (UE5) and client applications through socket.io. It provides a scalable and customizable solution for hosting multiplayer games and managing real-time communication between players and a limitless number of game servers or "Hosts".
