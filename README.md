@@ -85,7 +85,7 @@ To customize Horizon for your specific needs, modify these files according to yo
 
 ### Starting the Server
 
-To start the Horizon server, execute the following command (This assumes you have already [Built the Horizon server](####Installation-Steps)):
+To start the Horizon server, execute the following command (This assumes you have already [Built the Horizon server](#installation-steps)):
 
 ```bash
 ./start.sh
