@@ -78,7 +78,7 @@ Before installing Horizon, ensure that you have the following prerequisites:
 1. Clone the Horizon repository from GitHub:
 
     ```bash
-    git clone https://github.com/your_username/Horizon.git
+    git clone https://github.com/AstroVerse-Studios/Horizon.git
     ```
 
 2. Navigate to the project directory:
