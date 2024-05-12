@@ -3,8 +3,7 @@ use socketioxide::{
     extract::SocketRef,
     SocketIo,
 };
-use serde_json::{json, Value};
-use tracing::info;
+use serde_json::Value;
 
 macro_rules! define_routes {
      ($app:expr, $($path:expr, $handler:expr),* $(,)?) => {
