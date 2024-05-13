@@ -1,6 +1,5 @@
 use axum::routing::get;
-use socketioxide::{extract::*, socket, SocketIo};
-use serde_json::Value;
+use socketioxide::{extract::*, SocketIo};
 use serde::{Serialize, Deserialize};
 // use tracing::info;
 
@@ -92,11 +91,11 @@ async fn run_client_server() -> Result<(), Box<dyn std::error::Error>> {
             // Register an async handler for the "test" event and extract the data as a `MyData` struct
             // Extract the binary payload as a `Vec<Bytes>` with the Bin extractor.
             // It should be the last extractor because it consumes the request
-            socket.on("test", |socket: SocketRef, Data::<MyData>(data), ack: AckSender, Bin(bin)| async move {
-                println!("Received a test message {:?}", data);
+            socket.on("UpdatePlayerLocation", |socket: SocketRef, Data::<MyData>(data), ack: AckSender, Bin(bin)| async move {
+                println!("Received PlayerLocation {:?}", data);
                 tokio::time::sleep(std::time::Duration::from_secs(1)).await;
                 ack.bin(bin).send(data).ok(); // The data received is sent back to the client through the ack
-                socket.emit("test-test", MyData {player_location: "Teste".to_string()}).ok(); // Emit a message to the client
+                socket.emit("test-test", MyData {player_location: "UpdatePlayerLocation".to_string()}).ok(); // Emit a message to the client
             });
         });
 
