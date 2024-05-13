@@ -1,98 +1,78 @@
-use axum::routing::get;
+use tracing::{error, info};
+use serde_json::Value;
+use viz::{handler::ServiceHandler, serve, Result, Router};
+use tracing_subscriber::FmtSubscriber;
 use socketioxide::{
-    extract::SocketRef,
+    extract::{AckSender, Bin, Data, SocketRef},
     SocketIo,
 };
 
-use tracing::info;
+fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
+    info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
+    socket.emit("auth", data).ok();
 
-macro_rules! define_routes {
-     ($app:expr, $($path:expr, $handler:expr),* $(,)?) => {
-        $(
-            $app = $app.route($path, get(|| async { $handler }));
-        )*
-     };
+    socket.on(
+        "UpdatePlayerLocation",
+        |socket: SocketRef, Data::<Value>(data), Bin(bin)| {
+            info!("Received event: {:?} {:?}", data, bin);
+            socket.bin(bin).emit("message-back", data).ok();
+        },
+    );
+
+    socket.on(
+        "message-with-ack",
+        |Data::<Value>(data), ack: AckSender, Bin(bin)| {
+            info!("Received event: {:?} {:?}", data, bin);
+            ack.bin(bin).send(data).ok();
+        },
+    );
 }
-
-    
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Spin off client and server functions
-    println!("+------------------------------------------------------------------------------------------------------------------------------------+");
-    println!("|  __    __                      __                                       ______                                                     |");
-    println!("| |  |  |  |                    |  |                                     /      |                                                    |");
-    println!("| | $$  | $$  ______    ______   |$$ ________   ______   _______        |  $$$$$$|  ______    ______  __     __   ______    ______   |");
-    println!("| | $$__| $$ /      |  /      | |  ||        | /      | |       |       | $$___|$$ /      |  /      ||  |   /  | /      |  /      |  |");
-    println!("| | $$    $$|  $$$$$$||  $$$$$$|| $$ |$$$$$$$$|  $$$$$$|| $$$$$$$|       |$$    | |  $$$$$$||  $$$$$$||$$| /  $$|  $$$$$$||  $$$$$$| |");
-    println!("| | $$$$$$$$| $$  | $$| $$   |$$| $$  /    $$ | $$  | $$| $$  | $$       _|$$$$$$|| $$    $$| $$   |$$ |$$|  $$ | $$    $$| $$   |$$ |");
-    println!("| | $$  | $$| $$__/ $$| $$      | $$ /  $$$$_ | $$__/ $$| $$  | $$      |  |__| $$| $$$$$$$$| $$        |$$ $$  | $$$$$$$$| $$       |");
-    println!("| | $$  | $$ |$$    $$| $$      | $$|  $$    | |$$    $$| $$  | $$       |$$    $$ |$$     || $$         |$$$    |$$     || $$       |");
-    println!("|  |$$   |$$  |$$$$$$  |$$       |$$ |$$$$$$$$  |$$$$$$  |$$   |$$        |$$$$$$   |$$$$$$$ |$$          |$      |$$$$$$$ |$$       |");
-    println!("|                                                                 V: 0.0.1-A                                                         |");
-    println!("+------------------------------------------------------------------------------------------------------------------------------------+");
-    println!("");
-
-    println!("+-----------------------------------------------------------------------------------------+");
-    println!("|  ,---.   ,--.                            ,-----.                                   ,--. |");
-    println!("| (   .-',-'  '-. ,--,--.,--.--. ,---.     |  |) /_  ,---. ,--. ,--.,---. ,--,--,  ,-|  | |");
-    println!("|  `  `-.'-.  .-'| ,-.  ||  .--'(  .-'     |  .-.  || (===) |  '  /| .-. ||  ,,  |' .-. | |");
-    println!("|  _)   |  |  |  | '-'  ||  | .-'  `)      |  '--' /|   --.  |   / ' '-' '|  ||  || `-' | |");
-    println!("| (____/   `--'   `--`--'`--  `----'       `------'  `----'.-'  /   `---' `--''--' `---'  |");
-    println!("|                                    V: 0.0.1-A            `---'                          |");
-    println!("+-----------------------------------------------------------------------------------------+");
-    println!("");
-
-    tokio::try_join!(
-        run_internal_server(),
-        run_client_server()
-    )?;
-
-    Ok(())
-}
-
-async fn run_internal_server() -> Result<(), Box<dyn std::error::Error>> {
-    // Set up Socket.IO server for internal traffic on port 3001
-    let (layer, io) = SocketIo::new_layer();
+        // Spin off client and server functions
+        println!("+------------------------------------------------------------------------------------------------------------------------------------+");
+        println!("|  __    __                      __                                       ______                                                     |");
+        println!("| |  |  |  |                    |  |                                     /      |                                                    |");
+        println!("| | $$  | $$  ______    ______   |$$ ________   ______   _______        |  $$$$$$|  ______    ______  __     __   ______    ______   |");
+        println!("| | $$__| $$ /      |  /      | |  ||        | /      | |       |       | $$___|$$ /      |  /      ||  |   /  | /      |  /      |  |");
+        println!("| | $$    $$|  $$$$$$||  $$$$$$|| $$ |$$$$$$$$|  $$$$$$|| $$$$$$$|       |$$    | |  $$$$$$||  $$$$$$||$$| /  $$|  $$$$$$||  $$$$$$| |");
+        println!("| | $$$$$$$$| $$  | $$| $$   |$$| $$  /    $$ | $$  | $$| $$  | $$       _|$$$$$$|| $$    $$| $$   |$$ |$$|  $$ | $$    $$| $$   |$$ |");
+        println!("| | $$  | $$| $$__/ $$| $$      | $$ /  $$$$_ | $$__/ $$| $$  | $$      |  |__| $$| $$$$$$$$| $$        |$$ $$  | $$$$$$$$| $$       |");
+        println!("| | $$  | $$ |$$    $$| $$      | $$|  $$    | |$$    $$| $$  | $$       |$$    $$ |$$     || $$         |$$$    |$$     || $$       |");
+        println!("|  |$$   |$$  |$$$$$$  |$$       |$$ |$$$$$$$$  |$$$$$$  |$$   |$$        |$$$$$$   |$$$$$$$ |$$          |$      |$$$$$$$ |$$       |");
+        println!("|                                                                 V: 0.0.1-A                                                         |");
+        println!("+------------------------------------------------------------------------------------------------------------------------------------+");
+        println!("");
     
-    io.ns("DBUp", |s: SocketRef| {
-        println!("Received update result");
-    });
+        println!("+-----------------------------------------------------------------------------------------+");
+        println!("|  ,---.   ,--.                            ,-----.                                   ,--. |");
+        println!("| (   .-',-'  '-. ,--,--.,--.--. ,---.     |  |) /_  ,---. ,--. ,--.,---. ,--,--,  ,-|  | |");
+        println!("|  `  `-.'-.  .-'| ,-.  ||  .--'(  .-'     |  .-.  || (===) |  '  /| .-. ||  ,,  |' .-. | |");
+        println!("|  _)   |  |  |  | '-'  ||  | .-'  `)      |  '--' /|   --.  |   / ' '-' '|  ||  || `-' | |");
+        println!("| (____/   `--'   `--`--'`--  `----'       `------'  `----'.-'  /   `---' `--''--' `---'  |");
+        println!("|                                    V: 0.0.1-A            `---'                          |");
+        println!("+-----------------------------------------------------------------------------------------+");
+        println!("");
 
-    // Start the internal server
-    println!("Starting internal server");
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await?;
-    println!("Internal server listening on port 3001");
-    axum::serve(listener, axum::Router::new().layer(layer)).await?;
+    tracing::subscriber::set_global_default(FmtSubscriber::default())?;
 
-    Ok(())
-}
+    let (svc, io) = SocketIo::new_svc();
 
-async fn run_client_server() -> Result<(), Box<dyn std::error::Error>> {
-    // Set up Socket.IO server for clients on port 3000
-    let (layer, io) = SocketIo::new_layer();
-    
-    io.ns("/", |s: SocketRef| {
-        println!("New client connected!");
-        
-        s.on("message", |s: SocketRef| {
-            s.emit("message-back", "Hello World!").ok();
-        });
-        
-        s.on("ServerPrintToConsole", || {
-            println!("Server console print received from client");
-        });
-    });
+    io.ns("/", on_connect);
+    io.ns("/custom", on_connect);
 
-    // Create Axum app for client server
-    let mut app = axum::Router::new().layer(layer);
-    define_routes!(app, "/", "Hello, World!");
+    let app = Router::new()
+        .get("/", |_| async { Ok("Hello, World!") })
+        .any("/*", ServiceHandler::new(svc));
 
-    // Start the client server
-    println!("Starting client server");
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
-    println!("Client server listening on port 3000");
-    axum::serve(listener, app).await?;
+    info!("Starting server");
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+
+    if let Err(e) = serve(listener, app).await {
+        error!("{}", e);
+    }
 
     Ok(())
 }
