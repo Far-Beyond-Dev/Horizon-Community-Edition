@@ -127,7 +127,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                 }).collect::<Vec<_>>(),
             ).unwrap();
 
-            debug!("Players with Locations as JSON: {}", players_with_locations_json);
+            info!("Players with Locations as JSON: {}", players_with_locations_json);
             socket.emit("playersWithLocations", players_with_locations_json).ok();
         },
     );
