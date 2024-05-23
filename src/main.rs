@@ -1,65 +1,157 @@
-use serde_json::{json, Value};
-use std::sync::{Arc, Mutex};
-use tracing::{error, info};
-use viz::{handler::ServiceHandler, serve, Result, Router};
-use tracing_subscriber::FmtSubscriber;
+use serde_json::{json, Value}; // Import json macro and Value from serde_json
 use socketioxide::{
     extract::{AckSender, Bin, Data, SocketRef},
-    SocketIo,
 };
+use std::sync::{Arc, Mutex};
+use tracing::{debug, info};
+use tracing_subscriber::FmtSubscriber;
+use std::io::Write; // Bring the Write trait into scope
+use viz::{handler::ServiceHandler, serve, Result, Router};
+use serde::{Serialize, Deserialize};
 
 // Define a struct for Player
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Player {
     id: String,
-    // Add any other player-related data here
+    socket: SocketRef,
+    location: Option<Location>, // Optional to handle players who haven't sent location updates yet
+}
+
+// Define a struct for Rotation
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Rotation {
+    w: f64,
+    x: f64,
+    y: f64,
+    z: f64,
+}
+
+// Define a struct for Scale
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Scale {
+    x: f64,
+    y: f64,
+    z: f64,
+}
+
+// Define a struct for Translation
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Translation {
+    x: f64,
+    y: f64,
+    z: f64,
+}
+
+// Define a struct for Location
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Location {
+    rotation: Rotation,
+    scale3D: Scale, // Update field name to match the JSON data
+    translation: Translation,
 }
 
 fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
-    // Create a new Player instance and add it to the players array
     let player = Player {
-        id: socket.id.to_string(), // Convert Sid to String
-        // Add any other player-related data here
+        id: socket.id.to_string(),
+        socket: socket.clone(),
+        location: None, // Initialize with no location
     };
     players.lock().unwrap().push(player);
 
     info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
+    socket.emit("connected", true).ok();
     socket.emit("auth", data).ok();
+
+    let players_clone = Arc::clone(&players);
 
     socket.on(
         "UpdatePlayerLocation",
-        |socket: SocketRef, Data::<Value>(data), Bin(bin)| {
-            info!("Received event: {:?} {:?}", data, bin);
+        move |socket: SocketRef, Data::<Value>(data), Bin(bin)| {
+            info!("Received event: UpdatePlayerLocation with data: {:?} and bin: {:?}", data, bin);
+
+            // Extract location from data
+            match serde_json::from_value::<Location>(data.clone()) {
+                Ok(location) => {
+                    let mut players = players_clone.lock().unwrap();
+                    if let Some(player) = players.iter_mut().find(|p| p.id == socket.id.to_string()) {
+                        player.location = Some(location);
+                        info!("Updated player location: {:?}", player);
+                    } else {
+                        info!("Player not found: {}", socket.id);
+                    }
+                }
+                Err(err) => {
+                    info!("Failed to parse location: {:?}", err);
+                }
+            }
+
             socket.bin(bin).emit("message-back", data).ok();
         },
     );
 
+    let players_clone = Arc::clone(&players);
     socket.on(
         "message-with-ack",
-        |Data::<Value>(data), ack: AckSender, Bin(bin)| {
-            info!("Received event: {:?} {:?}", data, bin);
+        move |Data::<Value>(data), ack: AckSender, Bin(bin)| {
+            info!("Received event: message-with-ack with data: {:?} and bin: {:?}", data, bin);
             ack.bin(bin).send(data).ok();
         },
     );
 
-    // Register the event handler to send online players array to the client
+    let players_clone = Arc::clone(&players);
     socket.on(
         "getOnlinePlayers",
         move |socket: SocketRef, _: Data<Value>, _: Bin| {
-            println!("Responding with online players list");
-            let players = players.lock().unwrap(); // Lock mutex to access players array
-            let online_players: Vec<&str> = players.iter().map(|player| player.id.as_str()).collect(); // Extract player IDs
-            let online_players_json = serde_json::to_value(&online_players).unwrap(); // Serialize online players array to JSON
-            println!("Online players: {:?}", online_players_json); // Debug printout
-            socket.emit("onlinePlayers", online_players_json).ok(); // Emit online players array to clientto client
+            info!("Responding with online players list");
+            let players = players_clone.lock().unwrap();
+
+            let online_players_json = serde_json::to_value(
+                players.iter().map(|player| json!({ "id": player.id })).collect::<Vec<_>>(),
+            ).unwrap();
+
+            debug!("Player Array as JSON: {}", online_players_json);
+            socket.emit("onlinePlayers", online_players_json).ok();
+        },
+    );
+
+    let players_clone = Arc::clone(&players);
+    socket.on(
+        "getPlayersWithLocations",
+        move |socket: SocketRef, _: Data<Value>, _: Bin| {
+            info!("Responding with players and locations list");
+            let players = players_clone.lock().unwrap();
+
+            let players_with_locations_json = serde_json::to_value(
+                players.iter().map(|player| {
+                    json!({ "id": player.id, "location": player.location })
+                }).collect::<Vec<_>>(),
+            ).unwrap();
+
+            debug!("Players with Locations as JSON: {}", players_with_locations_json);
+            socket.emit("playersWithLocations", players_with_locations_json).ok();
+        },
+    );
+
+    let players_clone = Arc::clone(&players);
+    socket.on("broadcastMessage", move |Data::<Value>(data), _: Bin| {
+        let players = players_clone.lock().unwrap();
+        for player in &*players {
+            player.socket.emit("broadcastMessage", data.clone()).ok();
+        }
     });
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize the players array as an Arc<Mutex<Vec<Player>>>
-    let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
+    std::io::stdout().flush().unwrap();
+    
+    let subscriber = FmtSubscriber::builder()
+        .with_max_level(tracing::Level::INFO)
+        .finish();
+    tracing::subscriber::set_global_default(subscriber)?;
 
+    println!("Starting Horizon Server...");
+    println!("");
     println!("+------------------------------------------------------------------------------------------------------------------------------------+");
     println!("|  __    __                      __                                       ______                                                     |");
     println!("| |  |  |  |                    |  |                                     /      |                                                    |");
@@ -73,7 +165,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("|                                                                 V: 0.0.1-A                                                         |");
     println!("+------------------------------------------------------------------------------------------------------------------------------------+");
     println!("");
-
     println!("+-----------------------------------------------------------------------------------------+");
     println!("|  ,---.   ,--.                            ,-----.                                   ,--. |");
     println!("| (   .-',-'  '-. ,--,--.,--.--. ,---.     |  |) /_  ,---. ,--. ,--.,---. ,--,--,  ,-|  | |");
@@ -84,15 +175,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("+-----------------------------------------------------------------------------------------+");
     println!("");
 
-    tracing::subscriber::set_global_default(FmtSubscriber::default())?;
+    let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
 
-    let (svc, io) = SocketIo::new_svc();
+    let (svc, io) = socketioxide::SocketIo::new_svc();
 
-    // Pass the players array to the on_connect function
     let players_clone = players.clone();
-    io.ns("/", move |socket, data| on_connect(socket, data, players_clone.clone()));
-    let players_clone = players.clone();
-    io.ns("/custom", move |socket, data| on_connect(socket, data, players_clone.clone()));
+    io.ns("/", move |socket, data| {
+        on_connect(socket, data, players_clone.clone())
+    });
 
     let app = Router::new()
         .get("/", |_| async { Ok("Hello, World!") })
@@ -103,7 +193,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
 
     if let Err(e) = serve(listener, app).await {
-        error!("{}", e);
+        println!("{}", e);
     }
 
     Ok(())
