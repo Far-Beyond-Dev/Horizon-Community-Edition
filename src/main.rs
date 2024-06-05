@@ -1,13 +1,14 @@
+use events::test;
 use serde_json::{json, Value}; // Import json macro and Value from serde_json
-use socketioxide::{
-    extract::{AckSender, Bin, Data, SocketRef},
-};
+use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
 use std::sync::{Arc, Mutex};
-use tracing::{debug, info};
+use tracing::{info, debug};
 use tracing_subscriber::FmtSubscriber;
 use std::io::Write; // Bring the Write trait into scope
 use viz::{handler::ServiceHandler, serve, Result, Router};
 use serde::{Serialize, Deserialize};
+
+mod events;
 
 // Define a struct for Player
 #[derive(Debug, Clone)]
@@ -46,7 +47,7 @@ struct Translation {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Location {
     rotation: Rotation,
-    scale3D: Scale, // Update field name to match the JSON data
+    scale3d: Scale, // Update field name to match the JSON data
     translation: Translation,
 }
 
@@ -63,6 +64,25 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     socket.emit("auth", data).ok();
 
     let players_clone = Arc::clone(&players);
+
+
+    ////////////////////////////////////////////////////////
+    // Register some custom events with our socket server //
+    // Your custom events will also be registered here as //
+    // well as in the ./events/mod.rs file.               //
+    ////////////////////////////////////////////////////////
+
+    socket.on(
+        "test",
+        move || {
+            test::main();
+        },
+    );
+
+
+    ////////////////////////////////////////////////////////
+    // Register some custom events with our socket server //
+    ////////////////////////////////////////////////////////
 
     socket.on(
         "UpdatePlayerLocation",
@@ -89,7 +109,6 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
         },
     );
 
-    let players_clone = Arc::clone(&players);
     socket.on(
         "message-with-ack",
         move |Data::<Value>(data), ack: AckSender, Bin(bin)| {
