@@ -9,6 +9,7 @@ use viz::{handler::ServiceHandler, serve, Result, Router};
 use serde::{Serialize, Deserialize};
 
 mod events;
+mod macros;
 
 // Define a struct for Player
 #[derive(Debug, Clone)]
@@ -72,12 +73,8 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // well as in the ./events/mod.rs file.               //
     ////////////////////////////////////////////////////////
 
-    socket.on(
-        "test",
-        move || {
-            test::main();
-        },
-    );
+    define_event!(socket,
+                  "test", test::main());
 
 
     ////////////////////////////////////////////////////////
