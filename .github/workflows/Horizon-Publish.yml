@@ -21,11 +21,11 @@ jobs:
       matrix:
         include:
           - dockerfile: ./Dockerfile.rs
-            image: ${{ env.REGISTRY }}/horizon
+            image: ghcr.io/Stars-Beyond/horizon
           - dockerfile: ./Dockerfile.python
-            image: ${{ env.REGISTRY }}/graviton
+            image: ghcr.io/Stars-Beyond/graviton
           - dockerfile: ./Dockerfile.golang
-            image: ${{ env.REGISTRY }}/flashback
+            image: ghcr.io/Stars-Beyond/flashback
 
     permissions:
       contents: read
