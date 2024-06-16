@@ -3,6 +3,7 @@
 
 ![horizon-server-high-resolution-logo-transparent](/branding/horizon-server-high-resolution-logo-transparent.png)
 
+
 ## Table Of Contents
 
 - [1. Introduction](#1-introduction)
