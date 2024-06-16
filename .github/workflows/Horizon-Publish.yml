@@ -35,6 +35,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Validate Dockerfile and required files
+        run: |
+          if [ ! -f "${{ matrix.dockerfile }}" ]; then
+            echo "Dockerfile not found: ${{ matrix.dockerfile }}"
+            exit 1
+          fi
+          if [ ! -f "Cargo.toml" ]; then
+            echo "Cargo.toml not found"
+            exit 1
+          fi
+          if [ ! -f "Cargo.lock" ]; then
+            echo "Cargo.lock not found"
+            exit 1
+          fi
+          if [ ! -d "src" ]; then
+            echo "Source directory 'src' not found"
+            exit 1
+          fi
+          
       - name: Install cosign
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20
