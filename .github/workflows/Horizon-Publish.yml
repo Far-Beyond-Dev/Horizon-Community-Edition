@@ -32,9 +32,66 @@ jobs:
       packages: write
       id-token: write
 
+
+The error indicates that the Cargo.lock file is not found, which is causing the Docker build to fail. This can happen if the file is not in the repository or the path specified in the RUN --mount command is incorrect.
+
+To address this, make sure that all the files (Cargo.toml, Cargo.lock, and the src directory) exist at the specified paths. Additionally, ensure the Dockerfile paths and the context passed to the Docker build command are correct.
+
+Here's a revised workflow with improved error handling and validation of the necessary files before the Docker build:
+
+yaml
+Copy code
+name: Docker
+
+on:
+  schedule:
+    - cron: '44 20 * * *'
+  push:
+    branches: [ "main" ]
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dockerfile: ./Dockerfile1
+            image: ghcr.io/stars-beyond/horizon1
+          - dockerfile: ./Dockerfile2
+            image: ghcr.io/stars-beyond/horizon2
+          # Add more Dockerfile paths and image names as needed
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Validate Dockerfile and required files
+        run: |
+          if [ ! -f "${{ matrix.dockerfile }}" ]; then
+            echo "Dockerfile not found: ${{ matrix.dockerfile }}"
+            exit 1
+          fi
+          if [ ! -f "Cargo.toml" ]; then
+            echo "Cargo.toml not found"
+            exit 1
+          fi
+          if [ ! -f "Cargo.lock" ]; then
+            echo "Cargo.lock not found"
+            exit 1
+          fi
+          if [ ! -d "src" ]; then
+            echo "Source directory 'src' not found"
+            exit 1
+          fi
 
       - name: Install cosign
         if: github.event_name != 'pull_request'
