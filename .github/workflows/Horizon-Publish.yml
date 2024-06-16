@@ -1,0 +1,136 @@
+name: Docker
+
+on:
+  schedule:
+    - cron: '44 20 * * *'
+  push:
+    branches: [ "main" ]
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dockerfile: ./Dockerfile.rust
+            image: ghcr.io/Stars-Beyond/horizon
+          - dockerfile: ./Dockerfile.python
+            image: ghcr.io/Stars-Beyond/graviton
+          - dockerfile: ./Dockerfile.golang
+            image: ghcr.io/Stars-Beyond/flashback
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+
+The error indicates that the Cargo.lock file is not found, which is causing the Docker build to fail. This can happen if the file is not in the repository or the path specified in the RUN --mount command is incorrect.
+
+To address this, make sure that all the files (Cargo.toml, Cargo.lock, and the src directory) exist at the specified paths. Additionally, ensure the Dockerfile paths and the context passed to the Docker build command are correct.
+
+Here's a revised workflow with improved error handling and validation of the necessary files before the Docker build:
+
+yaml
+Copy code
+name: Docker
+
+on:
+  schedule:
+    - cron: '44 20 * * *'
+  push:
+    branches: [ "main" ]
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dockerfile: ./Dockerfile1
+            image: ghcr.io/stars-beyond/horizon1
+          - dockerfile: ./Dockerfile2
+            image: ghcr.io/stars-beyond/horizon2
+          # Add more Dockerfile paths and image names as needed
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Dockerfile and required files
+        run: |
+          if [ ! -f "${{ matrix.dockerfile }}" ]; then
+            echo "Dockerfile not found: ${{ matrix.dockerfile }}"
+            exit 1
+          fi
+          if [ ! -f "Cargo.toml" ]; then
+            echo "Cargo.toml not found"
+            exit 1
+          fi
+          if [ ! -f "Cargo.lock" ]; then
+            echo "Cargo.lock not found"
+            exit 1
+          fi
+          if [ ! -d "src" ]; then
+            echo "Source directory 'src' not found"
+            exit 1
+          fi
+
+      - name: Install cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20
+        with:
+          cosign-release: 'v2.2.4'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934
+        with:
+          images: ${{ matrix.image }}
+
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Sign the published Docker image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST
