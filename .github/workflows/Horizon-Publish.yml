@@ -3,7 +3,7 @@ name: Docker
 on:
   schedule:
     - cron: '44 20 * * *'
-  push:
+  marge:
     branches: [ "main" ]
     tags: [ 'v*.*.*' ]
   pull_request:
