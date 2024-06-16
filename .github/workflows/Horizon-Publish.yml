@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
   push:
+  schedule:
+    - cron: '44 20 * * *'
+  marge:
     branches: [ "main" ]
     tags: [ 'v*.*.*' ]
   pull_request:
