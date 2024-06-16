@@ -1,3 +1,6 @@
+> [!CAUTION]
+> Horizon is still in early development, and is not meant to be used in any production environments
+
 ![horizon-server-high-resolution-logo-transparent](/branding/horizon-server-high-resolution-logo-transparent.png)
 
 ## Table Of Contents
