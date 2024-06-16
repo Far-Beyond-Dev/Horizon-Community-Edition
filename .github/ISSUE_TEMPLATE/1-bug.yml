@@ -1,63 +1,64 @@
-name: "💡 Feature Request"
-description: Create a new ticket for a new feature request
-title: "💡 [REQUEST] - <title>"
+name: "🐛 Bug Report"
+description: Create a new ticket for a bug.
+title: "🐛 [BUG] - <title>"
 labels: [
-  "question"
+  "bug"
 ]
 body:
-  - type: input
-    id: start_date
-    attributes:
-      label: "Start Date"
-      description: Start of development
-      placeholder: "month/day/year"
-    validations:
-      required: false
   - type: textarea
-    id: implementation_pr
+    id: description
     attributes:
-      label: "Implementation PR"
-      description: Pull request used
-      placeholder: "#Pull Request ID"
-    validations:
-      required: false
-  - type: textarea
-    id: reference_issues
-    attributes:
-      label: "Reference Issues"
-      description: Common issues
-      placeholder: "#Issues IDs"
-    validations:
-      required: false
-  - type: textarea
-    id: summary
-    attributes:
-      label: "Summary"
-      description: Provide a brief explanation of the feature
-      placeholder: Describe in a few lines your feature request
+      label: "Description"
+      description: Please enter an explicit description of your issue
+      placeholder: Short and explicit description of your incident...
     validations:
       required: true
   - type: textarea
-    id: basic_example
+    id: reprod
     attributes:
-      label: "Basic Example"
-      description: Indicate here some basic examples of your feature.
-      placeholder: A few specific words about your feature request.
+      label: "Reproduction steps"
+      description: Please enter an explicit description of your issue
+      value: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+      render: bash
     validations:
       required: true
   - type: textarea
-    id: drawbacks
+    id: screenshot
     attributes:
-      label: "Drawbacks"
-      description: What are the drawbacks/impacts of your feature request ?
-      placeholder: Identify the drawbacks and impacts while being neutral on your feature request
+      label: "Screenshots"
+      description: If applicable, add screenshots to help explain your problem.
+      value: |
+        ![DESCRIPTION](LINK.png)
+      render: bash
     validations:
-      required: true
+      required: false
   - type: textarea
-    id: unresolved_question
+    id: logs
     attributes:
-      label: "Unresolved questions"
-      description: What questions still remain unresolved ?
-      placeholder: Identify any unresolved issues.
+      label: "Logs"
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: bash
+    validations:
+      required: false
+  - type: dropdown
+    id: os
+    attributes:
+      label: "OS"
+      description: What is the impacted environment ?
+      multiple: true
+      options:
+        - Windows
+        - Linux
+        - Mac
+        - PlayStation
+        - Xbox
+        - Steam Deck
+        - Android
+        - IOS
+        - VR Link (OpenXR)
     validations:
       required: false
