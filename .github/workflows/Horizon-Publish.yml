@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dockerfile: ./Dockerfile.rs
+          - dockerfile: ./Dockerfile.rust
             image: ghcr.io/Stars-Beyond/horizon
           - dockerfile: ./Dockerfile.python
             image: ghcr.io/Stars-Beyond/graviton
