@@ -47,7 +47,7 @@ struct Translation {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Location {
     rotation: Rotation,
-    scale3d: Scale, // Update field name to match the JSON data
+    scale3D: Scale, // Update field name to match the JSON data
     translation: Translation,
 }
 
