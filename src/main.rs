@@ -73,8 +73,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // well as in the ./events/mod.rs file.               //
     ////////////////////////////////////////////////////////
 
-    define_event!(socket,
-                  "test", test::main());
+    define_event!(socket, "test", test::main());
 
 
     ////////////////////////////////////////////////////////
