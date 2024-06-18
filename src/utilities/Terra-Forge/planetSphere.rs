@@ -29,22 +29,16 @@ fn fibonacci_point(numsamples: usize, samplev: usize, seed: f64, min_lat: f64, m
     (x * 1000.0, y * 1000.0, z * 1000.0)
 }
 
-fn main() -> io::Result<()> {
-    let num_samples = 1000;
-    let min_latitude = 0.0_f64.to_radians(); // 0 degrees
-    let max_latitude = 360.0_f64.to_radians(); // 360 degrees
-    let min_longitude = -45.0_f64.to_radians(); // -45 degrees
-    let max_longitude = 45.0_f64.to_radians(); // 45 degrees
-    let seed = 0.5;
-
+fn main(num_samples: usize, min_latitude: f64, max_latitude: f64, min_longitude: f64, max_longitude: f64, seed: f64) -> io::Result<Vec<(f64, f64, f64)>> {
     let start_time = Instant::now();
 
+    // Create a channel to communicate between threads
     let (tx, rx) = channel();
     let num_threads = 32;
     let samples_per_thread = num_samples / num_threads;
     let samples_leftover = num_samples % num_threads;
 
-    let tx = Arc::new(tx);
+    let tx = Arc::new(Mutex::new(tx)); // Use Mutex to safely send across threads
 
     let mut handles = vec![];
 
@@ -58,8 +52,13 @@ fn main() -> io::Result<()> {
         };
 
         let handle = thread::spawn(move || {
+            let mut thread_points = vec![];
             for samplev in start..end {
                 let point = fibonacci_point(num_samples, samplev, seed, min_latitude, max_latitude, min_longitude, max_longitude);
+                thread_points.push(point);
+            }
+            let mut tx = tx.lock().unwrap();
+            for point in thread_points {
                 tx.send(point).unwrap();
             }
         });
@@ -71,7 +70,7 @@ fn main() -> io::Result<()> {
         handle.join().unwrap();
     }
 
-    drop(tx);
+    drop(tx); // Dropping Mutex unlocks it
 
     let mut points = vec![];
     for point in rx {
@@ -79,13 +78,37 @@ fn main() -> io::Result<()> {
     }
 
     let duration = start_time.elapsed();
-    
+
+    // Write points to file (optional, as per original implementation)
     let mut file = File::create("output.txt")?;
     writeln!(file, "Generated points:")?;
     writeln!(file, "Time elapsed: {:?}", duration)?;
-    for point in points {
+    for point in &points {
         writeln!(file, "{:?}", point)?;
     }
 
-    Ok(())
+    Ok(points)
 }
+
+/////////////////////
+/// Example Usage ///
+/////////////////////
+/// fn main() {
+/// let num_samples = 1000;
+/// let min_latitude = -90.0;
+/// let max_latitude = 90.0;
+/// let min_longitude = -180.0;
+/// let max_longitude = 180.0;
+/// let seed = 0.1;
+/// 
+///     match generatePlanetFramework(num_samples, min_latitude, max_latitude, min_longitude, max_longitude, seed) {
+///         Ok(points) => {
+///             println!("Generated {} points", points.len());
+///             // Use `points` vector here for further processing
+///         },
+///         Err(e) => {
+///             eprintln!("Error generating points: {}", e);
+///         }
+///     }
+/// }
+/////////////////////

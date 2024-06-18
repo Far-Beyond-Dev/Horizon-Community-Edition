@@ -10,38 +10,31 @@ use viz::{handler::ServiceHandler, serve, Result, Router};
 
 mod events;
 mod macros;
+mod utilities;
 
 //Authentication system
-mod auth;
-use auth::{authenticate_user, authorize_request};
+use utilities::auth::{authenticate_user, authorize_request};
 
 // Chat System
-mod chat;
-use chat::{handle_voice_chat, receive_text_message, send_text_message};
+use utilities::chat::{handle_voice_chat, receive_text_message, send_text_message};
 
 // Leaderboard and Statistics
-mod leaderboard;
-use leaderboard::{get_leaderboard, update_player_stats};
+use utilities::leaderboard::{get_leaderboard, update_player_stats};
 
 // Persistent Player Data
-mod player_data;
-use player_data::{load_player_data, save_player_data};
+use utilities::player_data::{load_player_data, save_player_data};
 
 // Server-side Game Logic
-mod game_logic;
-use game_logic::{detect_cheating, update_game_state, validate_actions};
+use utilities::game_logic::{detect_cheating, update_game_state, validate_actions};
 
 // In-game Notifications and Alerts
-mod notifications;
-use notifications::{broadcast_maintenance_alert, send_notification};
+use utilities::notifications::{broadcast_maintenance_alert, send_notification};
 
 // Logging and Monitoring
-mod logging;
-use logging::{log_event, log_performance_metrics};
+use utilities::logging::{log_event, log_performance_metrics};
 
 // Level Save Data
-mod level_data;
-use level_data::{load_level_data, save_level_data};
+use utilities::level_data::{load_level_data, save_level_data};
 
 // Define a struct for Player
 #[derive(Debug, Clone)]
