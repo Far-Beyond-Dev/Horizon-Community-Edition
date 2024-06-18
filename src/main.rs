@@ -10,7 +10,6 @@ use serde::{Serialize, Deserialize};
 
 mod events;
 mod macros;
-mod planetsphere;
 
 // Define a struct for Player
 #[derive(Debug, Clone)]
