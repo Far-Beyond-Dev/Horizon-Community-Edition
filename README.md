@@ -6,28 +6,29 @@
 
 ## Table Of Contents
 
+- [Table Of Contents](#table-of-contents)
 - [1. Introduction](#1-introduction)
-  * [Synchronized Game Server Architecture](#synchronized-game-server-architecture)
-    + [Horizon Parent-Child Socket Sync](#horizon-parent-child-socket-sync)
+  - [Synchronized Game Server Architecture](#synchronized-game-server-architecture)
+    - [Horizon Parent-Child Socket Sync](#horizon-parent-child-socket-sync)
       - [How it Works](#how-it-works)
       - [Benefits](#benefits)
       - [Implementation Details](#implementation-details)
-    + [Conclusion](#conclusion)
+    - [Conclusion](#conclusion)
 - [2. Installation](#2-installation)
-    + [Prerequisites](#prerequisites)
-    + [Installation Steps](#installation-steps)
+    - [Prerequisites](#prerequisites)
+    - [Installation Steps](#installation-steps)
 - [3. Configuration](#3-configuration)
 - [4. Usage](#4-usage)
-  * [Starting the Server](#starting-the-server)
-  * [Managing the Server manually](#managing-the-server-manually)
+  - [Starting the Server](#starting-the-server)
+  - [Managing the Server manually](#managing-the-server-manually)
 - [5. Development](#5-development)
-  * [Project Structure](#project-structure)
-  * [Contribution Guidelines](#contribution-guidelines)
+  - [Project Structure](#project-structure)
+  - [Contribution Guidelines](#contribution-guidelines)
 - [6. Additional Resources](#6-additional-resources)
-  * [Community Support](#community-support)
-  * [Documentation](#documentation)
+  - [Community Support](#community-support)
+  - [Documentation](#documentation)
 - [7. Troubleshooting](#7-troubleshooting)
-  * [Common Issues](#common-issues)
+  - [Common Issues](#common-issues)
 
 
 ## 1. Introduction
@@ -174,4 +175,3 @@ For more resources and helpful links, visit the [Additional Resources section](r
 - **Performance Bottlenecks**: Monitor server performance and optimize resource usage if necessary.
 
 For troubleshooting tips and solutions to common problems, consult the [Troubleshooting Guide](troubleshooting.md).
-

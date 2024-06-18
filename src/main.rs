@@ -11,6 +11,42 @@ use serde::{Serialize, Deserialize};
 mod events;
 mod macros;
 
+//Authentication system
+mod auth;
+use auth::{authenticate_user, authorize_request};
+
+// Chat System
+mod chat;
+use chat::{send_text_message, receive_text_message, handle_voice_chat};
+
+// Leaderboard and Statistics
+mod leaderboard;
+use leaderboard::{get_leaderboard, update_player_stats};
+
+// Persistent Player Data
+mod player_data;
+use player_data::{load_player_data, save_player_data};
+
+// Spectator Mode
+mod spectator;
+use spectator::{handle_spectator_connection, broadcast_game_state, switch_spectator_view};
+
+// Server-side Game Logic
+mod game_logic;
+use game_logic::{update_game_state, validate_actions, detect_cheating};
+
+// In-game Notifications and Alerts
+mod notifications;
+use notifications::{send_notification, broadcast_maintenance_alert};
+
+// Logging and Monitoring
+mod logging;
+use logging::{log_event, log_performance_metrics};
+
+// Level Save Data
+mod level_data;
+use level_data::{load_level_data, save_level_data};
+
 // Define a struct for Player
 #[derive(Debug, Clone)]
 struct Player {
@@ -51,13 +87,119 @@ struct Location {
     scale3D: Scale, // Update field name to match the JSON data
     translation: Translation,
 }
+    
+    
+    
+    fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
+        // Authenticate the user
+        let player = Player {
+            id: socket.id.to_string(),
+            socket: socket.clone(),
+            location: None, // Initialize with no location
+        };
+        let user = authenticate_user(data.clone());
+        if let Some(user) = user {
+            // Authorize the request
+            if authorize_request(&user, socket.ns(), socket.id.to_string()) {
+                // ... (Existing code)
 
-fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
-    let player = Player {
-        id: socket.id.to_string(),
-        socket: socket.clone(),
-        location: None, // Initialize with no location
-    };
+                // Register custom events
+                define_event!(socket, "test", test::main());
+
+                // Handle chat events
+                socket.on("send_text_message", move |Data::<Value>(data), _: Bin| {
+                    send_text_message(user.clone(), data);
+                });
+                socket.on("receive_text_message", move |_, Data::<Value>(data), Bin(bin)| {
+                    receive_text_message(user.clone(), data, bin);
+                });
+                socket.on("voice_chat", move |_, Data::<Value>(data), Bin(bin)| {
+                    handle_voice_chat(user.clone(), data, bin);
+                });
+
+                // Handle leaderboard and statistics events
+                socket.on("get_leaderboard", move |_, _: Data<Value>, _: Bin| {
+                    let leaderboard = get_leaderboard();
+                    socket.emit("leaderboard", leaderboard).ok();
+                });
+                socket.on("update_player_stats", move |_, Data::<Value>(data), _: Bin| {
+                    update_player_stats(&user, data);
+                });
+
+                // Handle player data events
+                socket.on("load_player_data", move |_, _: Data<Value>, _: Bin| {
+                    let player_data = load_player_data(&user);
+                    socket.emit("player_data", player_data).ok();
+                });
+                socket.on("save_player_data", move |_, Data::<Value>(data), _: Bin| {
+                    save_player_data(&user, data);
+                });
+
+                // Handle spectator events
+                socket.on("spectator_connect", move |_, Data::<Value>(data), Bin(bin)| {
+                    handle_spectator_connection(data, bin);
+                });
+                socket.on("broadcast_game_state", move |_, Data::<Value>(data), _: Bin| {
+                    broadcast_game_state(data);
+                });
+                socket.on("switch_spectator_view", move |_, Data::<Value>(data), _: Bin| {
+                    switch_spectator_view(user.clone(), data);
+                });
+
+                // Handle game logic events
+                socket.on("update_game_state", move |_, Data::<Value>(data), _: Bin| {
+                    update_game_state(data);
+                });
+                socket.on("validate_action", move |_, Data::<Value>(data), _: Bin| {
+                    let is_valid = validate_actions(&user, data);
+                    socket.emit("action_validation", is_valid).ok();
+                });
+                socket.on("report_cheating", move |_, Data::<Value>(data), _: Bin| {
+                    detect_cheating(&user, data);
+                });
+
+                // Handle friend system events
+                socket.on("add_friend", move |_, Data::<Value>(data), _: Bin| {
+                    add_friend(&user, data);
+                });
+                socket.on("remove_friend", move |_, Data::<Value>(data), _: Bin| {
+                    remove_friend(&user, data);
+                });
+                socket.on("get_friends", move |_, _: Data<Value>, _: Bin| {
+                    let friends = get_friends(&user);
+                    socket.emit("friends", friends).ok();
+                });
+                socket.on("friend_notification", move |_, Data::<Value>(data), _: Bin| {
+                    send_friend_notification(&user, data);
+                });
+
+                // Handle notification events
+                socket.on("send_notification", move |_, Data::<Value>(data), _: Bin| {
+                    send_notification(&user, data);
+                });
+                socket.on("maintenance_alert", move |_, Data::<Value>(data), _: Bin| {
+                    broadcast_maintenance_alert(data);
+                });
+
+                // Handle logging and monitoring events
+                socket.on("log_event", move |_, Data::<Value>(data), _: Bin| {
+                    log_event(&user, data);
+                });
+                socket.on("log_performance_metrics", move |_, Data::<Value>(data), _: Bin| {
+                    log_performance_metrics(data);
+                });
+
+                // Handle level data events
+                socket.on("load_level_data", move |_, Data::<Value>(data), _: Bin| {
+                    let level_data = load_level_data(data);
+                    socket.emit("level_data", level_data).ok();
+                });
+                socket.on("save_level_data", move |_, Data::<Value>(data), _: Bin| {
+                    save_level_data(data);
+                });
+            }
+        }
+
     players.lock().unwrap().push(player);
 
     info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
