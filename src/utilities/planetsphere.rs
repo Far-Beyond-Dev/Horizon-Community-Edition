@@ -31,10 +31,10 @@ fn fibonacci_point(numsamples: usize, samplev: usize, seed: f64, min_lat: f64, m
 
 fn main() -> io::Result<()> {
     let num_samples = 1000;
-    let min_latitude = 0.0_f64.to_radians(); // 30 degrees in radians
-    let max_latitude = 360.0_f64.to_radians(); // 60 degrees in radians
-    let min_longitude = -45.0_f64.to_radians(); // -45 degrees in radians
-    let max_longitude = 45.0_f64.to_radians(); // 45 degrees in radians
+    let min_latitude = 0.0_f64.to_radians(); // 0 degrees
+    let max_latitude = 360.0_f64.to_radians(); // 360 degrees
+    let min_longitude = -45.0_f64.to_radians(); // -45 degrees
+    let max_longitude = 45.0_f64.to_radians(); // 45 degrees
     let seed = 0.5;
 
     let start_time = Instant::now();
