@@ -2,9 +2,9 @@ use std::f64::consts::PI;
 use std::fs::File;
 use std::io::{self, Write};
 use std::sync::Arc;
-use std::thread;
 use std::sync::mpsc::channel;
 use std::time::Instant;
+use std::sync::Mutex;
 
 fn fibonacci_point(numsamples: usize, samplev: usize, seed: f64, min_lat: f64, max_lat: f64, min_lon: f64, max_lon: f64) -> (f64, f64, f64) {
     let fib_incr = PI * (3.0 - (5.0 as f64).sqrt());
@@ -12,19 +12,22 @@ fn fibonacci_point(numsamples: usize, samplev: usize, seed: f64, min_lat: f64, m
     let rnd = seed * numsamplesf;
 
     let lat_offset = (max_lat - min_lat) / numsamplesf;
-    let lon_offset = (max_lon - min_lon) / numsamplesf;
+    let lon_range = max_lon - min_lon;
     let samplef = samplev as f64;
 
-    // Adjust latitude and longitude to be within the specified range
+    // Adjust latitude to be within the specified range
     let latitude = min_lat + (samplef + 0.5) * lat_offset;
-    let longitude = min_lon + (samplef + 0.5) * lon_offset;
+    
+    // Longitude based on the golden angle but adjusted to be within the specified range
+    let phi = ((samplef + rnd) % numsamplesf) * fib_incr;
+    let longitude = min_lon + (phi % lon_range + lon_range) % lon_range; // Ensure it wraps within [min_lon, max_lon]
 
     let z = latitude.cos();
     let r = (1.0 - z * z).sqrt();
-    let phi = ((samplef + rnd) % numsamplesf) * fib_incr + longitude;
+    let phi_corrected = longitude * PI / 180.0; // Convert to radians for the final calculation
 
-    let x = phi.cos() * r;
-    let y = phi.sin() * r;
+    let x = phi_corrected.cos() * r;
+    let y = phi_corrected.sin() * r;
 
     (x * 1000.0, y * 1000.0, z * 1000.0)
 }
@@ -94,14 +97,14 @@ fn main(num_samples: usize, min_latitude: f64, max_latitude: f64, min_longitude:
 /// Example Usage ///
 /////////////////////
 /// fn main() {
-/// let num_samples = 1000;
-/// let min_latitude = -90.0;
-/// let max_latitude = 90.0;
-/// let min_longitude = -180.0;
-/// let max_longitude = 180.0;
-/// let seed = 0.1;
+///     let num_samples = 1000;
+///     let min_latitude = -90.0;
+///     let max_latitude = 90.0;
+///     let min_longitude = -180.0;
+///     let max_longitude = 180.0;
+///     let seed = 0.1;
 /// 
-///     match generatePlanetFramework(num_samples, min_latitude, max_latitude, min_longitude, max_longitude, seed) {
+///     match main(num_samples, min_latitude, max_latitude, min_longitude, max_longitude, seed) {
 ///         Ok(points) => {
 ///             println!("Generated {} points", points.len());
 ///             // Use `points` vector here for further processing
