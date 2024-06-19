@@ -1,2 +1,1 @@
-use spade::{};
-
+use spade::{DelaunayTriangulation, FloatTriangulation};
