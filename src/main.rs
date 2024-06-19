@@ -1,4 +1,3 @@
-use events::test;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value}; // Import json macro and Value from serde_json
 use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
@@ -7,10 +6,6 @@ use std::sync::{Arc, Mutex};
 use tracing::{debug, info};
 use tracing_subscriber::FmtSubscriber;
 use viz::{handler::ServiceHandler, serve, Result, Router};
-
-mod events;
-mod macros;
-mod utilities;
 
 //Authentication system
 use utilities::auth::{authenticate_user, authorize_request};
@@ -35,6 +30,11 @@ use utilities::logging::{log_event, log_performance_metrics};
 
 // Level Save Data
 use utilities::level_data::{load_level_data, save_level_data};
+
+mod events;
+mod macros;
+mod utilities;
+
 
 // Define a struct for Player
 #[derive(Debug, Clone)]
