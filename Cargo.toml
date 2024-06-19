@@ -16,3 +16,13 @@ tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 viz = "0.8.4"
+
+
+#Make the fibonacci_sphere library available to the delaunay_triangulation binary
+[lib]
+name = "fibonacci_sphere"
+path = "src/Utilities/Terra-Forge/lib.rs"
+
+[[bin]]
+name = "delaunay_triangulation"
+path = "src/Utilities/Terra-Forge/main.rs"

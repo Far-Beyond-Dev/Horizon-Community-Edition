@@ -1,34 +1,36 @@
-mod planetSphere;
+mod fibonacci_sphere;
+mod delaunay_triangulation;
 
-fn generate_voxel_terrain(num_voxels: usize) -> Vec<((f64, f64, f64), (f64, f64, f64))> {
-    let sphere_radius = 100.0; // Example radius of the sphere
-    let voxel_size = 10.0; // Example size of each voxel
-
-    let mut voxels = Vec::new();
-
-    // Generate voxels on the surface of the sphere
-    for i in 0..num_voxels {
-        let latitude = i as f64 * 360.0 / num_voxels as f64;
-        for j in 0..num_voxels {
-            let longitude = j as f64 * 360.0 / num_voxels as f64;
-
-            // Generate opposite corners of the voxel
-            let corner1 = planetSphere::generate_surface_point(latitude, longitude);
-            let corner2 = planetSphere::generate_surface_point(latitude + voxel_size, longitude + voxel_size);
-
-            voxels.push((corner1, corner2));
-        }
-    }
-
-    voxels
-}
+use fibonacci_sphere::generate_fibonacci_sphere;
+use delaunay_triangulation::perform_triangulation;
 
 fn main() {
-    let num_voxels = 10;
-    let voxel_terrain = generate_voxel_terrain(num_voxels);
+    let num_samples = 1000;
+    let min_latitude = -90.0;
+    let max_latitude = 90.0;
+    let min_longitude = -180.0;
+    let max_longitude = 180.0;
+    let seed = 0.1;
 
-    // Print or process voxel terrain data
-    for (i, ((x1, y1, z1), (x2, y2, z2))) in voxel_terrain.iter().enumerate() {
-        println!("Voxel {}: Corner 1: ({}, {}, {}), Corner 2: ({}, {}, {})", i+1, x1, y1, z1, x2, y2, z2);
+    match generate_fibonacci_sphere(num_samples, min_latitude, max_latitude, min_longitude, max_longitude, seed) {
+        Ok(points) => {
+            println!("Generated {} points", points.len());
+            let triangulation = perform_triangulation(&points);
+            println!("Triangulation contains {} vertices and {} faces", triangulation.num_vertices(), triangulation.num_faces());
+            
+            // If you need to process the triangulation further, you can do it here.
+            for vertex in triangulation.vertices() {
+                let x = vertex.position().x;
+                let y = vertex.position().y;
+
+                // Find the corresponding z value from the original points
+                if let Some(&(_, _, z)) = points.iter().find(|&&(px, py, _)| (px - x).abs() < f64::EPSILON && (py - y).abs() < f64::EPSILON) {
+                    println!("Vertex: ({}, {}, {})", x, y, z);
+                }
+            }
+        },
+        Err(e) => {
+            eprintln!("Error generating points: {}", e);
+        }
     }
 }
