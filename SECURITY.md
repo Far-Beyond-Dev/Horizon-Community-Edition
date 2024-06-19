@@ -4,8 +4,10 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.0.1-a   | :white_check_mark: |
-| 0.0.1-b   | :white_check_mark: |
+| Horizon Community Edition 0.0.3 | :white_check_mark: |
+| Horizon Server 0.0.2 | :white_check_mark: |
+| Horizon Server 0.0.1 | :white_check_mark: |
+| Horizon Server 0.0.1-A | :white_check_mark: |
 
 
 ## Reporting a Vulnerability
