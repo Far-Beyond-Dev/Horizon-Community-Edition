@@ -1,3 +1,57 @@
+/*!
+ * Horizon Child Server
+ *
+ * This server software is part of a distributed system designed to facilitate communication
+ * and data transfer between multiple child servers and a master server. Each child server
+ * operates within a "Region map" managed by the master server, which keeps track of their
+ * coordinates in a relative cubic light-year space. The coordinates are stored in 64-bit floats
+ * to avoid coordinate overflow and to ensure high precision.
+ *
+ * The system works as follows:
+ *
+ * 1. Event Handling:
+ *    - The child server receives events from the master server. Each event contains its origin,
+ *      data, and a propagation distance, which determines how far the event should spread.
+ *
+ * 2. Event Propagation:
+ *    - Upon receiving an event, the child server calculates which neighboring child servers
+ *      should receive the event based on the event's origin and the specified propagation distance.
+ *    - This calculation considers all adjacent coordinates within a 3x3x3 cube centered on the
+ *      server's coordinate, ensuring that all relevant neighbors are included.
+ *
+ * 3. Event Transmission:
+ *    - After determining the target neighbors, the child server sends the event to the master server.
+ *      The master server then multicasts the event to the appropriate neighboring child servers.
+ *
+ * 4. Coordinate Management:
+ *    - Each child server maintains its position in the region map, identified by a coordinate
+ *      (x, y, z). The coordinates are managed as integers, representing the position in the cubic
+ *      light-year space.
+ *    - The child server can calculate the network address of neighboring servers based on their
+ *      coordinates, allowing for direct communication.
+ *
+ * The key components of this system include:
+ *
+ * - Event: Represents an event with an origin, data, and propagation distance.
+ * - Coordinate: Represents a position in the region map.
+ * - ChildServer: Represents a child server with methods to receive, handle, and send events.
+ *
+ * The `ChildServer` struct contains methods for:
+ * - Initializing the server with its ID, coordinate, parent server address, and local address.
+ * - Receiving events from the master server.
+ * - Determining which neighboring servers should receive an event.
+ * - Sending events to the parent server for further multicast.
+ * - Running the server to continuously listen for and handle events.
+ *
+ * Usage:
+ * - The child server is initialized with a unique ID, its coordinate, the master server's address,
+ *   and its own local address.
+ * - The server then enters a loop, continuously receiving and handling events.
+ *
+ * This implementation uses `serde` and `bincode` crates for serialization and deserialization of
+ * events to ensure efficient data transfer.
+ */
+
 use std::net::{UdpSocket, SocketAddr};
 use serde::{Serialize, Deserialize};
 
