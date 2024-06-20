@@ -52,14 +52,14 @@ struct ChildServer {
     socket: UdpSocket,
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// * The `ChildServer` struct contains methods for:                                               //
-// - Initializing the server with its ID, coordinate, parent server address, and local address.   //
-// - Receiving events from the master server.                                                     //
-// - Determining which neighboring servers should receive an event.                               //
-// - Sending events to the parent server for further multicast.                                   //
-// - Running the server to continuously listen for and handle events.                             //
-////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// * The `ChildServer` struct contains methods for:                                             //
+// - Initializing the server with its ID, coordinate, parent server address, and local address. //
+// - Receiving events from the master server.                                                   //
+// - Determining which neighboring servers should receive an event.                             //
+// - Sending events to the parent server for further multicast.                                 //
+// - Running the server to continuously listen for and handle events.                           //
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 impl ChildServer {
     fn new(
