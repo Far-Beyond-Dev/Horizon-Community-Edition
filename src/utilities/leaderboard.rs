@@ -1,7 +1,5 @@
-pub fn get_leaderboard () {
-    println!("Todo: Implement update game state function");
-} 
+use tracing::info;
 
-pub fn update_player_stats () {
-    println!("Todo: Implementvalidation function");
+pub fn main () {
+    info!("Setting up event listeners for leaderboard subsystem...");
 }

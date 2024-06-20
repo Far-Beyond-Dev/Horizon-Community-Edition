@@ -1,7 +1,5 @@
-pub fn log_event () {
-    println!("Todo: Implement log event function");
-} 
+use tracing::info;
 
-pub fn log_performance_metrics () {
-    println!("Todo: Implement performance metrics function");
+pub fn main () {
+    info!("Setting up event listeners for logging subsystem...");
 }

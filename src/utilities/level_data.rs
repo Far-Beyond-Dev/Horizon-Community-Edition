@@ -1,7 +1,5 @@
-pub fn load_level_data() {
-    println!("Todo: Implement load function");
-}
+use tracing::info;
 
-pub fn save_level_data() {
-    println!("Todo: save function");
+pub fn main () {
+    info!("Setting up event listeners for level data subsystem...");
 }

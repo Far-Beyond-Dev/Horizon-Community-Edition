@@ -1,7 +1,5 @@
-pub fn send_notification () {
-    println!("Todo: Implement send notification function");
-} 
+use tracing::info;
 
-pub fn broadcast_maintenance_alert () {
-    println!("Todo: Implement broadcast maintainance alert function");
+pub fn main () {
+    info!("Setting up event listeners for notifications subsystem...");
 }

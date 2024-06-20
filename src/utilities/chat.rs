@@ -1,11 +1,5 @@
-pub fn send_text_message() {
-    println!("Todo: Implement update game state function");
-}
+use tracing::info;
 
-pub fn receive_text_message() {
-    println!("Todo: Implementvalidation function");
-}
-
-pub fn handle_voice_chat() {
-    println!("Todo: Implement report cheating function");
+pub fn main () {
+    info!("Setting up event listeners for chat subsystem...");
 }
