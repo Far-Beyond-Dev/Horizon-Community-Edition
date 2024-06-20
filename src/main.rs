@@ -83,6 +83,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     utilities::logging::main();
     utilities::notifications::main();
     utilities::player_data::main();
+    
 
     ////////////////////////////////////////////////////////
     // Register some custom events with our socket server //
