@@ -1,4 +1,4 @@
-module horizon/buntdb
+module horizon/pebbleVault
 
 go 1.18
 
