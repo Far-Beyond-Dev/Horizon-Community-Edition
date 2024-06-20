@@ -4,6 +4,7 @@ mod delaunay_triangulation;
 use fibonacci_sphere::generate_fibonacci_sphere;
 use delaunay_triangulation::perform_triangulation;
 
+
 fn main() {
     let num_samples = 1000;
     let min_latitude = -90.0;
@@ -15,7 +16,7 @@ fn main() {
     match generate_fibonacci_sphere(num_samples, min_latitude, max_latitude, min_longitude, max_longitude, seed) {
         Ok(points) => {
             println!("Generated {} points", points.len());
-            let triangulation = perform_triangulation(&points);
+            let triangulation = perform_triangulation(points);
             println!("Triangulation contains {} vertices and {} faces", triangulation.num_vertices(), triangulation.num_faces());
             
             // If you need to process the triangulation further, you can do it here.

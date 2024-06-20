@@ -13,7 +13,7 @@ dependencies = [
  "serde",
  "serde_json",
  "socketioxide",
- "spade",
+ "terra_forge",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -1631,6 +1631,19 @@ dependencies = [
  "fastrand",
  "rustix",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "terra_forge"
+version = "0.1.0"
+dependencies = [
+ "console_log",
+ "serde",
+ "serde_json",
+ "spade",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
