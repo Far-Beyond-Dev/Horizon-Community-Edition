@@ -3,52 +3,28 @@ package main
 import (
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"time"
 
-	socketio "github.com/zhouhui8915/go-socket.io-client"
+	socketio "github.com/googollee/go-socket.io"
 	"github.com/tidwall/buntdb"
 )
 
 func main() {
 	fmt.Println("Start server...")
 
-	// Serve a simple HTML page on root path
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Go server is up and running!")
+	// Initialize a new Socket.IO server
+	server := socketio.NewServer(nil)
+
+	// Handle connection event
+	server.OnConnect("/", func(s socketio.Conn) error {
+		s.SetContext("")
+		fmt.Println("Connected:", s.ID())
+		return nil
 	})
 
-	// Listen on port 8000
-	ln, err := net.Listen("tcp", ":3003")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer ln.Close()
-
-	// Initialize a new server
-	server, err := socketio.NewClient([]string{"http://localhost:3001"}, nil)
-	if err != nil {
-		fmt.Println("Connected to Socket.IO server: ", err)
-	} else {
-		fmt.Println("Connected to Socket.IO server")
-	}
-
-	// Handle '/socket.io/' endpoint
-	go server.On("updateResult", func(data string) {
-		fmt.Println("Received update result:", data)
-	})
-
-	go http.Serve(ln, nil)
-
-	// Emit "DBUp" event
-	go func() {
-		time.Sleep(2 * time.Second) // Assuming 2 seconds for the server to start
-		server.Emit("DBUp", "")
-	}()
-
-	// Handle events
-	server.On("update", func(data string) {
+	// Handle "update" event
+	server.OnEvent("/", "update", func(s socketio.Conn, data string) {
 		fmt.Println("Received update request:", data)
 
 		// Open the database (use in-memory for this example)
@@ -70,9 +46,30 @@ func main() {
 		elapsed := time.Since(start)
 
 		// Emit performance measurement
-		server.Emit("updateResult", fmt.Sprintf("Update transaction took: %s", elapsed))
+		s.Emit("updateResult", fmt.Sprintf("Update transaction took: %s", elapsed))
 	})
 
-	// Run forever
-	select {}
+	// Handle disconnection event
+	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
+		fmt.Println("Disconnected:", s.ID(), reason)
+	})
+
+	// Serve the Socket.IO server
+	go func() {
+		if err := server.Serve(); err != nil {
+			log.Fatalf("SocketIO listen error: %s\n", err)
+		}
+	}()
+	defer server.Close()
+
+	http.Handle("/socket.io/", server)
+
+	// Serve a simple HTML page on root path
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Go server is up and running!")
+	})
+
+	// Listen on port 3003
+	log.Println("Serving at localhost:3001...")
+	log.Fatal(http.ListenAndServe(":3001", nil))
 }
