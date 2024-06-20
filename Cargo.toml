@@ -15,4 +15,4 @@ tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 viz = "0.8.4"
-terra_forge = { path = "./src/utilities/terra_forge" }
+terra_forge = { path = "./src/utilities/TerraForge" }
