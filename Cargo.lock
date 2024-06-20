@@ -6,6 +6,7 @@ version = 3
 name = "Horizon"
 version = "0.1.0"
 dependencies = [
+ "TerraForge",
  "axum",
  "console_log",
  "hyper",
@@ -13,11 +14,23 @@ dependencies = [
  "serde",
  "serde_json",
  "socketioxide",
- "terra_forge",
  "tokio",
  "tracing",
  "tracing-subscriber",
  "viz",
+]
+
+[[package]]
+name = "TerraForge"
+version = "0.1.0"
+dependencies = [
+ "console_log",
+ "serde",
+ "serde_json",
+ "spade",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -1631,19 +1644,6 @@ dependencies = [
  "fastrand",
  "rustix",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "terra_forge"
-version = "0.1.0"
-dependencies = [
- "console_log",
- "serde",
- "serde_json",
- "spade",
- "tokio",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

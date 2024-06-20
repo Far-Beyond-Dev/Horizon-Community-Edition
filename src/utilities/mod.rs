@@ -1,6 +1,6 @@
 // Register Custom Events
 
-pub mod auth;
+// pub mod auth;
 pub mod chat;
 pub mod leaderboard;
 pub mod player_data;
