@@ -233,7 +233,7 @@ struct Location {
 // on_connect runs every time a new player connects to the  //
 // avoid putting memory hungry code here if possible!       //
 //////////////////////////////////////////////////////////////
-///
+
 fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
     // Authenticate the user
     let player = Player {
@@ -252,6 +252,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 
     /////////////////////////////////////////////////////////
     // Setup external event listeners for the more complex //
+    // systems                                             //
     /////////////////////////////////////////////////////////
 
     utilities::chat::main();
@@ -400,6 +401,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("+-----------------------------------------------------------------------------------------+");
     println!("");
 
+    TerraForge::main();
     // let test = TerraForge::main();
     // println!("TerraForge: {:?}", test);
 
