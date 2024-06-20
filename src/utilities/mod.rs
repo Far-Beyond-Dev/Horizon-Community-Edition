@@ -8,3 +8,4 @@ pub mod game_logic;
 pub mod notifications;
 pub mod logging;
 pub mod level_data;
+pub mod startup;
