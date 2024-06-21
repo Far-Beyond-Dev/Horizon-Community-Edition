@@ -36,6 +36,7 @@ mod events;
 mod macros;
 mod utilities;
 mod structs;
+mod users;
 
 //////////////////////////////////////////////////////////////
 //                         WARNING                          //
