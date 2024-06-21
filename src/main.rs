@@ -23,10 +23,9 @@ use viz::{handler::ServiceHandler, serve, Result, Router};
 
 
 // WARNING
-// Import all structs (when we have a to of structs this will be very bad but should be fine for now)
+// Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
 
 use structs::*;
-
 
 /////////////////////////////////////
 // Import the modules we will need //
@@ -36,13 +35,12 @@ mod events;
 mod macros;
 mod utilities;
 mod structs;
-mod users;
 
-//////////////////////////////////////////////////////////////
-//                         WARNING                          //
-// on_connect runs every time a new player connects to the  //
-// avoid putting memory hungry code here if possible!       //
-//////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+//                         WARNING                           //
+// on_connect runs every time a new player connects to the   //
+// server avoid putting memory hungry code here if possible! //
+///////////////////////////////////////////////////////////////
 
 fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
     // Authenticate the user

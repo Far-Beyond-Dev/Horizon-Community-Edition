@@ -1,3 +1,3 @@
-module r2gexample
+module pebble
 
 go 1.22.4

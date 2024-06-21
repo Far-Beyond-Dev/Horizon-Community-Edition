@@ -19,6 +19,11 @@ bincode = "1.3.3"
 ansi_term = "0.12.1"
 TerraForge = "0.1.0"
 rust2go = { version = "0.3.4" }
+monoio = { version = "0.2", features = ["sync"] }
 
 [build-dependencies]
 rust2go = { version = "0.3.4", features = ["build"] }
+
+[[bin]]
+name = "horizon"
+path = "src/main.rs"
