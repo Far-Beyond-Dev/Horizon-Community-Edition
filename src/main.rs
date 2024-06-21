@@ -71,9 +71,10 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     utilities::player_data::main();
     
     ////////////////////////////////////////////////////////
-    // Register some custom events with our socket server //
-    // Your custom events will also be registered here as //
-    // well as in the ./events/mod.rs file.               //
+    // Register some additional custom events with our    // 
+    // socket server. Your custom events will be          //
+    // registered here as well as in the ./events/mod.rs  //
+    // file                                               //
     ////////////////////////////////////////////////////////
     
     define_event!(socket, "test", events::test::main());
