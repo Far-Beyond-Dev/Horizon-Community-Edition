@@ -1,5 +1,5 @@
 use tracing::info;
 
-pub fn main () {
+pub fn init () {
     info!("Setting up event listeners for player data subsystem...");
 }
