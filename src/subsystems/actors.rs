@@ -3,8 +3,6 @@ use serde_json::{json, Value};
 use tracing::info;
 
 pub fn init (socket: SocketRef) {
-    info!("Setting up event listeners for level data subsystem...");
-
     socket.on(
         "spawnActor",
         move |socket: SocketRef, _: Data<Value>, _: Bin| {
