@@ -1,34 +1,38 @@
 > [!CAUTION]
-> Horizon is still in early development, and is not meant to be used in any production environments
+> Horizon is still in early development and is not meant to be used in any production environments.
 
 ![horizon-server-high-resolution-logo-transparent](/branding/horizon-server-high-resolution-logo-transparent.png)
 
-
 ## Table Of Contents
 
+- [Table Of Contents](#table-of-contents)
 - [1. Introduction](#1-introduction)
-  * [Synchronized Game Server Architecture](#synchronized-game-server-architecture)
-    + [Horizon Parent-Child Socket Sync](#horizon-parent-child-socket-sync)
+  - [Synchronized Game Server Architecture](#synchronized-game-server-architecture)
+    - [Horizon Parent-Child Socket Sync](#horizon-parent-child-socket-sync)
       - [How it Works](#how-it-works)
       - [Benefits](#benefits)
       - [Implementation Details](#implementation-details)
-    + [Conclusion](#conclusion)
+    - [Server-to-Server Communication](#server-to-server-communication)
+      - [Event Propagation and Multicasting](#event-propagation-and-multicasting)
+      - [Coordinate Management and Region Mapping](#coordinate-management-and-region-mapping)
+  - [Conclusion](#conclusion)
 - [2. Installation](#2-installation)
-    + [Prerequisites](#prerequisites)
-    + [Installation Steps](#installation-steps)
+    - [Prerequisites](#prerequisites)
+    - [Installation Steps](#installation-steps)
 - [3. Configuration](#3-configuration)
 - [4. Usage](#4-usage)
-  * [Starting the Server](#starting-the-server)
-  * [Managing the Server manually](#managing-the-server-manually)
+  - [Starting the Server](#starting-the-server)
+  - [Managing the Server manually](#managing-the-server-manually)
 - [5. Development](#5-development)
-  * [Project Structure](#project-structure)
-  * [Contribution Guidelines](#contribution-guidelines)
+  - [Project Structure](#project-structure)
+  - [Contribution Guidelines](#contribution-guidelines)
 - [6. Additional Resources](#6-additional-resources)
-  * [Community Support](#community-support)
-  * [Documentation](#documentation)
+  - [Community Support](#community-support)
+  - [Documentation](#documentation)
 - [7. Troubleshooting](#7-troubleshooting)
-  * [Common Issues](#common-issues)
+  - [Common Issues](#common-issues)
 
+---
 
 ## 1. Introduction
 
@@ -64,9 +68,27 @@ Horizon utilizes a sophisticated Parent-Child socket synchronization mechanism t
 
 - **Monitoring**: Horizon provides built-in monitoring tools to track synchronization performance, allowing administrators to identify and address any potential bottlenecks or issues promptly.
 
-#### Conclusion
+#### Server-to-Server Communication
 
-The Horizon Parent-Child socket synchronization mechanism revolutionizes multiplayer game server architecture, offering unparalleled scalability, fault tolerance, and consistency. By leveraging real-time communication and optimization techniques, Horizon ensures that all players experience a seamless and immersive gaming environment, regardless of the complexity or scale of the game world.
+##### Event Propagation and Multicasting
+
+Horizon implements a robust event propagation mechanism to facilitate communication between servers based on spatial proximity and event origin.
+
+- **Multicast System**: Events are multicast from the Parent node to Child nodes based on their geographical proximity and relevance to the event origin. This ensures that only necessary servers receive and process the events, optimizing network bandwidth and computational resources.
+
+- **Propagation Distance**: Each event carries a propagation distance parameter, allowing servers to determine whether they should propagate the event further or handle it locally based on their position relative to the event origin.
+
+##### Coordinate Management and Region Mapping
+
+- **Spatial Coordinates**: Horizon uses a 64-bit floating-point coordinate system to manage server positions within a simulated universe. Each server instance covers a cubic light year, and coordinates are stored relative to avoid overflow issues.
+
+- **Region Mapping**: Servers are organized into a grid-based region map, where each region corresponds to a specific set of spatial coordinates. This mapping enables efficient routing of events between servers, as servers can quickly determine which neighboring servers should receive specific events based on their region coordinates.
+
+### Conclusion
+
+The Horizon Parent-Child socket synchronization mechanism and server-to-server communication protocols provide a robust foundation for managing distributed multiplayer game environments. By leveraging efficient event propagation, coordinate management, and real-time synchronization techniques, Horizon ensures a seamless and immersive gaming experience for all players.
+
+---
 
 ## 2. Installation
 
@@ -97,9 +119,11 @@ Before installing Horizon, ensure that you have the following prerequisites:
     docker-compose up --build
     ```
 
-4. Follow the prompts to configure any necessary settings in the `server-config.json` file
+4. Follow the prompts to configure any necessary settings in the `server-config.json` file.
 
 For more detailed instructions and troubleshooting tips, refer to the [Installation Guide](installation.md).
+
+---
 
 ## 3. Configuration
 
@@ -108,9 +132,11 @@ Horizon's configuration revolves around Docker and environment variables. Here's
 - `compose.yaml`: Defines the Docker services, networks, and volumes for running Horizon.
 - `Dockerfile`: Specifies the environment and dependencies for the Horizon server container.
 - `start.sh`: Contains startup commands for launching the server.
-- `server-config.json`: Contains Horizon server configurations
+- `server-config.json`: Contains Horizon server configurations.
 
 To customize Horizon for your specific needs, modify these files according to your requirements. Refer to the [Configuration Guide](configuration.md) for detailed instructions and best practices.
+
+---
 
 ## 4. Usage
 
@@ -125,12 +151,15 @@ To start the Horizon server, execute the following command (This assumes you hav
 This script initializes the Docker containers and launches the server. Once started, you can connect to the server using socket.io clients or integrate it with your Unreal Engine 5 project.
 
 ### Managing the Server manually
-You can avoid using the pre-built scripts to manage your server by managing it directly via docker-compose.
+
+You can manage your server directly via docker-compose:
 
 - Use `docker-compose` commands to manage the server lifecycle (e.g., `docker-compose up`, `docker-compose down`).
 - Monitor server logs for debugging and performance analysis.
 
 For more usage instructions and advanced features, see the [Usage Guide](usage.md).
+
+---
 
 ## 5. Development
 
@@ -151,6 +180,8 @@ The Horizon project directory consists of several key components:
 
 For detailed development instructions and guidelines, refer to the [Development Guide](development.md).
 
+---
+
 ## 6. Additional Resources
 
 ### Community Support
@@ -165,6 +196,8 @@ For detailed development instructions and guidelines, refer to the [Development 
 
 For more resources and helpful links, visit the [Additional Resources section](resources.md).
 
+---
+
 ## 7. Troubleshooting
 
 ### Common Issues
@@ -174,4 +207,3 @@ For more resources and helpful links, visit the [Additional Resources section](r
 - **Performance Bottlenecks**: Monitor server performance and optimize resource usage if necessary.
 
 For troubleshooting tips and solutions to common problems, consult the [Troubleshooting Guide](troubleshooting.md).
-

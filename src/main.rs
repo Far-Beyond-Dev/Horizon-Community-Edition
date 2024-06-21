@@ -1,63 +1,48 @@
-use events::test;
-use serde_json::{json, Value}; // Import json macro and Value from serde_json
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                      Horizon Game Server                                       //
+//                                                                                                //
+// This server software is part of a distributed system designed to facilitate communication      //
+// and data transfer between multiple child servers and a master server. Each child server        //
+// operates within a "Region map" managed by the master server, which keeps track of their        //
+// coordinates in a relative cubic light-year space. The coordinates are stored in 64-bit floats  //
+// to avoid coordinate overflow and to ensure high precision.                                     //
+//                                                                                                //
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////
+// Import a few things to get us started //
+///////////////////////////////////////////
+
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
+use std::net::{SocketAddr, UdpSocket};
 use std::sync::{Arc, Mutex};
-use tracing::{info, debug};
+use tokio::main;
+use tracing::{debug, info};
 use tracing_subscriber::FmtSubscriber;
-use std::io::Write; // Bring the Write trait into scope
 use viz::{handler::ServiceHandler, serve, Result, Router};
-use serde::{Serialize, Deserialize};
+use structs::*;
 
 mod events;
 mod macros;
+mod utilities;
+mod structs;
 
-// Define a struct for Player
-#[derive(Debug, Clone)]
-struct Player {
-    id: String,
-    socket: SocketRef,
-    location: Option<Location>, // Optional to handle players who haven't sent location updates yet
-}
-
-// Define a struct for Rotation
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct Rotation {
-    w: f64,
-    x: f64,
-    y: f64,
-    z: f64,
-}
-
-// Define a struct for Scale
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct Scale {
-    x: f64,
-    y: f64,
-    z: f64,
-}
-
-// Define a struct for Translation
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct Translation {
-    x: f64,
-    y: f64,
-    z: f64,
-}
-
-// Define a struct for Location
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct Location {
-    rotation: Rotation,
-    scale3D: Scale, // Update field name to match the JSON data
-    translation: Translation,
-}
+//////////////////////////////////////////////////////////////
+//                         WARNING                          //
+// on_connect runs every time a new player connects to the  //
+// avoid putting memory hungry code here if possible!       //
+//////////////////////////////////////////////////////////////
 
 fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
+    // Authenticate the user
     let player = Player {
         id: socket.id.to_string(),
         socket: socket.clone(),
         location: None, // Initialize with no location
     };
+
     players.lock().unwrap().push(player);
 
     info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
@@ -66,6 +51,18 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 
     let players_clone = Arc::clone(&players);
 
+    /////////////////////////////////////////////////////////
+    // Setup external event listeners for the more complex //
+    // systems                                             //
+    /////////////////////////////////////////////////////////
+
+    utilities::chat::main();
+    utilities::game_logic::main();
+    utilities::leaderboard::main();
+    utilities::level_data::main();
+    utilities::logging::main();
+    utilities::notifications::main();
+    utilities::player_data::main();
 
     ////////////////////////////////////////////////////////
     // Register some custom events with our socket server //
@@ -73,8 +70,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // well as in the ./events/mod.rs file.               //
     ////////////////////////////////////////////////////////
 
-    define_event!(socket, "test", test::main());
-
+    define_event!(socket, "test", events::test::main());
 
     ////////////////////////////////////////////////////////
     // Register some custom events with our socket server //
@@ -83,13 +79,17 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     socket.on(
         "UpdatePlayerLocation",
         move |socket: SocketRef, Data::<Value>(data), Bin(bin)| {
-            info!("Received event: UpdatePlayerLocation with data: {:?} and bin: {:?}", data, bin);
+            info!(
+                "Received event: UpdatePlayerLocation with data: {:?} and bin: {:?}",
+                data, bin
+            );
 
             // Extract location from data
             match serde_json::from_value::<Location>(data.clone()) {
                 Ok(location) => {
                     let mut players = players_clone.lock().unwrap();
-                    if let Some(player) = players.iter_mut().find(|p| p.id == socket.id.to_string()) {
+                    if let Some(player) = players.iter_mut().find(|p| p.id == socket.id.to_string())
+                    {
                         player.location = Some(location);
                         info!("Updated player location: {:?}", player);
                     } else {
@@ -108,7 +108,10 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     socket.on(
         "message-with-ack",
         move |Data::<Value>(data), ack: AckSender, Bin(bin)| {
-            info!("Received event: message-with-ack with data: {:?} and bin: {:?}", data, bin);
+            info!(
+                "Received event: message-with-ack with data: {:?} and bin: {:?}",
+                data, bin
+            );
             ack.bin(bin).send(data).ok();
         },
     );
@@ -121,8 +124,12 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
             let players = players_clone.lock().unwrap();
 
             let online_players_json = serde_json::to_value(
-                players.iter().map(|player| json!({ "id": player.id })).collect::<Vec<_>>(),
-            ).unwrap();
+                players
+                    .iter()
+                    .map(|player| json!({ "id": player.id }))
+                    .collect::<Vec<_>>(),
+            )
+            .unwrap();
 
             debug!("Player Array as JSON: {}", online_players_json);
             socket.emit("onlinePlayers", online_players_json).ok();
@@ -137,12 +144,17 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
             let players = players_clone.lock().unwrap();
 
             let players_with_locations_json = serde_json::to_value(
-                players.iter().map(|player| {
-                    json!({ "id": player.id, "location": player.location })
-                }).collect::<Vec<_>>(),
-            ).unwrap();
+                players
+                    .iter()
+                    .map(|player| json!({ "id": player.id, "location": player.location }))
+                    .collect::<Vec<_>>(),
+            )
+            .unwrap();
 
-            info!("Players with Locations as JSON: {}", players_with_locations_json);
+            info!(
+                "Players with Locations as JSON: {}",
+                players_with_locations_json
+            );
             let players = vec![players_with_locations_json];
 
             socket.emit("playersWithLocations", &players).ok();
@@ -158,39 +170,21 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     });
 }
 
-#[tokio::main]
+#[main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    std::io::stdout().flush().unwrap();
-    
     let subscriber = FmtSubscriber::builder()
         .with_max_level(tracing::Level::INFO)
         .finish();
     tracing::subscriber::set_global_default(subscriber)?;
 
-    println!("Starting Horizon Server...");
-    println!("");
-    println!("+------------------------------------------------------------------------------------------------------------------------------------+");
-    println!("|  __    __                      __                                       ______                                                     |");
-    println!("| |  |  |  |                    |  |                                     /      |                                                    |");
-    println!("| | $$  | $$  ______    ______   |$$ ________   ______   _______        |  $$$$$$|  ______    ______  __     __   ______    ______   |");
-    println!("| | $$__| $$ /      |  /      | |  ||        | /      | |       |       | $$___|$$ /      |  /      ||  |   /  | /      |  /      |  |");
-    println!("| | $$    $$|  $$$$$$||  $$$$$$|| $$ |$$$$$$$$|  $$$$$$|| $$$$$$$|       |$$    | |  $$$$$$||  $$$$$$||$$| /  $$|  $$$$$$||  $$$$$$| |");
-    println!("| | $$$$$$$$| $$  | $$| $$   |$$| $$  /    $$ | $$  | $$| $$  | $$       _|$$$$$$|| $$    $$| $$   |$$ |$$|  $$ | $$    $$| $$   |$$ |");
-    println!("| | $$  | $$| $$__/ $$| $$      | $$ /  $$$$_ | $$__/ $$| $$  | $$      |  |__| $$| $$$$$$$$| $$        |$$ $$  | $$$$$$$$| $$       |");
-    println!("| | $$  | $$ |$$    $$| $$      | $$|  $$    | |$$    $$| $$  | $$       |$$    $$ |$$     || $$         |$$$    |$$     || $$       |");
-    println!("|  |$$   |$$  |$$$$$$  |$$       |$$ |$$$$$$$$  |$$$$$$  |$$   |$$        |$$$$$$   |$$$$$$$ |$$          |$      |$$$$$$$ |$$       |");
-    println!("|                                                                 V: 0.0.1-A                                                         |");
-    println!("+------------------------------------------------------------------------------------------------------------------------------------+");
-    println!("");
-    println!("+-----------------------------------------------------------------------------------------+");
-    println!("|  ,---.   ,--.                            ,-----.                                   ,--. |");
-    println!("| (   .-',-'  '-. ,--,--.,--.--. ,---.     |  |) /_  ,---. ,--. ,--.,---. ,--,--,  ,-|  | |");
-    println!("|  `  `-.'-.  .-'| ,-.  ||  .--'(  .-'     |  .-.  || (===) |  '  /| .-. ||  ,,  |' .-. | |");
-    println!("|  _)   |  |  |  | '-'  ||  | .-'  `)      |  '--' /|   --.  |   / ' '-' '|  ||  || `-' | |");
-    println!("| (____/   `--'   `--`--'`--  `----'       `------'  `----'.-'  /   `---' `--''--' `---'  |");
-    println!("|                                    V: 0.0.1-A            `---'                          |");
-    println!("+-----------------------------------------------------------------------------------------+");
-    println!("");
+    //////////////////////////////////
+    // Show branding during startup //
+    //////////////////////////////////
+    utilities::startup::main();
+
+    //TerraForge::main();
+    // let test = TerraForge::main();
+    // println!("TerraForge: {:?}", test);
 
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
 

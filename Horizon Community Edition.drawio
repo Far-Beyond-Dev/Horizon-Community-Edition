@@ -1,12 +1,9 @@
 <mxfile host="65bd71144e">
     <diagram id="wVh6cHktjwnzRCAw79Iv" name="Page-1">
-        <mxGraphModel dx="860" dy="783" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="573" dy="658" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="9" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=19;fontColor=#6bb1f3;" parent="1" vertex="1">
-                    <mxGeometry x="10" y="10" width="540" height="760" as="geometry"/>
-                </mxCell>
                 <mxCell id="6" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;" parent="1" vertex="1">
                     <mxGeometry x="40" y="40" width="480" height="140" as="geometry"/>
                 </mxCell>
@@ -15,9 +12,6 @@
                 </mxCell>
                 <mxCell id="7" value="&lt;font style=&quot;font-size: 19px;&quot;&gt;&lt;b&gt;Powered By:&lt;/b&gt;&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#6bb1f3;" parent="1" vertex="1">
                     <mxGeometry x="181" y="54" width="260" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="10" value="Branding Stuffs" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=19;fontColor=#FFFFFF;" parent="1" vertex="1">
-                    <mxGeometry x="165" y="10" width="230" height="30" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
