@@ -62,13 +62,13 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     /////////////////////////////////////////////////////////
     
     subsystems::actors::init(socket);
-    subsystems::chat::main();
-    subsystems::game_logic::main();
-    subsystems::leaderboard::main();
-    subsystems::level_data::main();
-    subsystems::logging::main();
-    subsystems::notifications::main();
-    subsystems::player_data::main();
+    subsystems::chat::init();
+    subsystems::game_logic::init();
+    subsystems::leaderboard::init();
+    subsystems::level_data::init();
+    subsystems::logging::init();
+    subsystems::notifications::init();
+    subsystems::player_data::init();
     
     ////////////////////////////////////////////////////////
     // Register some additional custom events with our    // 
