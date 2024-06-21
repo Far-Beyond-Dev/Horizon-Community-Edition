@@ -20,6 +20,8 @@ ansi_term = "0.12.1"
 TerraForge = "0.1.0"
 rust2go = { version = "0.3.4" }
 monoio = { version = "0.2", features = ["sync"] }
+tokio-console = "0.1.11"
+console-subscriber = "0.3.0"
 
 [build-dependencies]
 rust2go = { version = "0.3.4", features = ["build"] }
@@ -27,3 +29,6 @@ rust2go = { version = "0.3.4", features = ["build"] }
 [[bin]]
 name = "horizon"
 path = "src/main.rs"
+
+[build]
+rustflags = ["--cfg", "tokio_unstable"]

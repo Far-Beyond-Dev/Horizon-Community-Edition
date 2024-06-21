@@ -2,6 +2,10 @@ use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use socketioxide::extract::SocketRef;
 use tokio::net::UdpSocket;
+use std::collections::HashMap;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+use tokio::sync::Notify;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Event {
@@ -182,4 +186,28 @@ pub struct Location {
     rotation: Rotation,
     scale3D: Scale, // Update field name to match the JSON data
     translation: Translation,
+}
+
+pub struct PlayerManager {
+    players: Mutex<HashMap<String, Arc<Notify>>>,
+}
+
+impl PlayerManager {
+    pub fn new() -> Self {
+        PlayerManager {
+            players: Mutex::new(HashMap::new()),
+        }
+    }
+
+    pub fn add_player(&self, player_id: String) -> Arc<Notify> {
+        let notify = Arc::new(Notify::new());
+        self.players.lock().unwrap().insert(player_id, notify.clone());
+        notify
+    }
+
+    pub fn remove_player(&self, player_id: &str) {
+        if let Some(notify) = self.players.lock().unwrap().remove(player_id) {
+            notify.notify_one();
+        }
+    }
 }
