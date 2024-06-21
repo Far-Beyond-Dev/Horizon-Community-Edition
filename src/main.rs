@@ -18,13 +18,7 @@ use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
 use std::sync::{Arc, Mutex};
 use tokio::main;
 use tracing::{debug, info};
-use tracing_subscriber::FmtSubscriber;
 use viz::{handler::ServiceHandler, serve, Result, Router};
-use tokio::task::JoinHandle;
-use std::collections::HashMap;
-use tokio::sync::Notify;
-
-
 
 // WARNING
 // Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
@@ -67,7 +61,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // systems                                             //
     /////////////////////////////////////////////////////////
     
-    utilities::actors::main();
+    utilities::actors::init(socket);
     utilities::chat::main();
     utilities::game_logic::main();
     utilities::leaderboard::main();
