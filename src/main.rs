@@ -31,7 +31,7 @@ use structs::*;
 
 mod events;
 mod macros;
-mod utilities;
+mod subsystems;
 mod structs;
 
 ///////////////////////////////////////////////////////////////
@@ -61,14 +61,14 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // systems                                             //
     /////////////////////////////////////////////////////////
     
-    utilities::actors::init(socket);
-    utilities::chat::main();
-    utilities::game_logic::main();
-    utilities::leaderboard::main();
-    utilities::level_data::main();
-    utilities::logging::main();
-    utilities::notifications::main();
-    utilities::player_data::main();
+    subsystems::actors::init(socket);
+    subsystems::chat::main();
+    subsystems::game_logic::main();
+    subsystems::leaderboard::main();
+    subsystems::level_data::main();
+    subsystems::logging::main();
+    subsystems::notifications::main();
+    subsystems::player_data::main();
     
     ////////////////////////////////////////////////////////
     // Register some additional custom events with our    // 
@@ -188,7 +188,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //////////////////////////////////
     // Show branding during startup //
     //////////////////////////////////
-    utilities::startup::main();
+    subsystems::startup::main();
 
     //TerraForge::main();
     // let test = TerraForge::main();
