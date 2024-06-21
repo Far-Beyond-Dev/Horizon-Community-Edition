@@ -25,6 +25,8 @@ dependencies = [
 [[package]]
 name = "TerraForge"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ed5d8ea2d8b657b544ac2ae6f84de5c51595bad67a0f8c987acfb5ad991ce86"
 dependencies = [
  "console_log",
  "serde",
