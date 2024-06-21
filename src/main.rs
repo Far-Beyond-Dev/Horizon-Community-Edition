@@ -20,7 +20,17 @@ use tokio::main;
 use tracing::{debug, info};
 use tracing_subscriber::FmtSubscriber;
 use viz::{handler::ServiceHandler, serve, Result, Router};
+
+
+// WARNING
+// Import all structs (when we have a to of structs this will be very bad but should be fine for now)
+
 use structs::*;
+
+
+/////////////////////////////////////
+// Import the modules we will need //
+/////////////////////////////////////
 
 mod events;
 mod macros;
