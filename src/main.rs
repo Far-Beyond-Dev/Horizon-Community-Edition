@@ -13,10 +13,8 @@
 // Import a few things to get us started //
 ///////////////////////////////////////////
 
-use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
-use std::net::{SocketAddr, UdpSocket};
 use std::sync::{Arc, Mutex};
 use tokio::main;
 use tracing::{debug, info};
@@ -98,7 +96,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                 }
                 Err(err) => {
                     info!("Failed to parse location: {:?}", err);
-                }
+                } 
             }
 
             socket.bin(bin).emit("message-back", data).ok();
