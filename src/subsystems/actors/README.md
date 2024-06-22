@@ -36,7 +36,11 @@ For those getting started with Rust, understanding how object-oriented concepts 
 
 ## Step-by-Step Guide
 
-1. **Define the `Actor` Trait** (This is done for you in Horizon Server):
+1. **Define the `Actor` Trait**:
+
+> [!NOTE]
+> This is done for you in Horizon Server.
+
 
    The `Actor` trait is the base trait that all actors must implement. It defines common behavior for all actors.
 
