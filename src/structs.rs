@@ -3,7 +3,6 @@ use std::net::SocketAddr;
 use socketioxide::extract::SocketRef;
 use tokio::net::UdpSocket;
 use std::collections::HashMap;
-use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tokio::sync::Notify;
 
@@ -52,11 +51,12 @@ impl ChildServer {
             socket,
         }
     }
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-// * Event Handling:                                                                                 //
-// - The child server receives events from the master server. Each event contains its origin,        //
-//   data, and a propagation distance, which determines how far the event should spread.             //
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    //                                          Event Handling:                                          //
+    // The child server receives events from the master server. Each event contains its origin, data     //
+    // and a propagation distance, which determines how far the event should spread.                     //
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub async fn receive_event(&self) -> Event {
         let mut buf = [0u8; 1024];
@@ -69,13 +69,13 @@ impl ChildServer {
         event
     }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-// * Event Propagation:                                                                               //
-// - Upon receiving an event, the child server calculates which neighboring child servers             //
-//    should receive the event based on the event's origin and the specified propagation distance.    //
-// - This calculation considers all adjacent coordinates within a 3x3x3 cube centered on the          //
-//    server's coordinate, ensuring that all relevant neighbors are included.                         //
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // * Event Propagation:                                                                               //
+    // - Upon receiving an event, the child server calculates which neighboring child servers             //
+    //    should receive the event based on the event's origin and the specified propagation distance.    //
+    // - This calculation considers all adjacent coordinates within a 3x3x3 cube centered on the          //
+    //    server's coordinate, ensuring that all relevant neighbors are included.                         //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub fn determine_propagation(&self, event: &Event) -> Vec<Coordinate> {
         let mut neighbors = Vec::new();
@@ -104,11 +104,11 @@ impl ChildServer {
         neighbors
     }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-// * Event Transmission:                                                                            //
-// - After determining the target neighbors, the child server sends the event to the master server. //
-//   The master server then multicasts the event to the appropriate neighboring child servers.      //
-//////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    // * Event Transmission:                                                                            //
+    // - After determining the target neighbors, the child server sends the event to the master server. //
+    // - The master server then multicasts the event to the appropriate neighboring child servers.      //
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub async fn send_event(&self, event: &Event, target: &Coordinate) {
         let msg = bincode::serialize(event).expect("Failed to serialize event");
@@ -149,12 +149,11 @@ pub struct Player {
     pub location: Option<Location>, // Optional to handle players who haven't sent location updates yet
 }
 
-////////////////////////////////////////////////////
-//            World object structs:               //
-// These Structs help store an object's location  //
-// this server's coordanites in the instance grid //
-// Define a struct for Rotation of objects        //
-////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+//                         World object structs:                           //
+// These Structs help store an object's location this server's coordanites //
+// in the instance grid define a struct for Rotation of objects.           //
+/////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Rotation {
@@ -210,4 +209,85 @@ impl PlayerManager {
             notify.notify_one();
         }
     }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//                                Save Data                                //
+// Save data structs are meant to store the save data of a given planet in //
+// memory while it is in use by a client.                                  //
+/////////////////////////////////////////////////////////////////////////////
+
+pub struct Chunk {
+    id: u32,
+    data: Vec<u8>,
+}
+
+pub struct Region {
+    name: String,
+    chunks: Vec<Chunk>,
+}
+
+//////////////////////////////////////////////////////////////////////////
+//                               Actor Structs                          //
+// The actor structs describee the data attatched to an actor, this may //
+// include Location, rotation, scale, meta tags, and more.              //
+//////////////////////////////////////////////////////////////////////////
+
+pub struct Actor {
+    location: Location,
+    meta_tags: Vec<HashMap<String, String>>,
+}
+
+pub struct Planet {
+    actor_data: Actor,
+    contained_region: Vec<Region>,
+}
+
+fn main() {
+    let myplanet = Planet {
+        actor_data: Actor {
+            location: Location {
+                rotation: Rotation { w: 1.0, x: 0.0, y: 0.0, z: 0.0 },
+                scale3D: Scale { x: 1.0, y: 1.0, z: 1.0 },
+                translation: Translation { x: 0.0, y: 0.0, z: 0.0 },
+            },
+            meta_tags: vec![
+                {
+                    let mut map = HashMap::new();
+                    map.insert(String::from("tag1"), String::from("value1"));
+                    map
+                },
+                {
+                    let mut map = HashMap::new();
+                    map.insert(String::from("tag2"), String::from("value2"));
+                    map
+                },
+            ],
+        },
+        contained_region: vec![
+            Region {
+                name: String::from("Region1"),
+                chunks: vec![
+                    Chunk {
+                        id: 1,
+                        data: vec![0, 1, 2, 3],
+                    },
+                    Chunk {
+                        id: 2,
+                        data: vec![4, 5, 6, 7],
+                    },
+                ],
+            },
+            Region {
+                name: String::from("Region2"),
+                chunks: vec![
+                    Chunk {
+                        id: 3,
+                        data: vec![8, 9, 10, 11],
+                    },
+                ],
+            },
+        ],
+    };
 }

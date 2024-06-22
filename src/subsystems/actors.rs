@@ -2,6 +2,8 @@ use socketioxide::extract::{Bin, Data, SocketRef};
 use serde_json::{json, Value};
 use tracing::info;
 
+use crate::structs::*;
+
 pub fn init (socket: SocketRef) {
     socket.on(
         "spawnActor",
