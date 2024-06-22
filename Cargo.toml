@@ -22,7 +22,7 @@ TerraForge = "0.1.0"
 monoio = { version = "0.2", features = ["sync"] }
 tokio-console = "0.1.11"
 console-subscriber = "0.3.0"
-pebblevault = { path = "./pebble-vault" }
+pebble_vault = { path = "./pebble_vault" }
 
 [[bin]]
 name = "horizon"

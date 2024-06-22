@@ -19,6 +19,7 @@ use std::sync::{Arc, Mutex};
 use tokio::main;
 use tracing::{debug, info};
 use viz::{handler::ServiceHandler, serve, Result, Router};
+use pebble_vault;
 
 // WARNING
 // Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
