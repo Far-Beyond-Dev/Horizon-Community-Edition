@@ -34,8 +34,6 @@ mod macros;
 mod subsystems;
 mod structs;
 
-use pebble_vault;
-
 //pebble_vault::gotest();
 
 ///////////////////////////////////////////////////////////////
@@ -180,9 +178,11 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
         }
     });
 }
-
+use pebblevault;
 #[main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+    pebble_vault::gotest();
     //let subscriber = FmtSubscriber::builder()
     //.with_max_level(tracing::Level::INFO)
     //.finish();
