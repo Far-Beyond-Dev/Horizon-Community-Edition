@@ -21,6 +21,19 @@ src/
 │       └── main.rs
 ```
 
+## Proper Rust Terms and Corresponding C++ Concepts
+
+For those getting started with Rust, understanding how object-oriented concepts work in Rust can be challenging. Here are some Rust OOP terms and their C++ counterparts:
+
+- **Trait** (`Actor`): Equivalent to an interface or an abstract base class in C++. A trait defines a set of methods that types must implement. Traits can also provide default method implementations.
+
+- **Struct** (`CelestialBody`, `Planet`, `NewActor`, `SubNewActor`): Similar to classes in C++. Structs in Rust are used to define custom types with fields and methods. Unlike C++ classes, Rust structs do not support inheritance; behavior is shared via composition and traits.
+
+- **Enum** (`ActorType`): Used to define a type that can be one of several variants. Rust enums are type-safe and can carry additional data for each variant, making them more powerful and expressive than C++ unions.
+
+- **Module**: A way to organize code into separate namespaces/files, akin to namespaces and header files in C++. Modules help manage scope and encapsulate implementation details, facilitating better code organization and reusability.
+
+
 ## Step-by-Step Guide
 
 1. **Define the `Actor` Trait** (This is done for you in Horizon Server):
@@ -163,10 +176,3 @@ src/
        println!("Deserialized actors: {:?}", deserialized);
    }
    ```
-
-## Proper Rust Terms and Corresponding C++ Concepts
-
-- **Trait** (`Actor`): Equivalent to an interface or an abstract base class in C++. Defines a set of methods that types must implement.
-- **Struct** (`CelestialBody`, `Planet`, `NewActor`, `SubNewActor`): Similar to classes in C++. They are used to define types with fields and methods.
-- **Enum** (`ActorType`): Used to define a type that can be one of several variants, similar to a union in C++ but type-safe.
-- **Module**: A way to organize code into separate namespaces/files, akin to namespaces and header files in C++.
