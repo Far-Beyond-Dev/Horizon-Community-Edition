@@ -224,7 +224,7 @@ pub struct Chunk {
 
 pub struct Region {
     location: (i64, i64),
-    chunks: Vec<Chunk>,
+    chunks: i64,
 }
 
 //////////////////////////////////////////////////////////////////////////

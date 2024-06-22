@@ -19,7 +19,7 @@ use std::sync::{Arc, Mutex};
 use tokio::main;
 use tracing::{debug, info};
 use viz::{handler::ServiceHandler, serve, Result, Router};
-use pebble_vault;
+use PebbleVault;
 
 // WARNING
 // Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
@@ -64,7 +64,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // systems                                             //
     /////////////////////////////////////////////////////////
     
-    subsystems::actors::main::main::main;
+    //subsystems::actors::main::main::main;
     subsystems::chat::init();
     subsystems::game_logic::init();
     subsystems::leaderboard::init();
@@ -179,11 +179,10 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
         }
     });
 }
-use pebblevault;
 #[main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
-    pebble_vault::gotest();
+    PebbleVault::gotest();
     //let subscriber = FmtSubscriber::builder()
     //.with_max_level(tracing::Level::INFO)
     //.finish();
