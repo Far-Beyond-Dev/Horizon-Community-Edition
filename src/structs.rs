@@ -120,8 +120,7 @@ impl ChildServer {
     }
 
     pub fn calculate_addr(&self, target: &Coordinate) -> SocketAddr {
-        // Implement your logic to calculate the socket address of the target coordinate
-        // This is a placeholder, you need to provide the actual mapping from coordinate to address
+        // Implement logic to calculate the socket address of the target coordinate
         SocketAddr::new("127.0.0.1".parse().unwrap(), 8080)
     }
 
@@ -220,11 +219,11 @@ impl PlayerManager {
 
 pub struct Chunk {
     id: u32,
-    data: Vec<u8>,
+    data: str,
 }
 
 pub struct Region {
-    name: String,
+    location: (i64, i64),
     chunks: Vec<Chunk>,
 }
 
@@ -241,53 +240,57 @@ pub struct Actor {
 
 pub struct Planet {
     actor_data: Actor,
-    contained_region: Vec<Region>,
+    object_file: Vec<Region>,
 }
 
-fn main() {
-    let myplanet = Planet {
-        actor_data: Actor {
-            location: Location {
-                rotation: Rotation { w: 1.0, x: 0.0, y: 0.0, z: 0.0 },
-                scale3D: Scale { x: 1.0, y: 1.0, z: 1.0 },
-                translation: Translation { x: 0.0, y: 0.0, z: 0.0 },
-            },
-            meta_tags: vec![
-                {
-                    let mut map = HashMap::new();
-                    map.insert(String::from("tag1"), String::from("value1"));
-                    map
-                },
-                {
-                    let mut map = HashMap::new();
-                    map.insert(String::from("tag2"), String::from("value2"));
-                    map
-                },
-            ],
-        },
-        contained_region: vec![
-            Region {
-                name: String::from("Region1"),
-                chunks: vec![
-                    Chunk {
-                        id: 1,
-                        data: vec![0, 1, 2, 3],
-                    },
-                    Chunk {
-                        id: 2,
-                        data: vec![4, 5, 6, 7],
-                    },
-                ],
-            },
-            Region {
-                name: String::from("Region2"),
-                chunks: vec![
-                    Chunk {
-                        id: 3,
-                        data: vec![8, 9, 10, 11],
-                    },
-                ],
-            },
-        ],
-    };
-}
+ 
+ 
+///////////////////////////////// Example planet ////////////////////////////////
+//  fn main() {
+//      let myplanet = Planet {
+//          actor_data: Actor {
+//              location: Location {
+//                  rotation: Rotation { w: 1.0, x: 0.0, y: 0.0, z: 0.0 },
+//                  scale3D: Scale { x: 1.0, y: 1.0, z: 1.0 },
+//                  translation: Translation { x: 0.0, y: 0.0, z: 0.0 },
+//              },
+//              meta_tags: vec![
+//                  {
+//                      let mut map = HashMap::new();
+//                      map.insert(String::from("tag1"), String::from("value1"));
+//                      map
+//                  },
+//                  {
+//                      let mut map = HashMap::new();
+//                      map.insert(String::from("tag2"), String::from("value2"));
+//                      map
+//                  },
+//              ],
+//          },
+//          contained_region: vec![
+//              Region {
+//                  location: (0,0),
+//                  chunks: vec![
+//                      Chunk {
+//                          id: 1,
+//                          data: vec![0, 1, 2, 3],
+//                      },
+//                      Chunk {
+//                          id: 2,
+//                          data: vec![4, 5, 6, 7],
+//                      },
+//                  ],
+//              },
+//              Region {
+//                  location: (0, 0),
+//                  chunks: vec![
+//                      Chunk {
+//                          id: 3,
+//                          data: vec![8, 9, 10, 11],
+//                      },
+//                  ],
+//              },
+//          ],
+//      };
+//  }
+//////////////////////////////////////////////////////////////////////////////////

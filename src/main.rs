@@ -61,7 +61,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // systems                                             //
     /////////////////////////////////////////////////////////
     
-    subsystems::actors::init(socket);
+    subsystems::actors::main::main::main
     subsystems::chat::init();
     subsystems::game_logic::init();
     subsystems::leaderboard::init();
