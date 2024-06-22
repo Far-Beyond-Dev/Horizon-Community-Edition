@@ -34,6 +34,10 @@ mod macros;
 mod subsystems;
 mod structs;
 
+use pebble_vault;
+
+//pebble_vault::gotest();
+
 ///////////////////////////////////////////////////////////////
 //                         WARNING                           //
 // on_connect runs every time a new player connects to the   //
@@ -61,7 +65,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // systems                                             //
     /////////////////////////////////////////////////////////
     
-    subsystems::actors::main::main::main
+    subsystems::actors::main::main::main;
     subsystems::chat::init();
     subsystems::game_logic::init();
     subsystems::leaderboard::init();
