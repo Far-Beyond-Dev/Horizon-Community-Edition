@@ -5,26 +5,26 @@ pub fn main () {
 
     // Define the ASCII art with placeholders for colors
     let art = r#"
-    {white}             `  :y.`yy`.y:  `
-    {white}         -``MNsNMMNNNNMMNsNM``-
-    {white}      ` -MMNMMMMNNm``NNNMMMMNMM- `
-    {white}     `NNNMMMdo:` `+md/  `:odMMMNNN`
-    {white}   -ssNMMNo.                .oNMMNss-
-    {white}   `mMM{red}MMNmmmmmmmmmmmmmdy+{white}     `sMMMm`
-    {white} `mMMM{red}MMMMMMMMMMMMMMMMMMMMMMN/{white}  hMMMMm`
-    {white} -oMN-:Ny:{red}mMMMMMm    oNMMMMMm{white} oN::MMo-
-    {white}.yMMMhhh+ {red}dMMMMMd:::::+mMMMMN/{white} odyhMMMy.
-    {white}-sNMMy    {red}dMMMMMMMMMMMMMMMMs{white}`    `yMMNs-
-    {white}-sNMMy    {red}dMMMMMNyyyydMMMMMMy{white}   .odMMNs-
-    {white}.yMMMm   {red}dMMMMMh     +MMMMMM+{white}  sMMMMMy.
-    {white} -oMMM{red}MMMMMMMMMMMMMM+  mMMMMMMMMMM{white}MMMo-
-    {white} `mMMM{red}MMMMMMMMMMMMMM+  :NMMMMMMMMM{white}MMMm`
-    {white}   `mMMMm               `-:o+:/mMMMm`
-    {white}   -ssNMMMyomo            smohMMMNss-
-    {white}     `NNNMs+mN/-`      `-/Nd/yMNNN`
-    {white}      ` -MMNMMMMMNmmmmNMMMMMNMM- `
-    {white}         -``MNsNMMNMMNMMNsNM``-
-    {white}            `  :y.`yy`.y:  `
+    {white}             `  :y.`yy.`yy.y`y:   `
+    {white}         -``MNsNMMNNNMNNNNMNNMMNsNM``-
+    {white}      ` -MMNMMMMNNm``Nm````NmNNMMMMNMM- `
+    {white}     `NNNMMMdo:` `+md`+md`+/    `:odMMMNNN`
+    {white}   -ssNMMNo.                        .oNMMNss-
+    {white}   `mMM{red}MMNmmmmmmmmmmmmmmmmmdydyy+{white}       `sMMMm`
+    {white} `mMMM{red}MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/{white}   hMMMMm`
+    {white} -oMN-:Ny:{red}mMMMMMMMMm     oNMMMMMMMMMm{white}     ::MMo-
+    {white}.yMMMhhh+ {red}dMMMMMMMMd::::::+mMmMMMMMMN/{white}    yhMMMy.
+    {white}-sNMMy    {red}dMMMMMMMMMMMMMMMMMMMMMMMsM{white}`     `yMMNs-
+    {white}-sNMMy    {red}dMMMMMMMMNyyyyydMMMMMMMMMMy{white}    .odMMNs-
+    {white}.yMMMm   {red}dMMMMMMMMh      +MMMMMMMMMM+{white}    sMMMMMy.
+    {white} -oMMM{red}MMMMMMMMMMMMMMMM+    mMmMMMMMMMMMMMM {white}MMMo-
+    {white} `mMMM{red}MMMMMMMMMMMMMMMM+    :N:NNMMMNMMMMMM{white}MMMm`
+    {white}   `mMMMm                       `---:o+:/mMMMm`
+    {white}   -ssNMMMyomo                    smohMMMNss-
+    {white}     `NNNMs+mN/-`              `-/Nd/yMNNN`
+    {white}      ` -MMNMMMMMNmmmNmmmNmmmNMMMMMNMM- `
+    {white}         -``MNsNMMNMMMNMMMNMMMMNsNM``-
+    {white}            `  :y.`yy.`yy.`yy.y:  `
     "#;
 
     // Replace placeholders with actual ANSI escape codes
@@ -46,16 +46,16 @@ pub fn main () {
     println!("| | $$  | $$| $$__/ $$| $$      | $$ /  $$$$_ | $$__/ $$| $$  | $$      |  |__| $$| $$$$$$$$| $$        |$$ $$  | $$$$$$$$| $$       |");
     println!("| | $$  | $$ |$$    $$| $$      | $$|  $$    | |$$    $$| $$  | $$       |$$    $$ |$$     || $$         |$$$    |$$     || $$       |");
     println!("|  |$$   |$$  |$$$$$$  |$$       |$$ |$$$$$$$$  |$$$$$$  |$$   |$$        |$$$$$$   |$$$$$$$ |$$          |$      |$$$$$$$ |$$       |");
-    println!("|                                                               V: 0.0.4-A                                                           |");
+    println!("|                                                             V: 0.0.4-A l                                                           |");
     println!("+------------------------------------------------------------------------------------------------------------------------------------+");
     println!("");
-    println!("+-----------------------------------------------------------------------------------------+");
-    println!("|  ,---.   ,--.                            ,-----.                                   ,--. |");
-    println!("| (   .-',-'  '-. ,--,--.,--.--. ,---.     |  |) /_  ,---. ,--. ,--.,---. ,--,--,  ,-|  | |");
-    println!("|  `  `-.'-.  .-'| ,-.  ||  .--'(  .-'     |  .-.  || (===) |  '  /| .-. ||  ,,  |' .-. | |");
-    println!("|  _)   |  |  |  | '-'  ||  | .-'  `)      |  '--' /|   --.  |   / ' '-' '|  ||  || `-' | |");
-    println!("| (____/   `--'   `--`--'`--  `----'       `------'  `----'.-'  /   `---' `--''--' `---'  |");
-    println!("|                                        V: 0.0.1          `---'                          |");
-    println!("+-----------------------------------------------------------------------------------------+");
+    println!("+----------------------------------------------------------------------------------------+");
+    println!("|  ,---.   ,--.                           ,-----.                                   ,--. |");
+    println!("| (   .-',-'  '-. ,--,--.,--.--. ,---.    |  |) /_  ,---. ,--. ,--.,---. ,--,--,  ,-|  | |");
+    println!("|  `  `-.'-.  .-'| ,-.  ||  .--'(  .-'    |  .-.  || (===) |  '  /| .-. ||  ,,  |' .-. | |");
+    println!("|  _)   |  |  |  | '-'  ||  | .-'  `)     |  '--' /|   --.  |   / ' '-' '|  ||  || `-' | |");
+    println!("| (____/   `--'   `--`--'`--  `----'      `------'  `----'.-'  /   `---' `--''--' `---'  |");
+    println!("|                                       V: 0.0.1          `---'                          |");
+    println!("+----------------------------------------------------------------------------------------+");
     println!("");
 }

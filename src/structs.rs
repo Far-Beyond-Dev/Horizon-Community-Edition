@@ -119,7 +119,7 @@ impl ChildServer {
             .expect("Failed to send event");
     }
 
-    pub fn calculate_addr(&self, target: &Coordinate) -> SocketAddr {
+    pub fn calculate_addr(&self) -> SocketAddr {
         // Implement logic to calculate the socket address of the target coordinate
         SocketAddr::new("127.0.0.1".parse().unwrap(), 8080)
     }
