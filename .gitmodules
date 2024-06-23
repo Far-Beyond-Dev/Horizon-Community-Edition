@@ -1,6 +1,3 @@
 [submodule "src/utilities/TerraForge"]
 	path = src/utilities/TerraForge
 	url = https://github.com/Stars-Beyond/TerraForge/
-[submodule "TerraForge"]
-	path = TerraForge
-	url = https://github.com/Stars-Beyond/TerraForge
