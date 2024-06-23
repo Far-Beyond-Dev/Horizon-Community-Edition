@@ -182,11 +182,11 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 #[main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
-    PebbleVault::gotest();
+    println!("{}", PebbleVault::greet("Rust"));
     //let subscriber = FmtSubscriber::builder()
     //.with_max_level(tracing::Level::INFO)
     //.finish();
-    console_subscriber::init();
+    //console_subscriber::init();
     //tracing::subscriber::set_global_default(subscriber)?;
 
     //////////////////////////////////

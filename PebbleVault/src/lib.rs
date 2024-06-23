@@ -1,21 +1,29 @@
-use std::os::raw::c_int;
+#![allow(non_upper_case_globals)]
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
 
-extern "C" {
-    fn Add(a: c_int, b: c_int) -> c_int;
-}
+include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-fn main() {
-    let a: c_int = 5;
-    let b: c_int = 7;
-    let result: c_int;
+use std::ffi::{c_char, CStr, CString};
+
+pub fn greet(name: &str) -> String {
+    let name = CString::new(name).unwrap();
 
     unsafe {
-        result = Add(a, b);
+        let cstr = CStr::from_ptr(Greet(name.as_ptr() as *mut c_char));
+        let s = String::from_utf8_lossy(cstr.to_bytes()).to_string();
+        GoFree(cstr.as_ptr() as *mut c_char);
+        s
     }
-
-    println!("The sum of {} and {} is {}", a, b, result);
 }
 
-pub fn gotest() {
-    main();
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        let result = greet("Rust");
+        assert_eq!(result, "Hello from Go, Rust!");
+    }
 }

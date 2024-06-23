@@ -1,16 +1,23 @@
 package main
 
 /*
-#include <stdint.h>
-
-// Declare the Add function here to make it visible to other languages
-int32_t Add(int32_t a, int32_t b);
+#include <stdlib.h>
 */
 import "C"
 
-//export Add
-func Add(a, b C.int) C.int {
-	return a + b
+import (
+	"fmt"
+	"unsafe"
+)
+
+//export Greet
+func Greet(name *C.char) *C.char {
+	return C.CString(fmt.Sprintf("Hello from Go, %s!", C.GoString(name)))
+}
+
+//export GoFree
+func GoFree(ptr *C.char) {
+	C.free(unsafe.Pointer(ptr))
 }
 
 func main() {}

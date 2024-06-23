@@ -3,8 +3,5 @@ name = "PebbleVault"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
-libc = "0.2.155"
-
-# [lib]
-# crate-type = ["cdylib"]
+[build-dependencies]
+bindgen = "*"

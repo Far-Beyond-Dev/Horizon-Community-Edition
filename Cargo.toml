@@ -23,6 +23,7 @@ monoio = { version = "0.2", features = ["sync"] }
 tokio-console = "0.1.11"
 console-subscriber = "0.3.0"
 PebbleVault = { path = "./PebbleVault" }
+bindgen = "0.69.4"
 
 [[bin]]
 name = "horizon"
