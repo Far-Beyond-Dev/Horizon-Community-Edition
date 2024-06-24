@@ -110,35 +110,35 @@ impl ChildServer {
     // - The master server then multicasts the event to the appropriate neighboring child servers.      //
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    pub async fn send_event(&self, event: &Event, _target: &Coordinate) {
-        let msg = bincode::serialize(event).expect("Failed to serialize event");
-        let addr = self.calculate_addr(); // 6/24/2024: removed the `target` parameter due to
-                                          // compiler errors. it doesn't seem to be used here
-        self.socket
-            .send_to(&msg, addr)
-            .await
-            .expect("Failed to send event");
-    }
+    //  `pub async fn send_event(&self, event: &Event, _target: &Coordinate) {
+    //      let msg = bincode::serialize(event).expect("Failed to serialize event");
+    //      let addr = self.calculate_addr(); // 6/24/2024: removed the `target` parameter due to
+    //                                        // compiler errors. it doesn't seem to be used here
+    //      self.socket
+    //          .send_to(&msg, addr)
+    //          .await
+    //          .expect("Failed to send event");
+    //  }
+    //  
+    //  pub fn calculate_addr(&self) -> SocketAddr {
+    //      // Implement logic to calculate the socket address of the target coordinate
+    //      SocketAddr::new("127.0.0.1".parse().unwrap(), 8080)
+    //  }
+  
+    //  pub fn handle_event(&self, event: Event) {
+    //      let neighbors = self.determine_propagation(&event);
+    //  
+    //      for neighbor in neighbors {
+    //          self.send_event(&event, &neighbor);
+    //      }
+    //  }
 
-    pub fn calculate_addr(&self) -> SocketAddr {
-        // Implement logic to calculate the socket address of the target coordinate
-        SocketAddr::new("127.0.0.1".parse().unwrap(), 8080)
-    }
-
-    pub fn handle_event(&self, event: Event) {
-        let neighbors = self.determine_propagation(&event);
-
-        for neighbor in neighbors {
-            self.send_event(&event, &neighbor);
-        }
-    }
-
-    pub async fn run(&self) {
-        loop {
-            let event = self.receive_event().await;
-            self.handle_event(event);
-        }
-    }
+    //  pub async fn run(&self) {
+    //      loop {
+    //          let event = self.receive_event().await;
+    //          self.handle_event(event);
+    //      }
+    //  }
 }
 
 // Define a struct for Player
