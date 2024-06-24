@@ -69,7 +69,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     subsystems::level_data::init();
     subsystems::logging::init();
     subsystems::notifications::init();
-    subsystems::player_data::init(socket);
+    subsystems::player_data::init(socket.clone());
     
     ////////////////////////////////////////////////////////
     // Register some additional custom events with our    // 

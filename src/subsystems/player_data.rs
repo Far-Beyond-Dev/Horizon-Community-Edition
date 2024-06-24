@@ -10,10 +10,11 @@ pub fn init (socket: SocketRef) {
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
 
 
-    let io = socketioxide::SocketIo::new_svc();
+    let (io, io2) = socketioxide::SocketIo::new_svc();
 
     let players_clone = players.clone();
-    io.ns("/", move |socket, data| {
+    let players_clone_two = players.clone();
+    io2.ns("/", move |socket, data| {
         on_connect(socket, data, players_clone.clone())
     });
 
@@ -29,7 +30,7 @@ pub fn init (socket: SocketRef) {
             // Extract location from data
             match serde_json::from_value::<Location>(data.clone()) {
                 Ok(location) => {
-                    let mut players = players_clone.lock().unwrap();
+                    let mut players = players_clone_two.lock().unwrap();
                     if let Some(player) = players.iter_mut().find(|p| p.id == socket.id.to_string())
                     {
                         player.location = Some(location);

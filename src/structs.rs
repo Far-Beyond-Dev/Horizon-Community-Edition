@@ -110,9 +110,10 @@ impl ChildServer {
     // - The master server then multicasts the event to the appropriate neighboring child servers.      //
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    pub async fn send_event(&self, event: &Event, target: &Coordinate) {
+    pub async fn send_event(&self, event: &Event, _target: &Coordinate) {
         let msg = bincode::serialize(event).expect("Failed to serialize event");
-        let addr = self.calculate_addr(target);
+        let addr = self.calculate_addr(); // 6/24/2024: removed the `target` parameter due to
+                                          // compiler errors. it doesn't seem to be used here
         self.socket
             .send_to(&msg, addr)
             .await
