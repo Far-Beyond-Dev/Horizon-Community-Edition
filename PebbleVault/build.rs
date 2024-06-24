@@ -19,7 +19,7 @@ fn main() {
 
     let bindings = bindgen::Builder::default()
         .header(out_path.join("pebbledb.h").to_str().unwrap())
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Unable to generate bindings");
 
