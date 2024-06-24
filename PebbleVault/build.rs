@@ -12,13 +12,13 @@ fn main() {
         .arg("build")
         .arg("-buildmode=c-archive")
         .arg("-o")
-        .arg(out_path.join("libgo.a"))
-        .arg("./go/export.go");
+        .arg(out_path.join("pebbledb.a"))
+        .arg("./go/main.go");
 
     go_build.status().expect("Go build failed");
 
     let bindings = bindgen::Builder::default()
-        .header(out_path.join("libgo.h").to_str().unwrap())
+        .header(out_path.join("pebbledb.h").to_str().unwrap())
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .generate()
         .expect("Unable to generate bindings");

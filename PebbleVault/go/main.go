@@ -8,6 +8,10 @@ import "C"
 import (
 	"fmt"
 	"unsafe"
+
+	"log"
+
+	"github.com/tidwall/buntdb"
 )
 
 //export Greet
@@ -20,4 +24,11 @@ func GoFree(ptr *C.char) {
 	C.free(unsafe.Pointer(ptr))
 }
 
-func main() {}
+func main() {
+	// Open the data.db file. It will be created if it doesn't exist.
+	db, err := buntdb.Open("data.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+}
