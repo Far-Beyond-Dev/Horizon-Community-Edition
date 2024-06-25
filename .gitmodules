@@ -1,3 +1,6 @@
 [submodule "src/utilities/TerraForge"]
 	path = src/utilities/TerraForge
 	url = https://github.com/Stars-Beyond/TerraForge/
+[submodule "PebbleVault"]
+	path = PebbleVault
+	url = https://github.com/Stars-Beyond/PebbleVault
