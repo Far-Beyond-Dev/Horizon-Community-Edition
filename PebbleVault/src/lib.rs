@@ -1,6 +1,9 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
+#![allow(improper_ctypes)] // silence u128 being not FFI safe warnings.
+                           // N.B. If any undefined behaviour occurs, it may be worthwhile to look
+                           // into this FIRST.
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
