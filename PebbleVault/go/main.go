@@ -66,5 +66,5 @@ func GetKNearestGalaxys(db uintptr, key *C.char) *C.char {
 
 func main() {
 	// Prevent main from exiting immediately.
-	select {}
+	//select {}
 }
