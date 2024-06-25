@@ -4,3 +4,6 @@
 [submodule "PebbleVault"]
 	path = PebbleVault
 	url = https://github.com/Stars-Beyond/PebbleVault
+[submodule "TerraForge"]
+	path = TerraForge
+	url = https://github.com/Stars-Beyond/TerraForge
