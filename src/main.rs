@@ -93,7 +93,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}", PebbleVault::greet("Rust"));
 
     let app = Router::new()
-        .get("/", |_| async { Ok("Hello, World!") });
+        .get("/", |_| async { Ok("Hello, World!") });
 
     info!("Starting server");
 
