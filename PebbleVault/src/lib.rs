@@ -24,6 +24,6 @@ mod tests {
     #[test]
     fn it_works() {
         let result = greet("Rust");
-        assert_eq!(result, "Hello from Go, Rust!");
+        assert_eq!(result, "Not Hello from Go, Rust!");
     }
 }

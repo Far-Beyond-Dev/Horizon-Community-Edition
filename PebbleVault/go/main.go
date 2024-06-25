@@ -6,22 +6,11 @@ package main
 import "C"
 
 import (
-	"fmt"
 	"log"
 	"unsafe"
 
 	"github.com/tidwall/buntdb"
 )
-
-//export Greet
-func Greet(name *C.char) *C.char {
-	return C.CString(fmt.Sprintf("Hello from Go, %s!", C.GoString(name)))
-}
-
-//export GoFree
-func GoFree(ptr *C.char) {
-	C.free(unsafe.Pointer(ptr))
-}
 
 //export CreateDB
 func CreateDB() uintptr {
@@ -31,7 +20,7 @@ func CreateDB() uintptr {
 		log.Fatal(err)
 	}
 	return uintptr(unsafe.Pointer(db))
-	//return uintptr(uintptr(unsafe.Pointer(db)))
+	// return uintptr(uintptr(unsafe.Pointer(db)))
 }
 
 //export CloseDB
@@ -45,13 +34,6 @@ func CreateSpatialIndex(db uintptr, indexName *C.char, indexKey *C.char) {
 	// db.CreateSpatialIndex("fleet", "fleet:*:pos", buntdb.IndexRect)
 	(*buntdb.DB)(unsafe.Pointer(db)).CreateSpatialIndex(C.GoString(indexName), C.GoString(indexKey), buntdb.IndexRect)
 }
-
-//db.Update(func(tx *buntdb.Tx) error {
-//	tx.Set("fleet:0:pos", "[-115.567 33.532]", nil)
-//	tx.Set("fleet:1:pos", "[-116.671 35.735]", nil)
-//	tx.Set("fleet:2:pos", "[-113.902 31.234]", nil)
-//	return nil
-//})
 
 //export CreateGalaxy
 func CreateGalaxy(db uintptr, key *C.char, value *C.char) {

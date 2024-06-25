@@ -27,7 +27,7 @@ fn main() {
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
 
-    println!("cargo:rerun-if-changed=go/lib.go");
+    println!("cargo:rerun-if-changed=go/main.go");
     println!(
         "cargo:rustc-link-search=native={}",
         out_path.to_str().unwrap()
