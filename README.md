@@ -2,6 +2,8 @@
 > Horizon is still in early development and is not meant to be used in any production environments.
 
 ![horizon-server-high-resolution-logo-transparent](/branding/horizon-server-high-resolution-logo-transparent.png)
+[![Build](https://github.com/Stars-Beyond/Horizon-Community-Edition/actions/workflows/rust.yml/badge.svg)](https://github.com/Stars-Beyond/Horizon-Community-Edition/actions/workflows/rust.yml)
+
 
 ## Table Of Contents
 
