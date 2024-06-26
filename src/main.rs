@@ -82,17 +82,18 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 #[main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
-    
     //////////////////////////////////
     // Show branding during startup //
     //////////////////////////////////
     subsystems::startup::main();
     
     println!("{}", PebbleVault::greet("Rust"));
-    db = PebbleVault::create_db();
-    PebbleVault::create_spatial_index(db, "test", "test");
-    PebbleVault::create_galaxy(db, "test", "test");
-    PebbleVault::get_k_nearest_galaxies(db, "test");
+    let db = PebbleVault::create_db();
+    PebbleVault::create_spatial_index(db, "SpaceBody", "1");
+    PebbleVault::create_galaxy(db, "Galaxy", "Artermis");
+    PebbleVault::create_galaxy(db, "Galaxy", "Athena");
+    PebbleVault::create_galaxy(db, "Galaxy", "Hades");
+    PebbleVault::get_k_nearest_galaxies(db, "Artermis");
 
     let app = Router::new()
         .get("/", |_| async { Ok("Hello, World!") });
