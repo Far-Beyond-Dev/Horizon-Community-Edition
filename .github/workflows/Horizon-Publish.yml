@@ -19,10 +19,6 @@ jobs:
         include:
           - dockerfile: ./Dockerfile.rust
             image: ghcr.io/Stars-Beyond/horizon
-          - dockerfile: ./Dockerfile.python
-            image: ghcr.io/Stars-Beyond/graviton
-          - dockerfile: ./Dockerfile.golang
-            image: ghcr.io/Stars-Beyond/flashback
 
     permissions:
       contents: read
