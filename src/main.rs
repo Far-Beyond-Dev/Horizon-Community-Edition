@@ -35,8 +35,6 @@ mod macros;
 mod subsystems;
 mod structs;
 
-//pebble_vault::gotest();
-
 ///////////////////////////////////////////////////////////////
 //                         WARNING                           //
 // on_connect runs every time a new player connects to the   //
@@ -91,6 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     subsystems::startup::main();
     
     println!("{}", PebbleVault::greet("Rust"));
+    PebbleVault::create_db();
 
     let app = Router::new()
         .get("/", |_| async { Ok("Hello, World!") });
