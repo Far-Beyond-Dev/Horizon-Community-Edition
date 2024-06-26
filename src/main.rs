@@ -89,7 +89,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     subsystems::startup::main();
     
     println!("{}", PebbleVault::greet("Rust"));
-    PebbleVault::create_db();
+    db = PebbleVault::create_db();
+    PebbleVault::create_spatial_index(db, "test", "test");
+    PebbleVault::create_galaxy(db, "test", "test");
+    PebbleVault::get_k_nearest_galaxies(db, "test");
 
     let app = Router::new()
         .get("/", |_| async { Ok("Hello, World!") });
