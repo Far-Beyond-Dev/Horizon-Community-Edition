@@ -10,7 +10,7 @@ pub fn init (socket: SocketRef) {
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
 
 
-    let (io, io2) = socketioxide::SocketIo::new_svc();
+    let (_io, io2) = socketioxide::SocketIo::new_svc();
 
     let players_clone = players.clone();
     let players_clone_two = players.clone();

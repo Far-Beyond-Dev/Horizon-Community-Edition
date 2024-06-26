@@ -29,5 +29,3 @@ bindgen = "0.69.4"
 name = "horizon"
 path = "src/main.rs"
 
-[build]
-rustflags = ["--cfg", "tokio_unstable"]
