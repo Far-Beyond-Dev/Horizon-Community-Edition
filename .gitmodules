@@ -7,3 +7,6 @@
 [submodule "TerraForge"]
 	path = TerraForge
 	url = https://github.com/Stars-Beyond/TerraForge
+[submodule "Graviton"]
+	path = Graviton
+	url = https://github.com/Stars-Beyond/Graviton
