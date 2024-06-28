@@ -20,6 +20,7 @@ use tokio::main;
 use tracing::info;
 use viz::{serve, Result, Router};
 use PebbleVault;
+use TerraForge;
 
 // WARNING
 // Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
@@ -86,6 +87,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Show branding during startup //
     //////////////////////////////////
     subsystems::startup::main();
+
+    TerraForge::main();
     
     println!("{}", PebbleVault::greet("Rust"));
     let db = PebbleVault::create_db();
