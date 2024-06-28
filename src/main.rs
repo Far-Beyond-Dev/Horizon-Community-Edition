@@ -99,7 +99,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     PebbleVault::get_k_nearest_galaxies(db, "Artermis");
 
     let app = Router::new()
-        .get("/", |_| async { Ok("Hello, World!") });
+        .get("/", |_| async { Ok("Welcome to Horizon Server V: 0.3.0-318974-C") });
 
     info!("Starting server");
 
