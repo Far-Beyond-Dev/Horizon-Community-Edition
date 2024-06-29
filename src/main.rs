@@ -190,6 +190,17 @@
         // Show branding
         subsystems::startup::main();
 
+
+        
+        println!("{}", PebbleVault::greet("Rust"));
+        let db = PebbleVault::create_db();
+
+        PebbleVault::create_spatial_index(db, "SpaceBody", "1");
+        PebbleVault::create_galaxy(db, "Galaxy", "Artermis");
+        PebbleVault::create_galaxy(db, "Galaxy", "Athena");
+        PebbleVault::create_galaxy(db, "Galaxy", "Hades");
+        PebbleVault::get_k_nearest_galaxies(db, "Artermis");
+
         let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
 
         let (svc, io) = socketioxide::SocketIo::new_svc();
