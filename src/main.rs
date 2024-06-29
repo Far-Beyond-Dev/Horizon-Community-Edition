@@ -1,226 +1,216 @@
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                       Horizon Game Server                                       //
-//                                                                                                 //
-//  This server software is part of a distributed system designed to facilitate communication      //
-//  and data transfer between multiple child servers and a master server. Each child server        //
-//  operates within a "Region map" managed by the master server, which keeps track of their        //
-//  coordinates in a relative cubic light-year space. The coordinates are stored in 64-bit floats  //
-//  to avoid coordinate overflow and to ensure high precision.                                     //
-//                                                                                                 //
-/////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    //                                       Horizon Game Server                                       //
+    //                                                                                                 //
+    //  This server software is part of a distributed system designed to facilitate communication      //
+    //  and data transfer between multiple child servers and a master server. Each child server        //
+    //  operates within a "Region map" managed by the master server, which keeps track of their        //
+    //  coordinates in a relative cubic light-year space. The coordinates are stored in 64-bit floats  //
+    //  to avoid coordinate overflow and to ensure high precision.                                     //
+    //                                                                                                 //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////
-// Import a few things to get us started //
-///////////////////////////////////////////
+    ///////////////////////////////////////////
+    // Import a few things to get us started //
+    ///////////////////////////////////////////
 
-use serde_json::{json, Value};
-use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
-use std::sync::{Arc, Mutex};
-use tokio::main;
-use tracing::{debug, info};
-use viz::{serve, Result, Router};
-use PebbleVault;
-use TerraForge;
+    use serde_json::{json, Value};
+    use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
+    use std::sync::{Arc, Mutex};
+    use tokio::main;
+    use tracing::{debug, info};
+    use viz::{handler::ServiceHandler, serve, Result, Router};
+    use PebbleVault;
+    use TerraForge;
 
-// WARNING
-// Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
+    // WARNING
+    // Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
 
-use structs::*;
+    use structs::*;
 
-/////////////////////////////////////
-// Import the modules we will need //
-/////////////////////////////////////
+    /////////////////////////////////////
+    // Import the modules we will need //
+    /////////////////////////////////////
 
-mod events;
-mod macros;
-mod structs;
-mod subsystems;
+    mod events;
+    mod macros;
+    mod structs;
+    mod subsystems;
 
-///////////////////////////////////////////////////////////////
-//                         WARNING                           //
-// on_connect runs every time a new player connects to the   //
-// server avoid putting memory hungry code here if possible! //
-///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    //                         WARNING                           //
+    // on_connect runs every time a new player connects to the   //
+    // server avoid putting memory hungry code here if possible! //
+    ///////////////////////////////////////////////////////////////
 
-fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
-    // Authenticate the user
-    let player = Player {
-        id: socket.id.to_string(),
-        socket: socket.clone(),
-        location: None, // Initialize with no location
-    };
-    
-    players.lock().unwrap().push(player);
-    
-    info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
-    socket.emit("connected", true).ok();
-    socket.emit("auth", data).ok();
+    fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
+        // Authenticate the user
+        let player = Player {
+            id: socket.id.to_string(),
+            socket: socket.clone(),
+            location: None, // Initialize with no location
+        };
         
-    /////////////////////////////////////////////////////////
-    // Setup external event listeners for the more complex //
-    // systems                                             //
-    /////////////////////////////////////////////////////////
-    
-    //subsystems::actors::main::main::main;
-    subsystems::chat::init(socket.clone());
-    subsystems::game_logic::init();
-    subsystems::leaderboard::init();
-    subsystems::level_data::init();
-    subsystems::logging::init();
-    subsystems::notifications::init();
-    // subsystems::player_data::init(socket.clone());
-    
-    ////////////////////////////////////////////////////////
-    // Register some additional custom events with our    // 
-    // socket server. Your custom events will be          //
-    // registered here as well as in the ./events/mod.rs  //
-    // file                                               //
-    ////////////////////////////////////////////////////////
-    
-    define_event!(socket, 
-        "test", events::test::main(),
-        // "UpdatePlayerLocation", subsystems::player_data::update_player_location(socket.clone()),
-        );
-
-    let players_clone = Arc::clone(&players);
-
-    // see subsystems/player_data.rs
-    // this code should be moved out of here.
-    socket.on(
-        "UpdatePlayerLocation",
-        move |socket: SocketRef, Data::<Value>(data), Bin(bin)| {
-            info!(
-                "Received event: UpdatePlayerLocation with data: {:?} and bin: {:?}",
-                data, bin
+        players.lock().unwrap().push(player);
+        
+        info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
+        socket.emit("connected", true).ok();
+        socket.emit("auth", true).ok();
+            
+        /////////////////////////////////////////////////////////
+        // Setup external event listeners for the more complex //
+        // systems                                             //
+        /////////////////////////////////////////////////////////
+        
+        //subsystems::actors::main::main::main;
+        subsystems::chat::init(socket.clone());
+        subsystems::game_logic::init();
+        subsystems::leaderboard::init();
+        subsystems::level_data::init();
+        subsystems::logging::init();
+        subsystems::notifications::init();
+        // subsystems::player_data::init(socket.clone());
+        
+        ////////////////////////////////////////////////////////
+        // Register some additional custom events with our    // 
+        // socket server. Your custom events will be          //
+        // registered here as well as in the ./events/mod.rs  //
+        // file                                               //
+        ////////////////////////////////////////////////////////
+        
+        define_event!(socket, 
+            "test", events::test::main(),
+            // "UpdatePlayerLocation", subsystems::player_data::update_player_location(socket.clone()),
             );
 
-            // Extract location from data
-            match serde_json::from_value::<Location>(data.clone()) {
-                Ok(location) => {
-                    let mut players = players_clone.lock().unwrap();
-                    if let Some(player) = players.iter_mut().find(|p| p.id == socket.id.to_string())
-                    {
-                        player.location = Some(location);
-                        info!("Updated player location: {:?}", player);
-                    } else {
-                        info!("Player not found: {}", socket.id);
+        let players_clone = Arc::clone(&players);
+
+        // see subsystems/player_data.rs
+        // this code should be moved out of here.
+        socket.on(
+            "UpdatePlayerLocation",
+            move |socket: SocketRef, Data::<Value>(data), Bin(bin)| {
+                info!(
+                    "Received event: UpdatePlayerLocation with data: {:?} and bin: {:?}",
+                    data, bin
+                );
+
+                // Extract location from data
+                match serde_json::from_value::<Location>(data.clone()) {
+                    Ok(location) => {
+                        let mut players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
+                        if let Some(player) = players.iter_mut().find(|p: &&mut Player| p.id == socket.id.to_string())
+                        {
+                            player.location = Some(location);
+                            info!("Updated player location: {:?}", player);
+                        } else {
+                            info!("Player not found: {}", socket.id);
+                        }
+                    }
+                    Err(err) => {
+                        info!("Failed to parse location: {:?}", err);
                     }
                 }
-                Err(err) => {
-                    info!("Failed to parse location: {:?}", err);
-                }
+
+                socket.bin(bin).emit("message-back", data).ok();
+            },
+        );
+
+        socket.on(
+            "message-with-ack",
+            move |Data::<Value>(data), ack: AckSender, Bin(bin)| {
+                info!(
+                    "Received event: message-with-ack with data: {:?} and bin: {:?}",
+                    data, bin
+                );
+                ack.bin(bin).send(data).ok();
+            },
+        );
+
+        let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
+        socket.on(
+            "getOnlinePlayers",
+            move |socket: SocketRef, _: Data<Value>, _: Bin| {
+                info!("Responding with online players list");
+                let players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
+
+                let online_players_json = serde_json::to_value(
+                    players
+                        .iter()
+                        .map(|player| json!({ "id": player.id }))
+                        .collect::<Vec<_>>(),
+                )
+                .unwrap();
+
+                debug!("Player Array as JSON: {}", online_players_json);
+                socket.emit("onlinePlayers", online_players_json).ok();
+            },
+        );
+
+        let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
+        socket.on(
+            "getPlayersWithLocations",
+            move |socket: SocketRef, _: Data<Value>, _: Bin| {
+                info!("Responding with players and locations list");
+                let players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
+
+                let players_with_locations_json = serde_json::to_value(
+                    players
+                        .iter()
+                        .map(|player| json!({ "id": player.id, "location": player.location }))
+                        .collect::<Vec<_>>(),
+                )
+                .unwrap();
+
+                info!(
+                    "Players with Locations as JSON: {}",
+                    players_with_locations_json
+                );
+                let players = vec![players_with_locations_json];
+
+                socket.emit("playersWithLocations", &players).ok();
+            },
+        );
+
+        let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
+        socket.on("broadcastMessage", move |Data::<Value>(data), _: Bin| {
+            let players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
+            for player in &*players {
+                player.socket.emit("broadcastMessage", data.clone()).ok();
             }
-
-            socket.bin(bin).emit("message-back", data).ok();
-        },
-    );
-
-    socket.on(
-        "message-with-ack",
-        move |Data::<Value>(data), ack: AckSender, Bin(bin)| {
-            info!(
-                "Received event: message-with-ack with data: {:?} and bin: {:?}",
-                data, bin
-            );
-            ack.bin(bin).send(data).ok();
-        },
-    );
-
-    let players_clone = Arc::clone(&players);
-    socket.on(
-        "getOnlinePlayers",
-        move |socket: SocketRef, _: Data<Value>, _: Bin| {
-            info!("Responding with online players list");
-            let players = players_clone.lock().unwrap();
-
-            let online_players_json = serde_json::to_value(
-                players
-                    .iter()
-                    .map(|player| json!({ "id": player.id }))
-                    .collect::<Vec<_>>(),
-            )
-            .unwrap();
-
-            debug!("Player Array as JSON: {}", online_players_json);
-            socket.emit("onlinePlayers", online_players_json).ok();
-        },
-    );
-
-    let players_clone = Arc::clone(&players);
-    socket.on(
-        "getPlayersWithLocations",
-        move |socket: SocketRef, _: Data<Value>, _: Bin| {
-            info!("Responding with players and locations list");
-            let players = players_clone.lock().unwrap();
-
-            let players_with_locations_json = serde_json::to_value(
-                players
-                    .iter()
-                    .map(|player| json!({ "id": player.id, "location": player.location }))
-                    .collect::<Vec<_>>(),
-            )
-            .unwrap();
-
-            info!(
-                "Players with Locations as JSON: {}",
-                players_with_locations_json
-            );
-            let players = vec![players_with_locations_json];
-
-            socket.emit("playersWithLocations", &players).ok();
-        },
-    );
-
-    let players_clone = Arc::clone(&players);
-    socket.on("broadcastMessage", move |Data::<Value>(data), _: Bin| {
-        let players = players_clone.lock().unwrap();
-        for player in &*players {
-            player.socket.emit("broadcastMessage", data.clone()).ok();
-        }
-    });
-}
-
-#[main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    //////////////////////////////////
-    // Show branding during startup //
-    //////////////////////////////////
-    subsystems::startup::main();
-
-    TerraForge::main();
-    
-    println!("{}", PebbleVault::greet("Rust"));
-    let db = PebbleVault::create_db();
-    PebbleVault::create_spatial_index(db, "SpaceBody", "1");
-    PebbleVault::create_galaxy(db, "Galaxy", "Artermis");
-    PebbleVault::create_galaxy(db, "Galaxy", "Athena");
-    PebbleVault::create_galaxy(db, "Galaxy", "Hades");
-    PebbleVault::get_k_nearest_galaxies(db, "Artermis");
-
-    let app = Router::new()
-        .get("/", |_| async { Ok("Welcome to Horizon Server V: 0.3.0-318974-C") });
-
-    info!("Starting server...");
-
-    let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
-    let (_io, io2) = socketioxide::SocketIo::new_svc();
-    let players_clone = players.clone();
-    io2.ns("/", move |socket, data| {
-        on_connect(socket, data, players_clone.clone())
-    });
-
-    let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
-    let (_io, io2) = socketioxide::SocketIo::new_svc();
-    let players_clone = players.clone();
-    io2.ns("/", move |socket, data| {
-        on_connect(socket, data, players_clone.clone())
-    });
-
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-
-    if let Err(e) = serve(listener, app).await {
-        println!("{}", e);
+        });
     }
 
-    Ok(())
-}
+    #[main]
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+        /////////////////////////////
+        // SERVER STARTUP SEQUENCE //
+        /////////////////////////////
+
+        // Show branding
+        subsystems::startup::main();
+
+        let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
+
+        let (svc, io) = socketioxide::SocketIo::new_svc();
+
+        let players_clone: Arc<Mutex<Vec<Player>>> = players.clone();
+        io.ns("/", move |socket: SocketRef, data: Data<Value>| {
+            println!("Player Connected!");
+            on_connect(socket, data, players_clone.clone())
+        });
+
+        let app = Router::new()
+            .get("/", |_| async { Ok("Hello, World!") })
+            .any("/*", ServiceHandler::new(svc));
+
+        info!("Starting server");
+
+        let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+
+        if let Err(e) = serve(listener, app).await {
+            println!("{}", e);
+        }
+
+        Ok(())
+    }
