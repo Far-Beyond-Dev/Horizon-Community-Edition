@@ -16,7 +16,7 @@
 use serde_json::{json, Value};
 use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
 use std::sync::{Arc, Mutex};
-use tokio::main;
+use tokio::{main, task::spawn};
 use tracing::{debug, info};
 use viz::{handler::ServiceHandler, serve, Result, Router};
 use PebbleVault;
@@ -188,6 +188,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Show branding
     subsystems::startup::main();
+
+    let _terraforge_thread = spawn(async {
+        // this is in it's own thread to not take up the main thread. because otherwise that would
+        // be catastrophically bad for performance, because then the tasks would not complete.
+        TerraForge::main();
+    });
     
     println!("{}", PebbleVault::greet("Rust"));
     let db = PebbleVault::create_db();
