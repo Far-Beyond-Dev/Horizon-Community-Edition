@@ -1,13 +1,13 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                      Horizon Game Server                                       //
-//                                                                                                //
-// This server software is part of a distributed system designed to facilitate communication      //
-// and data transfer between multiple child servers and a master server. Each child server        //
-// operates within a "Region map" managed by the master server, which keeps track of their        //
-// coordinates in a relative cubic light-year space. The coordinates are stored in 64-bit floats  //
-// to avoid coordinate overflow and to ensure high precision.                                     //
-//                                                                                                //
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                       Horizon Game Server                                       //
+//                                                                                                 //
+//  This server software is part of a distributed system designed to facilitate communication      //
+//  and data transfer between multiple child servers and a master server. Each child server        //
+//  operates within a "Region map" managed by the master server, which keeps track of their        //
+//  coordinates in a relative cubic light-year space. The coordinates are stored in 64-bit floats  //
+//  to avoid coordinate overflow and to ensure high precision.                                     //
+//                                                                                                 //
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////
 // Import a few things to get us started //
@@ -33,8 +33,8 @@ use structs::*;
 
 mod events;
 mod macros;
-mod subsystems;
 mod structs;
+mod subsystems;
 
 ///////////////////////////////////////////////////////////////
 //                         WARNING                           //
@@ -78,8 +78,8 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     ////////////////////////////////////////////////////////
     
     define_event!(socket, "test", events::test::main());
-    
 }
+
 #[main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
@@ -101,7 +101,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .get("/", |_| async { Ok("Welcome to Horizon Server V: 0.3.0-318974-C") });
 
-    info!("Starting server");
+    info!("Starting server...");
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
 
