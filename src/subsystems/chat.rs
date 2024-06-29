@@ -10,6 +10,8 @@ struct ChatMessage {
 }
 
 pub fn init(socket: SocketRef) {
+    info!("Starting chat subsystem...");
+
     socket.on("newChat", |socket: SocketRef, Data(data): Data<String>| {
         info!("Received event: newChat with data: {:?}", data);
 

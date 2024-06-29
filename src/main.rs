@@ -43,16 +43,19 @@ mod subsystems;
 ///////////////////////////////////////////////////////////////
 
 fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
+    println!("Starting subsystems for player: {}", socket.id.to_string());
+
     // Authenticate the user
     let player = Player {
         id: socket.id.to_string(),
         socket: socket.clone(),
         location: None, // Initialize with no location
     };
-    
+
     players.lock().unwrap().push(player);
+    println!("Player {} added to players list", socket.id.to_string());
     
-    info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
+    println!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
     socket.emit("connected", true).ok();
     socket.emit("auth", true).ok();
         
