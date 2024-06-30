@@ -14,9 +14,9 @@ use crate::define_event;
 
 #[derive(Deserialize)]
 struct ChatMessage {
-    sender: &str,
-    recipient: Option<&str>,
-    message: &str,
+    sender: String,
+    recipient: Option<String>,
+    message: String,
 }
 
 /////////////////////////////////////////////////
