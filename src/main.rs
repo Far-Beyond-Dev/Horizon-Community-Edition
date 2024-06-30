@@ -54,7 +54,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 
     players.lock().unwrap().push(player);
     println!("Player {} added to players list", socket.id.to_string());
-    
+
     println!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
     socket.emit("connected", true).ok();
     socket.emit("auth", true).ok();
@@ -198,20 +198,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}", PebbleVault::greet("Rust"));
     let db = PebbleVault::create_db();
 
-    PebbleVault::create_spatial_index(db, "SpaceBody", "1");
-    PebbleVault::create_galaxy(db, "Galaxy", "Artermis");
-    PebbleVault::create_galaxy(db, "Galaxy", "Athena");
-    PebbleVault::create_galaxy(db, "Galaxy", "Hades");
-    PebbleVault::get_k_nearest_galaxies(db, "Artermis");
+    // PebbleVault::create_spatial_index(db, "SpaceBody", "1");
+    // PebbleVault::create_galaxy(db, "Galaxy", "Artermis");
+    // PebbleVault::create_galaxy(db, "Galaxy", "Athena");
+    // PebbleVault::create_galaxy(db, "Galaxy", "Hades");
+    // PebbleVault::get_k_nearest_galaxies(db, "Artermis");
 
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
     let (svc, io) = socketioxide::SocketIo::new_svc();
     let players_clone: Arc<Mutex<Vec<Player>>> = players.clone();
 
+    // Handle New player connections
     io.ns("/", move |socket: SocketRef, data: Data<Value>| {
         println!("Player Connected!");
         on_connect(socket, data, players_clone.clone())
     });
+    
     let app = Router::new()
         .get("/", |_| async { Ok("Hello, World!") })
         .any("/*", ServiceHandler::new(svc));

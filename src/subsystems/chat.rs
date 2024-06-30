@@ -1,39 +1,47 @@
+//////////////////////////////////////
+// Lets import some tools we need.  //
+//////////////////////////////////////
+
 use socketioxide::extract::{SocketRef, Data};
 use serde::Deserialize;
 use tracing::info;
+use crate::define_event;
+
+////////////////////////////////////////////////
+// Next we will define some structs our code  //
+// will use to store and organize data.       //
+////////////////////////////////////////////////
 
 #[derive(Deserialize)]
 struct ChatMessage {
-    sender: String,
-    recipient: Option<String>,
-    message: String,
+    sender: &str,
+    recipient: Option<&str>,
+    message: &str,
 }
+
+/////////////////////////////////////////////////
+//  Next we will define what happens when our  //
+//  subsystem starts, this usually happens     //
+//  when a new player connects, so we will     //
+//  define our event listeners here.           //
+/////////////////////////////////////////////////
 
 pub fn init(socket: SocketRef) {
     info!("Starting chat subsystem...");
 
-    socket.on("newChat", |socket: SocketRef, Data(data): Data<String>| {
-        info!("Received event: newChat with data: {:?}", data);
+    define_event!(socket, 
+        "whisper", handle_whisper(socket, "", "", ""),
+        "broadcast", handle_broadcast(socket, "", ""),
+        "command", handle_help(socket, "")
+    );
 
-        // Parse the incoming chat message
-        let chat_message: Result<ChatMessage, _> = serde_json::from_str(&data);
-        match chat_message {
-            Ok(message) => {
-                // Handle the chat message
-                if let Some(recipient) = message.recipient {
-                    handle_whisper(socket.clone(), &message.sender, &recipient, &message.message);
-                } else if message.message.trim().eq_ignore_ascii_case("help") {
-                    handle_help(socket.clone(), &message.sender);
-                } else {
-                    handle_broadcast(socket.clone(), &message.sender, &message.message);
-                }
-            }
-            Err(err) => {
-                info!("Failed to parse chat message: {:?}", err);
-            }
-        }
-    });
 }
+
+////////////////////////////////////////////////////
+//  Finally we define the functions that will be  //
+//  called by our event listeners when they are   //
+//  triggered.                                    //
+////////////////////////////////////////////////////
 
 fn handle_whisper(socket: SocketRef, sender: &str, recipient: &str, message: &str) {
     info!("Whisper from {} to {}: {}", sender, recipient, message);
