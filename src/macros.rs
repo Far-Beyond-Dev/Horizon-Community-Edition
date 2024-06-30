@@ -18,7 +18,7 @@
 macro_rules! define_event {
      ($app:expr, $($path:expr, $handler:expr),* $(,)?) => {
         $(
-            $app.on($path, move || { $handler });
+            &$app.on($path, move || { $handler });
         )*
      };
 }
