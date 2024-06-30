@@ -2,10 +2,10 @@
 //    // Lets import some tools we need.  //
 //    //////////////////////////////////////
 //    
-//    use socketioxide::extract::{SocketRef, Data};
-//    use serde::Deserialize;
-//    use tracing::info;
-//    use crate::define_event;
+use socketioxide::extract::{SocketRef, Data};
+use serde::Deserialize;
+use tracing::info;
+use crate::define_event;
 //    
 //    ////////////////////////////////////////////////
 //    // Next we will define some structs our code  //
@@ -26,14 +26,14 @@
 //    //  define our event listeners here.           //
 //    /////////////////////////////////////////////////
 //    
-//    pub fn init(socket: SocketRef) {
-//        info!("Starting chat subsystem...");
+pub fn init(socket: SocketRef) {
+    info!("Starting chat subsystem...");
 //    
 //        define_event!(socket, "whisper", handle_whisper(socket, "", "", ""));
 //        define_event!(socket, "broadcast", handle_broadcast(socket, "", ""));
 //        define_event!(socket, "command", handle_help(socket, ""));
 //    
-//    }
+}
 //    
 //    ////////////////////////////////////////////////////
 //    //  Finally we define the functions that will be  //

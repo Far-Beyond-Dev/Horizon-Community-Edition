@@ -12,21 +12,6 @@
 
 #! /bin/bash
 
-##################
-# Install Python #
-##################
-
-apk add python3
-
-##################
-#  Install Git   #
-##################
-
-apk add git
-
-##################
-# Install GoLang #
-##################
-
-# Check GoLang version
-go version
+sudo apt update
+sudo apt install clang
+sudo apt install libsqlite3-dev
