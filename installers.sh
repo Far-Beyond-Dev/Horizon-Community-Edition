@@ -12,6 +12,10 @@
 
 #! /bin/bash
 
+cargo clean
+
 sudo apt update
 sudo apt install clang
 sudo apt install libsqlite3-dev
+
+cargo check
