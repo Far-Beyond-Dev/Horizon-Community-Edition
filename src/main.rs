@@ -13,12 +13,13 @@
 // Import a few things to get us started //
 ///////////////////////////////////////////
 
+use http::status;
 use serde_json::{json, Value};
 use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
 use std::sync::{Arc, Mutex};
 use tokio::{main, task::spawn};
 use tracing::{debug, info};
-use viz::{handler::ServiceHandler, serve, Result, Router};
+use viz::{future::ok, handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
 use PebbleVault;
 use TerraForge;
 
@@ -179,6 +180,17 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
         }
     });
 }
+
+async fn redirect_to_master_panel(_req: Request) -> Result<Response> {
+    let response = Response::builder()
+        .status(302)
+        .header("Location", "https://google.com")
+        .body(Body::empty())
+        .unwrap();
+    println!("Someone tried to access this server via a browser, redirecting them to the master dashboard");
+    Ok(response)
+}
+
 #[main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
@@ -198,12 +210,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}", PebbleVault::greet("Rust"));
     let db = PebbleVault::create_db();
 
+    ////////////////////////////////////////////////////////////////////////
+    //                              DEBUG ONLY                            //
+    // The code below allows for the creation of some test bodies within  //
+    // pebblevault, this is normally done automatically by TerraForge.    //
+    ////////////////////////////////////////////////////////////////////////
+    
     // PebbleVault::create_spatial_index(db, "SpaceBody", "1");
     // PebbleVault::create_galaxy(db, "Galaxy", "Artermis");
     // PebbleVault::create_galaxy(db, "Galaxy", "Athena");
     // PebbleVault::create_galaxy(db, "Galaxy", "Hades");
     // PebbleVault::get_k_nearest_galaxies(db, "Artermis");
 
+    // Define a place to put new players
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
     let (svc, io) = socketioxide::SocketIo::new_svc();
     let players_clone: Arc<Mutex<Vec<Player>>> = players.clone();
@@ -214,10 +233,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         on_connect(socket, data, players_clone.clone())
     });
     
+    //Create a router to handel incoming connections
     let app = Router::new()
-        .get("/", |_| async { Ok("Welcome to Horizon Server V: 0.3.0-318974-C") })
+        // If the user sends a GET request we redirect them to
+        // the master server which hosts the horizon dashboard
+        // if the master server itself has a master it too will
+        // redirect them until they reach the highest level master
+        // server
+
+        .get("/", redirect_to_master_panel)
+
+        // This is an any connection that is not handled above,
+        // we cosider these legitimate players and treat their
+        // request as them attempting to join the server
         .any("/*", ServiceHandler::new(svc));
+
+
     info!("Starting server");
+    
     let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     if let Err(e) = serve(listener, app).await {
         println!("{}", e);
