@@ -85,11 +85,9 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     
     define_event!(socket, 
         "test", events::test::main(),
-        // "UpdatePlayerLocation", subsystems::player_data::update_player_location(socket.clone()),
         );
 
-        let players_clone = Arc::clone(&players);
-
+    let players_clone = Arc::clone(&players);
     
     ////////////////////////////////////////////////////////////////////////////////
     //                                 TEMPORARY                                  //
