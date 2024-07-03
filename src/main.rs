@@ -90,8 +90,11 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 
         let players_clone = Arc::clone(&players);
 
-    // see subsystems/player_data.rs
-    // this code should be moved out of here.
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    //                                 TEMPORARY                                  //
+    // see subsystems/player_data.rs this code will be moved there in the future  //
+    ////////////////////////////////////////////////////////////////////////////////
 
     socket.on(
         "UpdatePlayerLocation",
@@ -181,6 +184,8 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     });
 }
 
+
+// This handels redirecting browser users to the master server to see the dashboard
 async fn redirect_to_master_panel(_req: Request) -> Result<Response> {
     let response = Response::builder()
         .status(302)
@@ -201,11 +206,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Show branding
     subsystems::startup::main();
 
+    // this is in it's own thread so it does not take up the main thread because this task runs
+    // throughout the lifetime of the server and would prevent anything else from running
     let _terraforge_thread = spawn(async {
-        // this is in it's own thread so it does not take up the main thread because this task runs
-        // throughout the lifetime of the server and would prevent anything else from running
-
-        
+        // TerraForge code here
     });
     
     println!("{}", PebbleVault::greet("Rust"));
@@ -252,7 +256,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Starting server");
     
+    // Define a listener on port 3000
     let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    
+    // Print any errors encountered while creating the listener
     if let Err(e) = serve(listener, app).await {
         println!("{}", e);
     }
