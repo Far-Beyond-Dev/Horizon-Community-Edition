@@ -215,7 +215,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
     
     let app = Router::new()
-        .get("/", |_| async { Ok("Hello, World!") })
+        .get("/", |_| async { Ok("Welcome to Horizon Server V: 0.3.0-318974-C") })
         .any("/*", ServiceHandler::new(svc));
     info!("Starting server");
     let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
