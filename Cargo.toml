@@ -24,6 +24,9 @@ tokio-console = "0.1.11"
 console-subscriber = "0.3.0"
 PebbleVault = { path = "./PebbleVault" }
 bindgen = "0.69.4"
+http = "1.1.0"
+bytes = "1.6.0"
+http-body-util = "0.1.2"
 
 [[bin]]
 name = "horizon"
