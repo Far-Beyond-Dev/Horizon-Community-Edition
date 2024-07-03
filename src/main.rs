@@ -202,9 +202,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     subsystems::startup::main();
 
     let _terraforge_thread = spawn(async {
-        // this is in it's own thread to not take up the main thread. because otherwise that would
-        // be catastrophically bad for performance, because then the tasks would not complete.
-        // TerraForge::main();
+        // this is in it's own thread so it does not take up the main thread because this task runs
+        // throughout the lifetime of the server and would prevent anything else from running
+
+        
     });
     
     println!("{}", PebbleVault::greet("Rust"));
