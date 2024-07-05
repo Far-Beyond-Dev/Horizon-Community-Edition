@@ -59,7 +59,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     println!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
     socket.emit("connected", true).ok();
     socket.emit("auth", true).ok();
-        
+         
     /////////////////////////////////////////////////////////
     // Setup external event listeners for the more complex //
     // systems                                             //
