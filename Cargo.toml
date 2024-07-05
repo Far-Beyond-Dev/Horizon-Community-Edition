@@ -32,3 +32,8 @@ http-body-util = "0.1.2"
 name = "horizon"
 path = "src/main.rs"
 
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+
