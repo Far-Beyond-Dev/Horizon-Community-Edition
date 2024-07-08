@@ -48,7 +48,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 
     // Authenticate the user
     let player = Player {
-        id: socket.id.to_string(),
+        // id: &socket.id,
         socket: socket.clone(),
         location: None, // Initialize with no location
     };
@@ -105,7 +105,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
             match serde_json::from_value::<Location>(data.clone()) {
                 Ok(location) => {
                     let mut players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
-                    if let Some(player) = players.iter_mut().find(|p: &&mut Player| p.id == socket.id.to_string())
+                    if let Some(player) = players.iter_mut().find(|p: &&mut Player| p.socket.id == socket.id)
                     {
                         player.location = Some(location);
                         info!("Updated player location: {:?}", player);
@@ -141,7 +141,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
             let online_players_json = serde_json::to_value(
                 players
                     .iter()
-                    .map(|player| json!({ "id": player.id }))
+                    .map(|player| json!({ "id": player.socket.id }))
                     .collect::<Vec<_>>(),
             )
             .unwrap();
@@ -160,7 +160,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
             let players_with_locations_json = serde_json::to_value(
                 players
                     .iter()
-                    .map(|player| json!({ "id": player.id, "location": player.location }))
+                    .map(|player| json!({ "id": player.socket.id, "location": player.location }))
                     .collect::<Vec<_>>(),
             )
             .unwrap();

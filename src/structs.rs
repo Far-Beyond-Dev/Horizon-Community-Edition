@@ -144,7 +144,6 @@ impl ChildServer {
 // Define a struct for Player
 #[derive(Debug, Clone)]
 pub struct Player {
-    pub id: String,
     pub socket: SocketRef,
     pub location: Option<Location>, // Optional to handle players who haven't sent location updates yet
 }
