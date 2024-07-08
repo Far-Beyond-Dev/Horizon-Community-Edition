@@ -48,7 +48,6 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 
     // Authenticate the user
     let player = Player {
-        // id: &socket.id,
         socket: socket.clone(),
         location: None, // Initialize with no location
     };
