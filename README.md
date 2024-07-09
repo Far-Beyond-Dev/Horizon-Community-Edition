@@ -23,6 +23,7 @@ markdown
   - [Starting the Server](#starting-the-server)
   - [Managing the Server manually](#managing-the-server-manually)
 - [5. Development](#5-development)
+  - [Contributors](#contributors)
   - [Project Structure](#project-structure)
   - [Contribution Guidelines](#contribution-guidelines)
 - [6. Additional Resources](#6-additional-resources)
@@ -30,6 +31,7 @@ markdown
   - [Documentation](#documentation)
 - [7. Troubleshooting](#7-troubleshooting)
   - [Common Issues](#common-issues)
+
 
 ---
 
@@ -160,6 +162,14 @@ For more usage instructions and advanced features, see the [Usage Guide](usage.m
 
 ## 5. Development
 
+### Contributors
+
+Contributors help shape the future of Horizon Server. To start contributing you have to [fork this repository](https://github.com/Stars-Beyond/Horizon-Community-Edition/fork) and [open a pull request](https://github.com/Stars-Beyond/Horizon-Community-Edition/compare).
+
+<a href="https://github.com/Stars-Beyond/Horizon-Community-Edition/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Stars-Beyond/Horizon-Community-Edition" />
+</a>
+
 ### Project Structure
 
 The Horizon project directory consists of several key components:
@@ -200,17 +210,6 @@ For more resources and helpful links, visit the [Additional Resources section](r
 - **Performance Bottlenecks**: Monitor server performance and optimize resource usage if necessary.
 
 For troubleshooting tips and solutions to common problems, consult the [Troubleshooting Guide](troubleshooting.md).
-
-<!-- Contributors -->
-<br/><h2 align="center">👥 Contributors</h2>
-
-Contributors help shape the future of Horizon Server. To start contributing you have to [fork this repository](https://github.com/Stars-Beyond/Horizon-Community-Edition/fork) and [open a pull request](https://github.com/Stars-Beyond/Horizon-Community-Edition/compare).
-
-<a href="https://github.com/Stars-Beyond/Horizon-Community-Edition/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Stars-Beyond/Horizon-Community-Edition" />
-</a>
-
-
 
 <!-- Stargazers -->
 <br/><h2 align="center">🌟 Stargazers</h2>
