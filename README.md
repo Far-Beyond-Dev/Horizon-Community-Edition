@@ -200,3 +200,25 @@ For more resources and helpful links, visit the [Additional Resources section](r
 - **Performance Bottlenecks**: Monitor server performance and optimize resource usage if necessary.
 
 For troubleshooting tips and solutions to common problems, consult the [Troubleshooting Guide](troubleshooting.md).
+
+<!-- Contributors -->
+<br/><h2 align="center">👥 Contributors</h2>
+
+Contributors help shape the future of Horizon Server. To start contributing you have to [fork this repository](https://github.com/Stars-Beyond/Horizon-Community-Edition/fork) and [open a pull request](https://github.com/Stars-Beyond/Horizon-Community-Edition/compare).
+
+<a href="https://github.com/Stars-Beyond/Horizon-Community-Edition/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Stars-Beyond/Horizon-Community-Edition" />
+</a>
+
+
+
+<!-- Stargazers -->
+<br/><h2 align="center">🌟 Stargazers</h2>
+
+<a href="https://github.com/Stars-Beyond/Horizon-Community-Edition/stargazers/">
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset="http://reporoster.com/stars/Stars-Beyond/Horizon-Community-Edition">
+    <img alt="stargazer-widget" src="http://reporoster.com/stars/dark/Stars-Beyond/Horizon-Community-Edition">
+  </picture>
+</a>
+
