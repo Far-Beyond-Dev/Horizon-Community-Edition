@@ -90,7 +90,7 @@ Horizon implements a robust event propagation mechanism to facilitate communicat
 
 #### Coordinate Management and Region Mapping
 
-- **Spatial Coordinates**: Horizon uses a 64-bit floating-point coordinate system to manage server positions within a simulated universe. Each server instance covers a cubic light year, and coordinates are stored relative to avoid overflow issues.
+- **Spatial Coordinates**: Horizon uses a 64-bit floating-point coordinate system to manage server positions within a simulated universe. Each server instance covers a cubic light year, and coordinates are stored relativistically to avoid overflow issues.
 
 - **Region Mapping**: Servers are organized into a grid-based region map, where each region corresponds to a specific set of spatial coordinates. This mapping enables efficient routing of events between servers, as servers can quickly determine which neighboring servers should receive specific events based on their region coordinates.
 
