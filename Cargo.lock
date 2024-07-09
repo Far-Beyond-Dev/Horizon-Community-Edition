@@ -50,7 +50,6 @@ version = "0.1.0"
 dependencies = [
  "console_log",
  "rand",
- "rayon",
  "serde",
  "serde_json",
  "spade",
