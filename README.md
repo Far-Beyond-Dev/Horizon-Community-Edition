@@ -34,12 +34,12 @@ markdown
   - [Common Issues](#common-issues)
 - [🌟 Stargazers](#stargazers)
 
-<center>
+
 </br>
 
 ---
-<h1 id='introduction'> 🚀 Introduction </h1>
-</center>
+<h1 align="center" id='introduction'> 🚀 Introduction </h1>
+
 Horizon is a custom game server software designed to facilitate seamless interaction between Unreal Engine 5 (UE5) and client applications through socket.io. It provides a scalable and customizable solution for hosting multiplayer games and managing real-time communication between players and a limitless number of game servers or "Hosts".
 
 ### Synchronized Game Server Architecture
@@ -97,12 +97,12 @@ Horizon implements a robust event propagation mechanism to facilitate communicat
 
 - **Region Mapping**: Servers are organized into a grid-based region map, where each region corresponds to a specific set of spatial coordinates. This mapping enables efficient routing of events between servers, as servers can quickly determine which neighboring servers should receive specific events based on their region coordinates.
 
-<center>
+
 </br>
 
 ---
-<h1 id='installation'> 🔧 Installation </h1>
-</center>
+<h1 align="center" id='installation'> 🔧 Installation </h1>
+
 
 ### Prerequisites
 
@@ -136,12 +136,12 @@ Before installing Horizon, ensure that you have the following prerequisites:
 
 For more detailed instructions and troubleshooting tips, refer to the [Installation Guide](installation.md).
 
-<center>
+
 </br>
 
 ---
 <h1> ⚙️ Configuration </h1>
-</center>
+
 
 Horizon's configuration revolves around Docker and environment variables. Here's an overview of key configuration files:
 
@@ -152,12 +152,12 @@ Horizon's configuration revolves around Docker and environment variables. Here's
 
 To customize Horizon for your specific needs, modify these files according to your requirements. Refer to the [Configuration Guide](configuration.md) for detailed instructions and best practices.
 
-<center>
+
 </br>
 
 ---
-<h1 id='usage'> 📈 Usage </h1>
-</center>
+<h1 align="center" id='usage'> 📈 Usage </h1>
+
 
 ### Starting the Server
 
@@ -178,12 +178,12 @@ You can manage your server directly via docker-compose:
 
 For more usage instructions and advanced features, see the [Usage Guide](usage.md).
 
-<center>
+
 </br>
 
 ---
-<h1 id='development'> 💻 Development </h1>
-</center>
+<h1 align="center" id='development'> 💻 Development </h1>
+
 
 ### Contributors
 
@@ -210,12 +210,12 @@ The Horizon project directory consists of several key components:
 
 For detailed development instructions and guidelines, refer to the [Development Guide](development.md).
 
-<center>
+
 </br>
 
 ---
-<h1 id='additional-resources'> 📚 Additional Resources </h1>
-</center>
+<h1 align="center" id='additional-resources'> 📚 Additional Resources </h1>
+
 
 ### Community Support
 
@@ -229,12 +229,12 @@ For detailed development instructions and guidelines, refer to the [Development 
 
 For more resources and helpful links, visit the [Additional Resources section](resources.md).
 
-<center>
+
 </br>
 
 ---
-<h1 id='troubleshooting'> 🐞 Troubleshooting </h1>
-</center>
+<h1 align="center" id='troubleshooting'> 🐞 Troubleshooting </h1>
+
 
 ### Common Issues
 
@@ -244,12 +244,12 @@ For more resources and helpful links, visit the [Additional Resources section](r
 
 For troubleshooting tips and solutions to common problems, consult the [Troubleshooting Guide](troubleshooting.md).
 
-<center>
+
 </br>
 
 ---
-<h1 id='stargazers'> 🐞 Stargazers </h1>
-</center>
+<h1 align="center" id='stargazers'> 🐞 Stargazers </h1>
+
 
 <a href="https://github.com/Stars-Beyond/Horizon-Community-Edition/stargazers/">
   <picture>
