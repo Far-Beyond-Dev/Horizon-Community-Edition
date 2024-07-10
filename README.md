@@ -140,7 +140,7 @@ For more detailed instructions and troubleshooting tips, refer to the [Installat
 </br>
 
 ---
-<h1> ⚙️ Configuration </h1>
+<h1 align="center" id='configuration'> ⚙️ Configuration </h1>
 
 
 Horizon's configuration revolves around Docker and environment variables. Here's an overview of key configuration files:
