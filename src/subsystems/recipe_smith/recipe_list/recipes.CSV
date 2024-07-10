@@ -1,0 +1,8 @@
+# Recipes CSV file containing recipes, their ingredients, and outcomes.
+name,ingredients,outcome
+Bread,"Flour:2,Water:1,Salt:1",Bread
+Cake,"Flour:3,Sugar:2,Egg:1,Milk:1",Cake
+Potion,"Herb:1,Water:1",Health Potion
+Stew,"Meat:2,Potato:3,Carrot:2,Water:2",Stew
+Salad,"Lettuce:2,Tomato:2,Cucumber:1,Olive Oil:1",Salad
+Sandwich,"Bread:2,Ham:1,Cheese:1,Lettuce:1",Sandwich

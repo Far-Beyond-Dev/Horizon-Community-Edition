@@ -1,6 +1,6 @@
-/// This Script is simply a Rough Concept and May be changed Multiple Times before we settle on a result so dont get to Comfy Just Yet.
+/// This Script is simply a Rough Concept and May be changed Multiple Times before we settle on a result so don't get too comfy just yet.
 
-// this is mainly just a simple Subsystem Asterisk & Trident Have Been Working on. we will most likely be implementing the Associated Databases found here:Horizon-Community-Edition\src\subsystems\Recipe Smith Subsystem\Recipe List  into (SQL) Soon for performance Reasons.
+// This is mainly just a simple Subsystem Asterisk & Trident Have Been Working on. We will most likely be implementing the Associated Databases found here: Horizon-Community-Edition\src\subsystems\Recipe Smith Subsystem\Recipe List into (SQL) Soon for performance Reasons.
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -35,7 +35,7 @@ impl RecipeBook {
     /// Creates a new RecipeBook.
     pub fn new() -> Self {
         Self {
-            recipes: HashMap::new(),    // Here ive Simply Initialized an empty HashMap for recipes
+            recipes: HashMap::new(),    // Here I've Simply Initialized an empty HashMap for recipes
         }
     }
 
@@ -80,7 +80,7 @@ impl RecipeBook {
         }
     }
 
-      // this import Feature is a special request from that of Trident so please (Do Not Remove) Unless Authorized by him First.
+    // This import Feature is a special request from that of Trident so please (Do Not Remove) Unless Authorized by him First.
 
     /// Imports recipes from a JSON or CSV file.
     pub fn import_recipes_from_file(&mut self, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -108,7 +108,7 @@ impl RecipeBook {
     }
 }
 
-/// Main.rs code is below this stays here and below ive provided a Sample for understanding it Further by the rest of the SBH Team.
+/// Main.rs code is below this stays here and below I've provided a Sample for understanding it Further by the rest of the SBH Team.
 
 fn main() {
     // Example usage:
@@ -124,18 +124,25 @@ fn main() {
         eprintln!("Error importing recipes: {}", e);
     }
 
-    // Here ive provided a Sample Starting Inventory that Follows the other Data Accordingly for testing and example usage.
-    let mut inventory: HashMap<String, u32> = HashMap::new();
-    inventory.insert("Herb".to_string(), 3);
-    inventory.insert("Water".to_string(), 2);
-    inventory.insert("Flour".to_string(), 4);
-    inventory.insert("Salt".to_string(), 2);
-    inventory.insert("Sugar".to_string(), 3);
-    inventory.insert("Egg".to_string(), 4);
-    inventory.insert("Milk".to_string(), 1);
+    // Improved the hashmap based on the structure of common matrix arrays for ease of use and editing.
+    let items = [
+        "Herb", "Water", "Flour", "Salt", "Sugar", "Egg", "Milk", "Meat", 
+        "Potato", "Carrot", "Lettuce", "Tomato", "Cucumber", "Olive Oil", 
+        "Ham", "Cheese"
+    ];
+    
+    let quantities = [
+        3, 2, 4, 2, 3, 4, 1, 2, 3, 2, 3, 2, 1, 1, 1, 1
+    ];
 
-     // Below is the section ive added that uses the items and attempts to craft them if the user has the required resources / ingredients.
-     /// otherwise it should say not enough Ingredients or Simply Failed to craft if they dont meet Gathered Requirements.
+    let mut inventory: HashMap<String, u32> = items.iter()
+        .cloned()
+        .zip(quantities.iter().cloned())
+        .map(|(item, quantity)| (item.to_string(), quantity))
+        .collect();
+
+    // Below is the section I've added that uses the items and attempts to craft them if the user has the required resources / ingredients.
+    // Otherwise, it should say not enough Ingredients or Simply Failed to craft if they don't meet Gathered Requirements.
 
     // Attempt to craft Bread
     if recipe_book.can_craft("Bread", &inventory) {

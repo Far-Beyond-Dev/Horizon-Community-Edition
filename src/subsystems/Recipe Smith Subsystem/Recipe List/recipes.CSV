@@ -1,5 +1,0 @@
-# Recipes CSV file containing recipes, their ingredients, and outcomes.
-name,ingredients,outcome
-Bread,"Flour:2,Water:1,Salt:1",Bread
-Cake,"Flour:3,Sugar:2,Egg:1,Milk:1",Cake
-Potion,"Herb:1,Water:1",Health Potion
