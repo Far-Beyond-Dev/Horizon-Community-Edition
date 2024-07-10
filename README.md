@@ -7,35 +7,38 @@ markdown
 
 ## Table Of Contents
 
-- [Table Of Contents](#table-of-contents)
-- [1. Introduction](#1-introduction)
+
+- [📝 Table Of Contents](#table-of-contents)
+- [🚀 Introduction](#introduction)
   - [Synchronized Game Server Architecture](#synchronized-game-server-architecture)
     - [How it Works](#how-it-works)
     - [Benefits](#benefits)
     - [Implementation Details](#implementation-details)
     - [Event Propagation and Multicasting](#event-propagation-and-multicasting)
     - [Coordinate Management and Region Mapping](#coordinate-management-and-region-mapping)
-- [2. Installation](#2-installation)
+- [🔧 Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Installation Steps](#installation-steps)
-- [3. Configuration](#3-configuration)
-- [4. Usage](#4-usage)
+- [⚙️ Configuration](#configuration)
+- [📈 Usage](#usage)
   - [Starting the Server](#starting-the-server)
   - [Managing the Server manually](#managing-the-server-manually)
-- [5. Development](#5-development)
+- [💻 Development](#development)
   - [Contributors](#contributors)
   - [Project Structure](#project-structure)
   - [Contribution Guidelines](#contribution-guidelines)
-- [6. Additional Resources](#6-additional-resources)
+- [📚 Additional Resources](#additional-resources)
   - [Community Support](#community-support)
   - [Documentation](#documentation)
-- [7. Troubleshooting](#7-troubleshooting)
+- [🐞 Troubleshooting](#troubleshooting)
   - [Common Issues](#common-issues)
+- [🌟 Stargazers](#stargazers)
 
+
+</br>
 
 ---
-
-## 1. Introduction
+<h1 align="center" id='introduction'> 🚀 Introduction </h1>
 
 Horizon is a custom game server software designed to facilitate seamless interaction between Unreal Engine 5 (UE5) and client applications through socket.io. It provides a scalable and customizable solution for hosting multiplayer games and managing real-time communication between players and a limitless number of game servers or "Hosts".
 
@@ -94,7 +97,12 @@ Horizon implements a robust event propagation mechanism to facilitate communicat
 
 - **Region Mapping**: Servers are organized into a grid-based region map, where each region corresponds to a specific set of spatial coordinates. This mapping enables efficient routing of events between servers, as servers can quickly determine which neighboring servers should receive specific events based on their region coordinates.
 
-## 2. Installation
+
+</br>
+
+---
+<h1 align="center" id='installation'> 🔧 Installation </h1>
+
 
 ### Prerequisites
 
@@ -128,7 +136,12 @@ Before installing Horizon, ensure that you have the following prerequisites:
 
 For more detailed instructions and troubleshooting tips, refer to the [Installation Guide](installation.md).
 
-## 3. Configuration
+
+</br>
+
+---
+<h1 align="center" id='configuration'> ⚙️ Configuration </h1>
+
 
 Horizon's configuration revolves around Docker and environment variables. Here's an overview of key configuration files:
 
@@ -139,7 +152,12 @@ Horizon's configuration revolves around Docker and environment variables. Here's
 
 To customize Horizon for your specific needs, modify these files according to your requirements. Refer to the [Configuration Guide](configuration.md) for detailed instructions and best practices.
 
-## 4. Usage
+
+</br>
+
+---
+<h1 align="center" id='usage'> 📈 Usage </h1>
+
 
 ### Starting the Server
 
@@ -160,7 +178,12 @@ You can manage your server directly via docker-compose:
 
 For more usage instructions and advanced features, see the [Usage Guide](usage.md).
 
-## 5. Development
+
+</br>
+
+---
+<h1 align="center" id='development'> 💻 Development </h1>
+
 
 ### Contributors
 
@@ -187,7 +210,12 @@ The Horizon project directory consists of several key components:
 
 For detailed development instructions and guidelines, refer to the [Development Guide](development.md).
 
-## 6. Additional Resources
+
+</br>
+
+---
+<h1 align="center" id='additional-resources'> 📚 Additional Resources </h1>
+
 
 ### Community Support
 
@@ -201,7 +229,12 @@ For detailed development instructions and guidelines, refer to the [Development 
 
 For more resources and helpful links, visit the [Additional Resources section](resources.md).
 
-## 7. Troubleshooting
+
+</br>
+
+---
+<h1 align="center" id='troubleshooting'> 🐞 Troubleshooting </h1>
+
 
 ### Common Issues
 
@@ -211,8 +244,12 @@ For more resources and helpful links, visit the [Additional Resources section](r
 
 For troubleshooting tips and solutions to common problems, consult the [Troubleshooting Guide](troubleshooting.md).
 
-<!-- Stargazers -->
-<br/><h2 align="center">🌟 Stargazers</h2>
+
+</br>
+
+---
+<h1 align="center" id='stargazers'> 🌟 Stargazers </h1>
+
 
 <a href="https://github.com/Stars-Beyond/Horizon-Community-Edition/stargazers/">
   <picture>
