@@ -1,0 +1,62 @@
+{
+    "_comment": "Recipes JSON file containing various recipes and their ingredients.",
+    "recipes": [
+        {
+            "name": "Bread",
+            "ingredients": [
+                {"name": "Flour", "quantity": 2},
+                {"name": "Water", "quantity": 1},
+                {"name": "Salt", "quantity": 1}
+            ],
+            "outcome": "Bread"
+        },
+        {
+            "name": "Cake",
+            "ingredients": [
+                {"name": "Flour", "quantity": 3},
+                {"name": "Sugar", "quantity": 2},
+                {"name": "Egg", "quantity": 1},
+                {"name": "Milk", "quantity": 1}
+            ],
+            "outcome": "Cake"
+        },
+        {
+            "name": "Potion",
+            "ingredients": [
+                {"name": "Herb", "quantity": 1},
+                {"name": "Water", "quantity": 1}
+            ],
+            "outcome": "Health Potion"
+        },
+        {
+            "name": "Stew",
+            "ingredients": [
+                {"name": "Meat", "quantity": 2},
+                {"name": "Potato", "quantity": 3},
+                {"name": "Carrot", "quantity": 2},
+                {"name": "Water", "quantity": 2}
+            ],
+            "outcome": "Stew"
+        },
+        {
+            "name": "Salad",
+            "ingredients": [
+                {"name": "Lettuce", "quantity": 2},
+                {"name": "Tomato", "quantity": 2},
+                {"name": "Cucumber", "quantity": 1},
+                {"name": "Olive Oil", "quantity": 1}
+            ],
+            "outcome": "Salad"
+        },
+        {
+            "name": "Sandwich",
+            "ingredients": [
+                {"name": "Bread", "quantity": 2},
+                {"name": "Ham", "quantity": 1},
+                {"name": "Cheese", "quantity": 1},
+                {"name": "Lettuce", "quantity": 1}
+            ],
+            "outcome": "Sandwich"
+        }
+    ]
+}
