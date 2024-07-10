@@ -248,7 +248,7 @@ For troubleshooting tips and solutions to common problems, consult the [Troubles
 </br>
 
 ---
-<h1 align="center" id='stargazers'> 🐞 Stargazers </h1>
+<h1 align="center" id='stargazers'> 🌟 Stargazers </h1>
 
 
 <a href="https://github.com/Stars-Beyond/Horizon-Community-Edition/stargazers/">
