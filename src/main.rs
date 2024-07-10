@@ -8,13 +8,13 @@
 //  to avoid coordinate overflow and to ensure high precision.                                     //
 //                                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////
- 
-////////////////////////////////////////////////////////////
-// Use the jemalloc allocator, which boasts fragmentation //
-// resistance and scalable concurrency support            //
-////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+// Use the mimalloc allocator, which boasts excellent performance //
+// across a variety of tasks, while being small (8k LOC)          //
+////////////////////////////////////////////////////////////////////
 #[global_allocator]
-static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 ///////////////////////////////////////////
 // Import a few things to get us started //
