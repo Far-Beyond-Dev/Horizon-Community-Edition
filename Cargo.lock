@@ -38,6 +38,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
+ "uuid",
 ]
 
 [[package]]
@@ -3114,6 +3115,7 @@ checksum = "5de17fd2f7da591098415cff336e12965a28061ddace43b59cb3c430179c9439"
 dependencies = [
  "getrandom",
  "rand",
+ "serde",
  "uuid-macro-internal",
 ]
 
