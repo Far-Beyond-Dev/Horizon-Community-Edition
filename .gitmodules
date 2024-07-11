@@ -8,5 +8,5 @@
 	path = src/crates/Graviton
 	url = https://github.com/Stars-Beyond/Graviton
 [submodule "core"]
-	path = src/submodules/core
+	path = src/subsystems/core
 	url = https://github.com/Stars-Beyond/core
