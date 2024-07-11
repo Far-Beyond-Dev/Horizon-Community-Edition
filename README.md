@@ -1,4 +1,3 @@
-markdown
 > [!CAUTION]
 > Horizon is still in early development and is not meant to be used in any production environments.
 
