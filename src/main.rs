@@ -20,6 +20,7 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 // Import a few things to get us started //
 ///////////////////////////////////////////
 
+// Imported some third party crates
 use http::status;
 use serde_json::{json, Value};
 use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
@@ -27,8 +28,11 @@ use std::sync::{Arc, Mutex};
 use tokio::{main, task::spawn};
 use tracing::{debug, info};
 use viz::{future::ok, handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
-use PebbleVault;
+
+
+// Import some custom crates from the crates folder in /src
 use TerraForge;
+use PebbleVault;
 
 // WARNING
 // Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
@@ -72,14 +76,14 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // systems                                             //
     /////////////////////////////////////////////////////////
     
-    //subsystems::actors::main::main::main;
+    //subsystems::actors::main::main();
 
-    subsystems::game_logic::init();
-    subsystems::chat::init(socket.clone());
-    subsystems::leaderboard::init();
-    subsystems::level_data::init();
-    subsystems::logging::init();
-    subsystems::notifications::init();
+    subsystems::core::game_logic::init();
+    subsystems::core::chat::init(socket.clone());
+    subsystems::core::leaderboard::init();
+    subsystems::core::level_data::init();
+    subsystems::core::logging::init();
+    subsystems::core::notifications::init();
 
     // subsystems::player_data::init(socket.clone());
     
@@ -209,7 +213,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /////////////////////////////
 
     // Show branding
-    subsystems::startup::main();
+    subsystems::core::startup::main();
 
     // this is in it's own thread so it does not take up the main thread because this task runs
     // throughout the lifetime of the server and would prevent anything else from running
