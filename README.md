@@ -190,7 +190,7 @@ For more usage instructions and advanced features, see the [Usage Guide](usage.m
 Contributors help shape the future of Horizon Server. To start contributing you have to [fork this repository](https://github.com/Stars-Beyond/Horizon-Community-Edition/fork) and [open a pull request](https://github.com/Stars-Beyond/Horizon-Community-Edition/compare).
 
 <a href="https://github.com/Stars-Beyond/Horizon-Community-Edition/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Stars-Beyond/Horizon-Community-Edition" />
+  <img src="https://contrib.rocks/image?repo=Stars-Beyond/Horizon-Community-Edition"/>
 </a>
 
 ### Project Structure
