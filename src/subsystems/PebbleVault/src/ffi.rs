@@ -1,0 +1,5 @@
+///////////////////////////////////////////////////////////////////////////////////////
+// This is where the FFIs for GoLang should be migrated, we will then use lib.rs to  //
+// handel the public funstion calls which will each call into this file and/or the   //
+// MySQLGeo.rs file                                                                  //
+///////////////////////////////////////////////////////////////////////////////////////
