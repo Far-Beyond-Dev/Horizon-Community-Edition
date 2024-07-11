@@ -72,7 +72,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // systems                                             //
     /////////////////////////////////////////////////////////
     
-    //subsystems::actors::main::main::main;
+    //subsystems::actors::main::main();
 
     subsystems::core::game_logic::init();
     subsystems::core::chat::init(socket.clone());
@@ -209,7 +209,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /////////////////////////////
 
     // Show branding
-    subsystems::startup::main();
+    subsystems::core::startup::main();
 
     // this is in it's own thread so it does not take up the main thread because this task runs
     // throughout the lifetime of the server and would prevent anything else from running
