@@ -8,11 +8,12 @@ use std::io::{BufReader, Error, ErrorKind};
 use csv::Reader;
 use serde_json::Value;
 
-/// Structure representing an Ingredient.
+/// Structure representing an Ingredient with required quantity and recipe crafting flag.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Ingredient {
-    pub name: String,    // Name of the ingredient
-    pub quantity: u32,   // Quantity of the ingredient needed
+    pub name: String,        // Name of the ingredient
+    pub quantity: u32,       // Quantity of the ingredient needed
+    pub recipe_craftable: bool, // Flag indicating if enough quantity is available to craft recipes
     // Add more properties here as needed
 }
 
@@ -50,12 +51,12 @@ impl RecipeBook {
     }
 
     /// Checks if a recipe can be crafted with the given inventory.
-    pub fn can_craft(&self, recipe_name: &str, inventory: &HashMap<String, u32>) -> bool {
+    pub fn can_craft(&self, recipe_name: &str, inventory: &HashMap<String, Ingredient>) -> bool {
         if let Some(recipe) = self.get_recipe(recipe_name) {
             for ingredient in &recipe.ingredients {
-                if let Some(inventory_qty) = inventory.get(&ingredient.name) {
-                    if *inventory_qty < ingredient.quantity {
-                        return false;    // Not enough of this ingredient in inventory
+                if let Some(inventory_ingredient) = inventory.get(&ingredient.name) {
+                    if !inventory_ingredient.recipe_craftable || inventory_ingredient.quantity < ingredient.quantity {
+                        return false;    // Not enough of this ingredient in inventory or not craftable
                     }
                 } else {
                     return false;    // Missing this ingredient in inventory
@@ -68,11 +69,15 @@ impl RecipeBook {
     }
 
     /// Crafts a recipe if possible, updating the inventory.
-    pub fn craft(&self, recipe_name: &str, inventory: &mut HashMap<String, u32>) -> Option<String> {
+    pub fn craft(&self, recipe_name: &str, inventory: &mut HashMap<String, Ingredient>) -> Option<String> {
         if self.can_craft(recipe_name, inventory) {
             let recipe = self.get_recipe(recipe_name).unwrap().clone();    // Clone the recipe
             for ingredient in &recipe.ingredients {
-                *inventory.entry(ingredient.name.clone()).and_modify(|e| *e -= ingredient.quantity).or_insert(0);
+                if let Some(inventory_ingredient) = inventory.get_mut(&ingredient.name) {
+                    if inventory_ingredient.recipe_craftable {
+                        inventory_ingredient.quantity -= ingredient.quantity;
+                    }
+                }
             }
             Some(recipe.outcome.clone())    // Return the outcome of crafting
         } else {
@@ -124,25 +129,39 @@ fn main() {
         eprintln!("Error importing recipes: {}", e);
     }
 
-    // Improved the hashmap based on the structure of common matrix arrays for ease of use and editing.
+    // Initialize inventory with ingredients and their quantities
+    let mut inventory: HashMap<String, Ingredient> = HashMap::new();
+
+    // Example initialization of inventory ingredients with quantities and craftable status
     let items = [
-        "Herb", "Water", "Flour", "Salt", "Sugar", "Egg", "Milk", "Meat", 
-        "Potato", "Carrot", "Lettuce", "Tomato", "Cucumber", "Olive Oil", 
-        "Ham", "Cheese"
-    ];
-    
-    let quantities = [
-        3, 2, 4, 2, 3, 4, 1, 2, 3, 2, 3, 2, 1, 1, 1, 1
+        ("Herb", 3, true),
+        ("Water", 2, true),
+        ("Flour", 4, true),
+        ("Salt", 2, true),
+        ("Sugar", 3, true),
+        ("Egg", 4, true),
+        ("Milk", 1, true),
+        ("Meat", 2, true),
+        ("Potato", 3, true),
+        ("Carrot", 2, true),
+        ("Lettuce", 3, true),
+        ("Tomato", 2, true),
+        ("Cucumber", 1, true),
+        ("Olive Oil", 1, true),
+        ("Ham", 1, true),
+        ("Cheese", 1, true),
     ];
 
-    let mut inventory: HashMap<String, u32> = items.iter()
-        .cloned()
-        .zip(quantities.iter().cloned())
-        .map(|(item, quantity)| (item.to_string(), quantity))
-        .collect();
-
-    // Below is the section I've added that uses the items and attempts to craft them if the user has the required resources / ingredients.
-    // Otherwise, it should say not enough Ingredients or Simply Failed to craft if they don't meet Gathered Requirements.
+    for (name, quantity, recipe_craftable) in &items {
+        inventory.insert(
+            name.to_string(),
+            Ingredient {
+                name: name.to_string(),
+                quantity: *quantity,
+                recipe_craftable: *recipe_craftable,
+            },
+        );
+    }
 
     // Attempt to craft Bread
     if recipe_book.can_craft("Bread", &inventory) {
