@@ -1,9 +1,12 @@
-[submodule "src/crates/TerraForge"]
+[submodule "TerraForge"]
 	path = src/crates/TerraForge
-	url = https://github.com/Stars-Beyond/TerraForge/
-[submodule "src/crates/PebbleVault"]
+	url = https://github.com/Stars-Beyond/TerraForge
+[submodule "PebbleVault"]
 	path = src/crates/PebbleVault
 	url = https://github.com/Stars-Beyond/PebbleVault
 [submodule "Graviton"]
-	path = Graviton
+	path = src/crates/Graviton
 	url = https://github.com/Stars-Beyond/Graviton
+[submodule "core"]
+	path = src/submodules/core
+	url = https://github.com/Stars-Beyond/core
