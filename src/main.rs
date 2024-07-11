@@ -36,7 +36,6 @@ use PebbleVault;
 
 // WARNING
 // Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
-
 use structs::*;
 
 /////////////////////////////////////
