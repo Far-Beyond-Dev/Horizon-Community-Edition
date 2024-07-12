@@ -30,8 +30,8 @@ use tracing::{debug, info};
 use viz::{future::ok, handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
 
 // Import some custom crates from the crates folder in /src
-use TerraForge;
-use PebbleVault;
+pub use TerraForge;
+pub use PebbleVault;
 
 // WARNING
 // Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
