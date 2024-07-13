@@ -22,4 +22,3 @@ macro_rules! define_event {
         )*
      };
 }
-
