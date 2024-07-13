@@ -33,9 +33,6 @@ nalgebra = "0.33.0"
 v = "0.1.0"
 rayon = "1.10.0"
 
-tikv-jemallocator = "0.5.4"
-
-
 [[bin]]
 name = "horizon"
 path = "src/main.rs"
