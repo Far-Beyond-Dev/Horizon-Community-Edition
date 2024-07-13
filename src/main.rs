@@ -222,20 +222,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         TerraForge::main();
     });
     
-    println!("{}", PebbleVault::greet("Rust"));
-    let db = PebbleVault::create_db();
+    PebbleVault::main();
 
     ////////////////////////////////////////////////////////////////////////
     //                              DEBUG ONLY                            //
     // The code below allows for the creation of some test bodies within  //
     // pebblevault, this is normally done automatically by TerraForge.    //
     ////////////////////////////////////////////////////////////////////////
-    
-    // PebbleVault::create_spatial_index(db, "SpaceBody", "1");
-    // PebbleVault::create_galaxy(db, "Galaxy", "Artermis");
-    // PebbleVault::create_galaxy(db, "Galaxy", "Athena");
-    // PebbleVault::create_galaxy(db, "Galaxy", "Hades");
-    // PebbleVault::get_k_nearest_galaxies(db, "Artermis");
 
     // Define a place to put new players
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
