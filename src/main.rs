@@ -77,7 +77,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     //subsystems::actors::main::main();
 
     subsystems::core::game_logic::init();
-    subsystems::core::chat::init(socket.clone());
+    subsystems::core::chat::init(&socket);
     subsystems::core::leaderboard::init();
     subsystems::core::level_data::init();
     subsystems::core::logging::init();
