@@ -62,6 +62,8 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
         location: None, // Initialize with no location
     };
 
+    let sock = Arc::new(socket.clone());
+
     players.lock().unwrap().push(player);
     println!("Player {} added to players list", id);
 
@@ -77,7 +79,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     //subsystems::actors::main::main();
 
     subsystems::core::game_logic::init();
-    subsystems::core::chat::init(&socket);
+    subsystems::core::chat::init(sock.clone());
     subsystems::core::leaderboard::init();
     subsystems::core::level_data::init();
     subsystems::core::logging::init();
@@ -92,7 +94,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // file                                               //
     ////////////////////////////////////////////////////////
     
-    define_event!(socket, 
+    define_event!(&socket,
         "test", events::test::main(),
         );
 
