@@ -1,1 +1,1 @@
-docker build -t Astroverse-Studios/horizon .
+docker build -t Far-Beyond/horizon .
