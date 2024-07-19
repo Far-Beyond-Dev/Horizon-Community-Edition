@@ -76,15 +76,13 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     /////////////////////////////////////////////////////////
     
     //subsystems::actors::main::main();
-
+    // subsystems::core::chat::init(socket.clone());
+    // subsystems::core::leaderboard::init();
+    // subsystems::player_data::init(socket.clone());
     subsystems::core::game_logic::init();
-    subsystems::core::chat::init(socket.clone());
-    subsystems::core::leaderboard::init();
     subsystems::core::level_data::init();
     subsystems::core::logging::init();
     subsystems::core::notifications::init();
-
-    // subsystems::player_data::init(socket.clone());
     
     ////////////////////////////////////////////////////////
     // Register some additional custom events with our    // 
