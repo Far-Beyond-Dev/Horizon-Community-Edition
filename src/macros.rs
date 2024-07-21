@@ -18,7 +18,11 @@
 macro_rules! define_event {
      ($app:expr, $($path:expr, $handler:expr),* $(,)?) => {
         $(
-            &$app.on($path, move || { $handler });
+            {
+                let app = &$app;  // Borrow $app
+                let handler = $handler.clone(); //define handler within the macro's scope
+                app.on($path, move || { handler });
+            }
         )*
      };
 }
