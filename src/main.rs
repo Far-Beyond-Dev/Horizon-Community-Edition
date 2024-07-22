@@ -100,7 +100,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     let players_clone = Arc::clone(&players);
     
     ////////////////////////////////////////////////////////////////////////////////
-    //                                 TEMPORARY                                  //
+    //                              !!!TEMPORARY!!!                               //
     // see subsystems/player_data.rs this code will be moved there in the future  //
     ////////////////////////////////////////////////////////////////////////////////
 
