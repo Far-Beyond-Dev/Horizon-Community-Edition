@@ -75,16 +75,15 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // systems                                             //
     /////////////////////////////////////////////////////////
     
-    //subsystems::actors::main::main();
 
+    // subsystems::actors::main::main();
+    subsystems::core::chat::init(socket.clone());
+    // subsystems::core::leaderboard::init();
+    // subsystems::player_data::init(socket.clone());
     subsystems::core::game_logic::init();
-//    subsystems::core::chat::init(socket.clone());
-    subsystems::core::leaderboard::init();
     subsystems::core::level_data::init();
     subsystems::core::logging::init();
     subsystems::core::notifications::init();
-
-    // subsystems::player_data::init(socket.clone());
     
     ////////////////////////////////////////////////////////
     // Register some additional custom events with our    // 
@@ -93,9 +92,9 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // file                                               //
     ////////////////////////////////////////////////////////
     
-    define_event!(socket, 
-        "test", events::test::main(),
-        );
+    //define_event!(socket, 
+    //    "test", events::test::main(),
+    //    );
 
     let players_clone = Arc::clone(&players);
     

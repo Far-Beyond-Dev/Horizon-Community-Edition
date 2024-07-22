@@ -2,7 +2,19 @@
 > Horizon is still in early development and is not meant to be used in any production environments.
 
 ![horizon-server-high-resolution-logo-transparent](/branding/horizon-server-high-resolution-logo-transparent.png)
-[![Build](https://github.com/Stars-Beyond/Horizon-Community-Edition/actions/workflows/rust.yml/badge.svg)](https://github.com/Stars-Beyond/Horizon-Community-Edition/actions/workflows/rust.yml)
+<center>
+<p style="text-align: center;" align="center">
+    <img src="https://github.com/Stars-Beyond/Horizon-Community-Edition/actions/workflows/rust.yml/badge.svg" alt="Build">
+    <img src="https://img.shields.io/github/repo-size/Stars-Beyond/Horizon-Community-Edition" alt="Size">
+    <img src="https://img.shields.io/website?url=https%3A%2F%2Fstars-beyond.com%2F" alt="Website">
+    <img src="https://img.shields.io/github/license/Stars-Beyond/Horizon-Community-Edition" alt="GitHub License">
+    <img src="https://img.shields.io/github/discussions/Stars-Beyond/Horizon-Community-Edition" alt="GitHub Discussions">
+    <img src="https://img.shields.io/github/sponsors/Stars-Beyond" alt="GitHub Sponsors">
+    <img src="https://img.shields.io/github/forks/Stars-Beyond/Horizon-Community-Edition" alt="GitHub forks">
+    <img src="https://img.shields.io/github/stars/Stars-Beyond/Horizon-Community-Edition" alt="GitHub Repo stars">
+</p>
+</center>
+
 
 ## Table Of Contents
 
