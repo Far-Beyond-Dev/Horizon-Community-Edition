@@ -10,3 +10,6 @@
 [submodule "core"]
 path = src/subsystems/core
 url = https://github.com/Stars-Beyond/core
+[submodule "src/subsystems/RecipeSmith"]
+	path = src/subsystems/RecipeSmith
+	url = https://github.com/Stars-Beyond/RecipeSmith
