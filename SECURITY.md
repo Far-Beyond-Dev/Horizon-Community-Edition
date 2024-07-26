@@ -4,6 +4,8 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
+| Horizon Community Edition 0.0.6-b | :white_check_mark: |
+| Horizon Community Edition 0.0.6-a | :white_check_mark: |
 | Horizon Community Edition 0.0.5-a | :white_check_mark: |
 | Horizon Community Edition 0.0.4 | :white_check_mark: |
 | Horizon Community Edition 0.0.3 | :white_check_mark: |
