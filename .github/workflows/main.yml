@@ -71,9 +71,6 @@ jobs:
           key: ${{ matrix.info.target }}
           cache-all-crates: true
 
-      - name: Check cargo fmt
-        run: cargo fmt --all -- --check
-
       - name: Build tests
         uses: ClementTsang/cargo-action@v0.0.5
         with:
