@@ -54,6 +54,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.1
+        with:
+          submodules: 'true'
 
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17
@@ -133,6 +135,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.1
+        with:
+          submodules: 'true'
 
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17
@@ -171,67 +175,33 @@ jobs:
           name: ${{ matrix.info.target }}-release
           path: target/${{ matrix.info.target }}/release/
 
-  completion:
-    name: "CI Pass Check"
-    needs: [supported, other-check]
-    runs-on: ubuntu-latest
-    steps:
-      - name: CI workflow success.
-        if: ${{ needs.supported.result == 'success' && needs.other-check.result == 'success' }}
-        run: echo "CI workflow succeeded."
-      - name: CI workflow failed.
-        if: ${{ !(needs.supported.result == 'success' && needs.other-check.result == 'success') && !(needs.supported.result == 'skipped' && needs.other-check.result == 'skipped') }}
-        run: echo "CI workflow failed.";
-
   release:
-    needs: [supported, other-check]
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_skip != 'true' }}
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.1
+        with:
+          submodules: 'true'
 
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17
         with:
           toolchain: stable
           components: rustfmt, clippy
-
-      - name: Download artifacts from supported
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ matrix.info.target }}-release
-          path: target/release/
-
-      - name: Download artifacts from other-check
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ matrix.info.target }}-release
-          path: target/release/
+          target: x86_64-unknown-linux-gnu
 
       - name: Build release
-        run: cargo build --release
+        uses: ClementTsang/cargo-action@v0.0.5
+        with:
+          command: build
+          args: --release --target=x86_64-unknown-linux-gnu
+        env:
+          RUST_BACKTRACE: full
 
-      - name: Upload release binaries
+      - name: Upload release binary
         uses: actions/upload-artifact@v3
         with:
-          name: my-rust-project-binaries
-          path: target/release/
-
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: target/release/my-rust-project
-          asset_name: my-rust-project
-          asset_content_type: application/zip
+          name: release-binary
+          path: target/x86_64-unknown-linux-gnu/release/
