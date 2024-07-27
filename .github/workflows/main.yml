@@ -1,0 +1,237 @@
+name: ci
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+  release:
+    types:
+      - created
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_INCREMENTAL: 0
+  CARGO_PROFILE_DEV_DEBUG: 0
+  CARGO_HUSKY_DONT_INSTALL_HOOKS: true
+  COMPLETION_DIR: "target/tmp/bottom/completion/"
+  MANPAGE_DIR: "target/tmp/bottom/manpage/"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.repository != 'ClementTsang/bottom' }}
+
+jobs:
+  pre-job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - name: Check if this action should be skipped
+        id: skip_check
+        uses: fkirc/skip-duplicate-actions@f75f66ce1886f00957d99748a42c724f4330bdcf # v5.3.1
+        with:
+          skip_after_successful_duplicate: "true"
+          paths: '[".cargo/**", ".github/workflows/ci.yml", "sample_configs/**", "src/**", "tests/**", "build.rs", "Cargo.lock", "Cargo.toml", "clippy.toml", "rustfmt.toml", "Cross.toml"]'
+          do_not_skip: '["workflow_dispatch", "push"]'
+
+  supported:
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_skip != 'true' }}
+    runs-on: ${{ matrix.info.os }}
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        info:
+          - { os: "ubuntu-latest", target: "x86_64-unknown-linux-gnu", cross: false }
+          - { os: "ubuntu-latest", target: "aarch64-unknown-linux-gnu", cross: true }
+          - { os: "macos-12", target: "x86_64-apple-darwin", cross: false }
+          - { os: "macos-14", target: "aarch64-apple-darwin", cross: false }
+          - { os: "windows-2019", target: "x86_64-pc-windows-msvc", cross: false }
+        features: ["--all-features", "--no-default-features"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.1
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+          target: ${{ matrix.info.target }}
+
+      - name: Enable Rust cache
+        uses: Swatinem/rust-cache@9bdad043e88c75890e36ad3bbc8d27f0090dd609 # 2.7.3
+        if: ${{ github.event_name != 'pull_request' || ! github.event.pull_request.head.repo.fork }}
+        with:
+          key: ${{ matrix.info.target }}
+          cache-all-crates: true
+
+      - name: Check cargo fmt
+        run: cargo fmt --all -- --check
+
+      - name: Build tests
+        uses: ClementTsang/cargo-action@v0.0.5
+        with:
+          command: test
+          args: --no-run --locked ${{ matrix.features }} --target=${{ matrix.info.target }}
+          use-cross: ${{ matrix.info.cross }}
+          cross-version: 0.2.5
+        env:
+          RUST_BACKTRACE: full
+
+      - name: Run tests
+        uses: ClementTsang/cargo-action@v0.0.5
+        with:
+          command: test
+          args: --no-fail-fast ${{ matrix.features }} --target=${{ matrix.info.target }} -- --nocapture --quiet
+          use-cross: ${{ matrix.info.cross }}
+          cross-version: 0.2.5
+        env:
+          RUST_BACKTRACE: full
+
+      - name: Run clippy
+        uses: ClementTsang/cargo-action@v0.0.5
+        with:
+          command: clippy
+          args: ${{ matrix.features }} --all-targets --workspace --target=${{ matrix.info.target }} -- -D warnings
+          use-cross: ${{ matrix.info.cross }}
+          cross-version: 0.2.5
+        env:
+          RUST_BACKTRACE: full
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.info.target }}-release
+          path: target/${{ matrix.info.target }}/release/
+
+  other-check:
+    needs: pre-job
+    runs-on: ${{ matrix.info.os }}
+    if: ${{ needs.pre-job.outputs.should_skip != 'true' }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        info:
+          - { os: "ubuntu-latest", target: "i686-unknown-linux-gnu", cross: true }
+          - { os: "ubuntu-latest", target: "x86_64-unknown-linux-musl", cross: false }
+          - { os: "ubuntu-latest", target: "i686-unknown-linux-musl", cross: true }
+          - { os: "windows-2019", target: "i686-pc-windows-msvc", cross: false }
+          - { os: "windows-2019", target: "x86_64-pc-windows-gnu", cross: false }
+          - { os: "ubuntu-latest", target: "x86_64-unknown-linux-gnu", cross: false, rust: "beta" }
+          - { os: "macos-12", target: "x86_64-apple-darwin", cross: false, rust: "beta" }
+          - { os: "windows-2019", target: "x86_64-pc-windows-msvc", cross: false, rust: "beta" }
+          - { os: "ubuntu-latest", target: "armv7-unknown-linux-gnueabihf", cross: true }
+          - { os: "ubuntu-latest", target: "arm-unknown-linux-gnueabihf", cross: true }
+          - { os: "ubuntu-latest", target: "powerpc64le-unknown-linux-gnu", cross: true }
+          - { os: "ubuntu-latest", target: "riscv64gc-unknown-linux-gnu", cross: true }
+          - { os: "ubuntu-latest", target: "aarch64-linux-android", cross: true, cross-version: "git:cabfc3b02d1edec03869fabdabf6a7f8b0519160", no-default-features: true }
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.1
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17
+        with:
+          toolchain: ${{ matrix.info.rust || 'stable' }}
+          target: ${{ matrix.info.target }}
+
+      - name: Enable Rust cache
+        uses: Swatinem/rust-cache@9bdad043e88c75890e36ad3bbc8d27f0090dd609 # 2.7.3
+        if: ${{ github.event_name != 'pull_request' || ! github.event.pull_request.head.repo.fork }}
+        with:
+          key: ${{ matrix.info.target }}
+          cache-all-crates: true
+
+      - name: Try building with only default features enabled
+        uses: ClementTsang/cargo-action@v0.0.5
+        if: ${{ matrix.info.no-default-features != true }}
+        with:
+          command: build
+          args: --all-targets --verbose --target=${{ matrix.info.target }} --locked
+          use-cross: ${{ matrix.info.cross }}
+          cross-version: ${{ matrix.info.cross-version || '0.2.5' }}
+
+      - name: Try building with no features enabled
+        uses: ClementTsang/cargo-action@v0.0.5
+        if: ${{ matrix.info.no-default-features == true }}
+        with:
+          command: build
+          args: --all-targets --verbose --target=${{ matrix.info.target }} --locked --no-default-features
+          use-cross: ${{ matrix.info.cross }}
+          cross-version: ${{ matrix.info.cross-version || '0.2.5' }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.info.target }}-release
+          path: target/${{ matrix.info.target }}/release/
+
+  completion:
+    name: "CI Pass Check"
+    needs: [supported, other-check]
+    runs-on: ubuntu-latest
+    steps:
+      - name: CI workflow success.
+        if: ${{ needs.supported.result == 'success' && needs.other-check.result == 'success' }}
+        run: echo "CI workflow succeeded."
+      - name: CI workflow failed.
+        if: ${{ !(needs.supported.result == 'success' && needs.other-check.result == 'success') && !(needs.supported.result == 'skipped' && needs.other-check.result == 'skipped') }}
+        run: echo "CI workflow failed.";
+
+  release:
+    needs: [supported, other-check]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.1
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
+      - name: Download artifacts from supported
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.info.target }}-release
+          path: target/release/
+
+      - name: Download artifacts from other-check
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.info.target }}-release
+          path: target/release/
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Upload release binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: my-rust-project-binaries
+          path: target/release/
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: target/release/my-rust-project
+          asset_name: my-rust-project
+          asset_content_type: application/zip
