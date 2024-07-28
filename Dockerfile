@@ -7,24 +7,20 @@
 # Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
 
 ARG RUST_VERSION=1.78.0
-ARG APP_NAME=Horizon
+ARG APP_NAME=horizon
 
 ################################################################################
 # Create a stage for building the application.
 
-FROM rust:${RUST_VERSION}-alpine AS build
+FROM rust:${RUST_VERSION}-bullseye AS build
 ARG APP_NAME
 WORKDIR /app
 
+COPY . /app
+
 # Install host build dependencies.
-RUN apk add libressl-dev clang clang-dev sqlite-dev go \
-    apk add --no-cache clang lld musl-dev git pkgconfig \
-    apk add --no-cache curl xz && \
-    curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.0/clang+llvm-17.0.0-x86_64-linux-gnu.tar.xz && \
-    tar -xf clang+llvm-17.0.0-x86_64-linux-gnu.tar.xz && \
-    mv clang+llvm-17.0.0-x86_64-linux-gnu /usr/local/clang && \
-    rm clang+llvm-17.0.0-x86_64-linux-gnu.tar.xz && \
-    echo 'export PATH=/usr/local/clang/bin:$PATH' >> /etc/profile.d/clang.sh
+RUN chmod a+x /app/installers-deb.sh \
+    /app/installers-deb.sh
 
 # Build the application.
 # Leverage a cache mount to /usr/local/cargo/registry/
@@ -35,14 +31,8 @@ RUN apk add libressl-dev clang clang-dev sqlite-dev go \
 # source code into the container. Once built, copy the executable to an
 # output directory before the cache mounted /app/target is unmounted.
 
-# RUN --mount=type=bind,source=src,target=src \
-#     --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
-#     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
-#     --mount=type=cache,target=/app/target/ \
-#     --mount=type=cache,target=/usr/local/cargo/git/db \
-#     --mount=type=cache,target=/usr/local/cargo/registry/ \
-# cargo build --locked --release && \
-# cp ./target/release/$APP_NAME /bin/server
+RUN cargo build --release && \
+    cp ./target/release/$APP_NAME /bin/server
 
 
 ################################################################################
@@ -71,11 +61,12 @@ RUN adduser \
 USER appuser
 
 # Copy the executable from the "build" stage.
+COPY --from=build /bin/server /bin/
 
-# COPY --from=build /bin/server /bin/
 
 # Expose the port that the application listens on.
 EXPOSE 3000
 
 # What the container should run when it is started.
-CMD ["tail","-f","/dev/null"]
+
+CMD ["/bin/server"]
