@@ -126,7 +126,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                     info!("Failed to parse location: {:?}", err);
                 }
             }
-            socket.bin(bin).emit("message-back", data).ok();
+            socket.bin(bin).emit("messageBack", data).ok();
         },
     );
 
@@ -164,7 +164,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     socket.on(
         "getPlayersWithLocations",
         move |socket: SocketRef, _: Data<Value>, _: Bin| {
-            info!("Responding with players and locations list");
+            println!("Responding with players and locations list");
             let players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
             let players_with_locations_json = serde_json::to_value(
                 players
@@ -173,7 +173,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                     .collect::<Vec<_>>(),
             )
             .unwrap();
-            info!(
+            println!(
                 "Players with Locations as JSON: {}",
                 players_with_locations_json
             );
