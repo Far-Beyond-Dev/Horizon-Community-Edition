@@ -17,8 +17,14 @@ ARG APP_NAME
 WORKDIR /app
 
 # Install host build dependencies.
-RUN apk add libressl-dev
-RUN apk add --no-cache clang lld musl-dev git pkgconfig
+RUN apk add libressl-dev clang clang-dev sqlite-dev go \
+    apk add --no-cache clang lld musl-dev git pkgconfig \
+    apk add --no-cache curl xz && \
+    curl -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.0/clang+llvm-17.0.0-x86_64-linux-gnu.tar.xz && \
+    tar -xf clang+llvm-17.0.0-x86_64-linux-gnu.tar.xz && \
+    mv clang+llvm-17.0.0-x86_64-linux-gnu /usr/local/clang && \
+    rm clang+llvm-17.0.0-x86_64-linux-gnu.tar.xz && \
+    echo 'export PATH=/usr/local/clang/bin:$PATH' >> /etc/profile.d/clang.sh
 
 # Build the application.
 # Leverage a cache mount to /usr/local/cargo/registry/
@@ -28,14 +34,16 @@ RUN apk add --no-cache clang lld musl-dev git pkgconfig
 # Leverage a bind mount to the src directory to avoid having to copy the
 # source code into the container. Once built, copy the executable to an
 # output directory before the cache mounted /app/target is unmounted.
-RUN --mount=type=bind,source=src,target=src \
-    --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
-    --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
-    --mount=type=cache,target=/app/target/ \
-    --mount=type=cache,target=/usr/local/cargo/git/db \
-    --mount=type=cache,target=/usr/local/cargo/registry/ \
-cargo build --locked --release && \
-cp ./target/release/$APP_NAME /bin/server
+
+# RUN --mount=type=bind,source=src,target=src \
+#     --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
+#     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
+#     --mount=type=cache,target=/app/target/ \
+#     --mount=type=cache,target=/usr/local/cargo/git/db \
+#     --mount=type=cache,target=/usr/local/cargo/registry/ \
+# cargo build --locked --release && \
+# cp ./target/release/$APP_NAME /bin/server
+
 
 ################################################################################
 # Create a new stage for running the application that contains the minimal
@@ -63,10 +71,11 @@ RUN adduser \
 USER appuser
 
 # Copy the executable from the "build" stage.
-COPY --from=build /bin/server /bin/
+
+# COPY --from=build /bin/server /bin/
 
 # Expose the port that the application listens on.
 EXPOSE 3000
 
 # What the container should run when it is started.
-CMD ["/bin/server"]
+CMD ["tail","-f","/dev/null"]
