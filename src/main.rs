@@ -122,7 +122,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                     let mut players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
                     if let Some(player) = players.iter_mut().find(|p: &&mut Player| p.socket.id == socket.id)
                     {
-                        player.transform.unwrap().location = Some(translation);
+                        player.transform.as_mut().unwrap().location = Some(translation);
                         info!("Updated player location: {:?}", player);
                     } else {
                         info!("Player not found: {}", socket.id);
@@ -176,10 +176,11 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
         move |socket: SocketRef, _: Data<Value>, _: Bin| {
             info!("Responding with players and locations list");
             let players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
+            println!("{}", Data.to_value());
             let players_with_locations_json = serde_json::to_value(
                 players
                     .iter()
-                    .map(|player| json!({ "id": player.socket.id, "location": player.transform.unwrap().location}))
+                    .map(|player| json!({ "id": player.socket.id, "transform": player.transform.as_ref().unwrap().location}))
                     .collect::<Vec<_>>(),
             )
             .unwrap();
