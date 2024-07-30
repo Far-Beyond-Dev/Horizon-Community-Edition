@@ -133,11 +133,12 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     //               \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
     // now:
     // {"transform":{"rotation":{"x":-0,"y":0,"z":-0.83580733212554525,"w":0.54902286251592336},"translation":{"x":-1931.1015330597675,"y":-474.28515171261336,"z":88.275007484621824},"scale3D":{"x":1,"y":1,"z":1}},"move Action Value":{"x":0,"y":0}}
+    
     socket.on(
-        "message-with-ack",
+        "printRaw",
         move |Data::<Value>(data), ack: AckSender, Bin(bin)| {
-            info!(
-                "Received event: message-with-ack with data: {:?} and bin: {:?}",
+            println!(
+                "Received event with data: {:?} and bin: {:?}",
                 data, bin
             );
             ack.bin(bin).send(data).ok();
@@ -170,14 +171,23 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 
     socket.on(
         "getPlayersWithLocations",
-        move |socket: SocketRef, _: Data<Value>, _: Bin| {
+        move |socket: SocketRef, Data::<Value>(data), ack: AckSender, Bin(bin)| {
             info!("Responding with players and locations list");
             let players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
-            println!("{}", Data.to_value());
+            
+            match data {
+                Value::Null => println!("Received event with null data"),
+                Value::String(s) => println!("Received event with string data: {}", s),
+                _ => println!("Received event with data: {:?}", data),
+            }
+            println!("Binary payload: {:?}", bin);
             let players_with_locations_json = serde_json::to_value(
                 players
                     .iter()
-                    .map(|player| json!({ "id": player.socket.id, "transform": player.transform.as_ref().unwrap().location}))
+                    .map(|player| json!({ 
+                        "id": player.socket.id, 
+                        "transform": player.transform.as_ref().unwrap().location
+                    }))
                     .collect::<Vec<_>>(),
             )
             .unwrap();
