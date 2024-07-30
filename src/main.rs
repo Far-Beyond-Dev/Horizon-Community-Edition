@@ -34,8 +34,11 @@ use viz::{future::ok, handler::ServiceHandler, serve, Response, Result, Router, 
 use TerraForge;
 use PebbleVault;
 
-// WARNING
-// Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
+//////////////////////////////////////////////////////////////
+//                    !!!! WARNING !!!!                     //
+// Import all structs (when we have a ton of structs this   //
+// will be very bad but should be fine for now)             //
+//////////////////////////////////////////////////////////////
 use structs::*;
 
 /////////////////////////////////////
@@ -48,7 +51,7 @@ mod structs;
 mod subsystems;
 
 ///////////////////////////////////////////////////////////////
-//                         WARNING                           //
+//                    !!!! WARNING !!!!                      //
 // on_connect runs every time a new player connects to the   //
 // server avoid putting memory hungry code here if possible! //
 ///////////////////////////////////////////////////////////////
@@ -130,7 +133,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     );
     // before:
     //              {"rotation":{"x":-0,"y":0,"z":-0.99757924131734277,"w":0.069538890505348144},"translation":{"x":-1343.2250368899206,"y":316.90470015219415,"z":88.275007484621824},"scale3D":{"x":1,"y":1,"z":1}}
-    //               \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+    //               ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
     // now:
     // {"transform":{"rotation":{"x":-0,"y":0,"z":-0.83580733212554525,"w":0.54902286251592336},"translation":{"x":-1931.1015330597675,"y":-474.28515171261336,"z":88.275007484621824},"scale3D":{"x":1,"y":1,"z":1}},"move Action Value":{"x":0,"y":0}}
     
