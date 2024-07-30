@@ -102,15 +102,8 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     //      "test", events::test::main(),
     //      );
 
-    let players_clone = Arc::clone(&players);
-    
-    /////////////////////////////////////////////////////////////////////////////////
-    //                              !!!TEMPORARY!!!                                //
-    //  see subsystems/player_data.rs this code will be moved there in the future  //
-    /////////////////////////////////////////////////////////////////////////////////
-
     socket.on(
-        "UpdatePlayerLocation",
+        "updatePlayerLocation",
         move |socket: SocketRef, Data::<Value>(data), Bin(bin)| {
             info!(
                 "Received event: UpdatePlayerLocation with data: {:?} and bin: {:?}",
