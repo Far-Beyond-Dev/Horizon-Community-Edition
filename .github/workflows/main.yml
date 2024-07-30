@@ -47,7 +47,7 @@ jobs:
         info:
           - { os: "ubuntu-latest", target: "x86_64-unknown-linux-gnu", cross: false, rust: "beta" }
           - { os: "macos-12", target: "x86_64-apple-darwin", cross: false, rust: "beta" }
-          - { os: "windows-2019", target: "x86_64-pc-windows-msvc", cross: false, rust: "beta" }
+#          - { os: "windows-2019", target: "x86_64-pc-windows-msvc", cross: false, rust: "beta" }
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.1
@@ -91,47 +91,47 @@ jobs:
           name: ${{ matrix.info.target }}-release
           path: target/${{ matrix.info.target }}/release/
 
-  release:
-    needs: pre-job
-    if: ${{ needs.pre-job.outputs.should_skip != 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4.1.1
-        with:
-          submodules: 'true'
-
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17
-        with:
-          toolchain: stable
-          components: rustfmt, clippy
-          target: x86_64-unknown-linux-gnu
-
-      - name: Build release
-        uses: ClementTsang/cargo-action@v0.0.5
-        with:
-          command: build
-          args: --release --target=x86_64-unknown-linux-gnu
-        env:
-          RUST_BACKTRACE: full
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ github.event.release.tag_name }}  # This should be a proper tag like 'v1.0.0'
-          release_name: Release ${{ github.event.release.tag_name }}
-          body: Release description
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: target/x86_64-unknown-linux-gnu/release/your-binary
-          asset_name: your-binary
-          asset_content_type: application/octet-stream
+#  release:
+#    needs: pre-job
+#    if: ${{ needs.pre-job.outputs.should_skip != 'true' }}
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4.1.1
+#        with:
+#          submodules: 'true'
+#
+#      - name: Set up Rust toolchain
+#        uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17
+#        with:
+#          toolchain: stable
+#          components: rustfmt, clippy
+#          target: x86_64-unknown-linux-gnu
+#
+#      - name: Build release
+#        uses: ClementTsang/cargo-action@v0.0.5
+#        with:
+#          command: build
+#          args: --release --target=x86_64-unknown-linux-gnu
+#        env:
+#          RUST_BACKTRACE: full
+#
+#      - name: Create Release
+#        id: create_release
+#        uses: actions/create-release@v1
+#        with:
+#          tag_name: ${{ github.event.release.tag_name }}  # This should be a proper tag like 'v1.0.0'
+#          release_name: Release ${{ github.event.release.tag_name }}
+#          body: Release description
+#          draft: false
+#          prerelease: false
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+#
+#      - name: Upload Release Asset
+#        uses: actions/upload-release-asset@v1
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: target/x86_64-unknown-linux-gnu/release/your-binary
+#          asset_name: your-binary
+#          asset_content_type: application/octet-stream
