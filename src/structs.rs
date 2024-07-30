@@ -141,12 +141,6 @@ impl ChildServer {
     //  }
 }
 
-// Define a struct for Player
-#[derive(Debug, Clone)]
-pub struct Player {
-    pub socket: SocketRef,
-    pub location: Option<Location>, // Optional to handle players who haven't sent location updates yet
-}
 
 /////////////////////////////////////////////////////////////////////////////
 //                         World object structs:                           //
@@ -156,35 +150,59 @@ pub struct Player {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Rotation {
-    w: f64,
-    x: f64,
-    y: f64,
-    z: f64,
+    pub x: i64,
+    pub y: i64,
+    pub z: i64,
+    pub w: i64,
 }
 
-// Define a struct for Scale of objects
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Scale {
-    x: f64,
-    y: f64,
-    z: f64,
-}
-
-// Define a struct for Translation of objects
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Translation {
-    x: f64,
-    y: f64,
-    z: f64,
+    pub x: i64,
+    pub y: i64,
+    pub z: i64,
 }
 
-// Define a struct for Location of objects
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Location {
-    rotation: Rotation,
-    scale3D: Scale, // Update field name to match the JSON data
-    translation: Translation,
+    pub x: i64,
+    pub y: i64,
+    pub z: i64,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Scale3D {
+    pub x: i64,
+    pub y: i64,
+    pub z: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Transform {
+    pub location: Option<Translation>,
+    pub rotation: Option<Rotation>,
+    pub translation: Option<Translation>,
+    pub scale3D: Scale3D,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MoveActionValue {
+    pub x: i64,
+    pub y: i64,
+}
+
+
+////////////////////////////////
+//  Define the player struct  //
+////////////////////////////////
+
+#[derive(Debug, Clone)]
+pub struct Player {
+    pub socket: SocketRef,
+    pub moveActionValue: Option<MoveActionValue>,
+    pub transform: Option<Transform>
+}
+
 
 pub struct PlayerManager {
     players: Mutex<HashMap<String, Arc<Notify>>>,

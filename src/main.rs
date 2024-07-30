@@ -57,10 +57,16 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     let id = socket.id.as_str();
     println!("Starting subsystems for player: {}", id);
 
+    ///////////////////////////////////////////////////////////////////
+    //
+    //
+    ///////////////////////////////////////////////////////////////////
+
     // Authenticate the user
-    let player = Player {
+    let player =  Player {
         socket: socket.clone(),
-        location: None, // Initialize with no location
+        moveActionValue: None,
+        transform: None
     };
 
     players.lock().unwrap().push(player);
@@ -111,12 +117,12 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                 data, bin
             );
             // Extract location from data
-            match serde_json::from_value::<Location>(data.clone()) {
-                Ok(location) => {
+            match serde_json::from_value::<Translation>(data.clone()) {
+                Ok(translation) => {
                     let mut players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
                     if let Some(player) = players.iter_mut().find(|p: &&mut Player| p.socket.id == socket.id)
                     {
-                        player.location = Some(location);
+                        player.transform.unwrap().location = Some(translation);
                         info!("Updated player location: {:?}", player);
                     } else {
                         info!("Player not found: {}", socket.id);
@@ -129,7 +135,11 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
             socket.bin(bin).emit("messageBack", data).ok();
         },
     );
-
+    // before:
+    //              {"rotation":{"x":-0,"y":0,"z":-0.99757924131734277,"w":0.069538890505348144},"translation":{"x":-1343.2250368899206,"y":316.90470015219415,"z":88.275007484621824},"scale3D":{"x":1,"y":1,"z":1}}
+    //              \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+    // now:
+    // {"transform":{"rotation":{"x":-0,"y":0,"z":-0.83580733212554525,"w":0.54902286251592336},"translation":{"x":-1931.1015330597675,"y":-474.28515171261336,"z":88.275007484621824},"scale3D":{"x":1,"y":1,"z":1}},"move Action Value":{"x":0,"y":0}}
     socket.on(
         "message-with-ack",
         move |Data::<Value>(data), ack: AckSender, Bin(bin)| {
@@ -164,16 +174,16 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     socket.on(
         "getPlayersWithLocations",
         move |socket: SocketRef, _: Data<Value>, _: Bin| {
-            println!("Responding with players and locations list");
+            info!("Responding with players and locations list");
             let players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
             let players_with_locations_json = serde_json::to_value(
                 players
                     .iter()
-                    .map(|player| json!({ "id": player.socket.id, "location": player.location }))
+                    .map(|player| json!({ "id": player.socket.id, "location": player.transform.unwrap().location}))
                     .collect::<Vec<_>>(),
             )
             .unwrap();
-            println!(
+            info!(
                 "Players with Locations as JSON: {}",
                 players_with_locations_json
             );
