@@ -76,10 +76,10 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     socket.emit("connected", true).ok();
     socket.emit("auth", true).ok();
          
-    /////////////////////////////////////////////////////////
-    // Setup external event listeners for the more complex //
-    // systems                                             //
-    /////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
+    //  Setup external event listeners for the more complex  //
+    //  systems                                              //
+    ///////////////////////////////////////////////////////////
     
 
     // subsystems::actors::main::main();
@@ -91,23 +91,23 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     subsystems::core::logging::init();
     subsystems::core::notifications::init();
     
-    ////////////////////////////////////////////////////////
-    // Register some additional custom events with our    // 
-    // socket server. Your custom events will be          //
-    // registered here as well as in the ./events/mod.rs  //
-    // file                                               //
-    ////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
+    //  Register some additional custom events with our    // 
+    //  socket server. Your custom events will be          //
+    //  registered here as well as in the ./events/mod.rs  //
+    //  file                                               //
+    /////////////////////////////////////////////////////////
     
-    //define_event!(socket, 
-    //    "test", events::test::main(),
-    //    );
+    //  define_event!(socket, 
+    //      "test", events::test::main(),
+    //      );
 
     let players_clone = Arc::clone(&players);
     
-    ////////////////////////////////////////////////////////////////////////////////
-    //                              !!!TEMPORARY!!!                               //
-    // see subsystems/player_data.rs this code will be moved there in the future  //
-    ////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
+    //                              !!!TEMPORARY!!!                                //
+    //  see subsystems/player_data.rs this code will be moved there in the future  //
+    /////////////////////////////////////////////////////////////////////////////////
 
     socket.on(
         "UpdatePlayerLocation",
@@ -137,7 +137,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     );
     // before:
     //              {"rotation":{"x":-0,"y":0,"z":-0.99757924131734277,"w":0.069538890505348144},"translation":{"x":-1343.2250368899206,"y":316.90470015219415,"z":88.275007484621824},"scale3D":{"x":1,"y":1,"z":1}}
-    //              \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+    //               \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
     // now:
     // {"transform":{"rotation":{"x":-0,"y":0,"z":-0.83580733212554525,"w":0.54902286251592336},"translation":{"x":-1931.1015330597675,"y":-474.28515171261336,"z":88.275007484621824},"scale3D":{"x":1,"y":1,"z":1}},"move Action Value":{"x":0,"y":0}}
     socket.on(
@@ -150,6 +150,10 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
             ack.bin(bin).send(data).ok();
         },
     );
+
+    /////////////////////////////////////////////////////////////////////////
+    //  Client sends this message when they need a list of online players  //
+    /////////////////////////////////////////////////////////////////////////
 
     let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
     socket.on(
