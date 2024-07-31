@@ -57,6 +57,37 @@ mod subsystems;
 ///////////////////////////////////////////////////////////////
 
 fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
+    fn parse_f64(n: &serde_json::Value) -> Result<f64, std::io::Error> {
+        match n.as_f64() {
+            Some(result) => Ok(result),
+            None => todo!("proper error handling"),
+        }
+    }
+
+    fn parse_rotation(parse: &serde_json::Value) -> (f64, f64, f64, f64) {
+        let w = parse_f64(&parse["w"]).unwrap();
+        let x = parse_f64(&parse["x"]).unwrap();
+        let y = parse_f64(&parse["y"]).unwrap();
+        let z = parse_f64(&parse["z"]).unwrap();
+
+        (w, x, y, z)
+    }
+
+    fn parse_xyz(parse: &serde_json::Value) -> (f64, f64, f64) {
+        let x = parse_f64(&parse["x"]).unwrap();
+        let y = parse_f64(&parse["y"]).unwrap();
+        let z = parse_f64(&parse["z"]).unwrap();
+
+        (x, y, z)
+    }
+
+    fn parse_xy(parse: &serde_json::Value) -> (f64, f64) {
+        let x = parse_f64(&parse["x"]).unwrap();
+        let y = parse_f64(&parse["y"]).unwrap();
+
+        (x, y)
+    }
+
     let id = socket.id.as_str();
     println!("Starting subsystems for player: {}", id);
 
