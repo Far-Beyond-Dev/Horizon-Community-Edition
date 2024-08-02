@@ -136,6 +136,8 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     //      "test", events::test::main(),
     //      );
 
+    let players_clone_updateloc: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
+    let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
     socket.on(
         "updatePlayerLocation",
         move |socket: SocketRef, Data::<Value>(data), Bin(bin)| {
@@ -143,12 +145,36 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                 "Received event: UpdatePlayerLocation with data: {:?} and bin: {:?}",
                 data, bin
             );
+            // example json; switch out later
+            let body = "{\"transform\":{\"rotation\":{\"x\":-0,\"y\":0,\"z\":-0.83580733212554525,\"w\":0.54902286251592336},\"translation\":{\"x\":-1931.1015330597675,\"y\":-474.28515171261336,\"z\":88.275007484621824},\"scale3D\":{\"x\":1,\"y\":1,\"z\":1}},\"move Action Value\":{\"x\":0,\"y\":0}}";
+            let parse: serde_json::Value = serde_json::from_str(&body).unwrap();
             // Extract location from data
             match serde_json::from_value::<Translation>(data.clone()) {
                 Ok(translation) => {
-                    let mut players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
+                    let mut players: std::sync::MutexGuard<Vec<Player>> = players_clone_updateloc.lock().unwrap();
                     if let Some(player) = players.iter_mut().find(|p: &&mut Player| p.socket.id == socket.id)
                     {
+                        // TODO; refactor
+                        let (rot_w, rot_x, rot_y, rot_z) = parse_rotation(&parse["transform"]["rotation"]);
+                        let (trans_x, trans_y, trans_z) = parse_xyz(&parse["transform"]["translation"]);
+                        let (scale3d_x, scale3d_y, scale3d_z) = parse_xyz(&parse["transform"]["scale3D"]);
+                        let (mv_action_value_x, mv_action_value_y) = parse_xy(&parse["move Action Value"]);
+
+                        // let mut transform = player.transform.unwrap();
+                        let mut transform = <std::option::Option<structs::Transform> as Clone>::clone(&player.transform).unwrap();
+                        let mut rotation = transform.rotation.unwrap();
+                        let mut translation = transform.translation.unwrap();
+                        rotation.w = rot_w;
+                        rotation.x = rot_x;
+                        rotation.y = rot_y;
+                        rotation.z = rot_z;
+                        translation.x = trans_x;
+                        translation.y = trans_y;
+                        translation.z = trans_z;
+
+                        transform.rotation = Some(rotation);
+                        transform.translation = Some(translation);
+
                         player.transform.as_mut().unwrap().location = Some(translation);
                         info!("Updated player location: {:?}", player);
                     } else {
@@ -183,7 +209,6 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     //  Client sends this message when they need a list of online players  //
     /////////////////////////////////////////////////////////////////////////
 
-    let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
     socket.on(
         "getOnlinePlayers",
         move |socket: SocketRef, _: Data<Value>, _: Bin| {

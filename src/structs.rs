@@ -165,31 +165,31 @@ impl ChildServer {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Rotation {
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
-    pub w: i64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub w: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Translation {
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Location {
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Scale3D {
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -202,8 +202,8 @@ pub struct Transform {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MoveActionValue {
-    pub x: i64,
-    pub y: i64,
+    pub x: f64,
+    pub y: f64,
 }
 
 
