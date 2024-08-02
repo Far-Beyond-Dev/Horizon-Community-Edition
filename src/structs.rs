@@ -164,49 +164,39 @@ impl ChildServer {
 /////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Rotation {
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
-    pub w: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Translation {
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Location {
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Scale3D {
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transform {
-    pub location: Option<Translation>,
-    pub rotation: Option<Rotation>,
-    pub translation: Option<Translation>,
+    pub rotation: Rotation,
+    pub translation: Translation,
     pub scale3D: Scale3D,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MoveActionValue {
-    pub x: i64,
-    pub y: i64,
+pub struct Rotation {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub w: f64,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Translation {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+}
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Scale3D {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MoveActionValue {
+    pub x: f64,
+    pub y: f64,
+}
 ////////////////////////////////
 //  Define the player struct  //
 ////////////////////////////////
@@ -267,7 +257,7 @@ pub struct Region {
 //////////////////////////////////////////////////////////////////////////
 
 pub struct Actor {
-    location: Location,
+    location: Transform,
     meta_tags: Vec<HashMap<String, String>>,
 }
 
@@ -327,3 +317,10 @@ pub struct Planet {
 //      };
 //  }
 //////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Deserialize)]
+pub struct Payload {
+    pub transform: Transform,
+    #[serde(rename = "move Action Value")]
+    pub move_action_value: MoveActionValue,
+}

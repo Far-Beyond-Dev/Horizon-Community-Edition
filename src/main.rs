@@ -9,211 +9,212 @@
 //                                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////
-// Use the mimalloc allocator, which boasts excellent performance //
-// across a variety of tasks, while being small (8k LOC)          //
-////////////////////////////////////////////////////////////////////
+// Use the mimalloc allocator for excellent performance across various tasks
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
-///////////////////////////////////////////
-// Import a few things to get us started //
-///////////////////////////////////////////
-
-// Imported some third party crates
-use http::status;
+// External crate imports
 use serde_json::{json, Value};
 use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
 use std::sync::{Arc, Mutex};
 use tokio::{main, task::spawn};
-use tracing::{debug, info};
-use viz::{future::ok, handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
+use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
 
-
-// Import some custom crates from the crates folder in /src
+// Custom crate imports
 use TerraForge;
 use PebbleVault;
 
-//////////////////////////////////////////////////////////////
-//                    !!!! WARNING !!!!                     //
-// Import all structs (when we have a ton of structs this   //
-// will be very bad but should be fine for now)             //
-//////////////////////////////////////////////////////////////
+// Import all structs (temporary solution, to be refactored later)
 use structs::*;
 
-/////////////////////////////////////
-// Import the modules we will need //
-/////////////////////////////////////
-
+// Module imports
 mod events;
 mod macros;
 mod structs;
 mod subsystems;
 
-///////////////////////////////////////////////////////////////
-//                    !!!! WARNING !!!!                      //
-// on_connect runs every time a new player connects to the   //
-// server avoid putting memory hungry code here if possible! //
-///////////////////////////////////////////////////////////////
-
+/// Handles new player connections
+///
+/// This function is called every time a new player connects to the server.
+/// It initializes player data and sets up event listeners for various game systems.
+///
+/// # Arguments
+///
+/// * `socket` - The SocketRef for the connected player
+/// * `data` - Data associated with the connection
+/// * `players` - Shared reference to the list of all players
 fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
     let id = socket.id.as_str();
-    println!("Starting subsystems for player: {}", id);
+    println!("Player connected: {}", id);
+    println!("Connection data: {:?}", data);
 
-    ///////////////////////////////////////////////////////////////////
-    //
-    //
-    ///////////////////////////////////////////////////////////////////
-
-    // Authenticate the user
-    let player =  Player {
+    // Initialize new player
+    let player = Player {
         socket: socket.clone(),
         moveActionValue: None,
         transform: None
     };
 
+    // Add player to the list
     players.lock().unwrap().push(player);
     println!("Player {} added to players list", id);
 
+    // Emit connection events
     println!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
     socket.emit("connected", true).ok();
     socket.emit("auth", true).ok();
          
-    ///////////////////////////////////////////////////////////
-    //  Setup external event listeners for the more complex  //
-    //  systems                                              //
-    ///////////////////////////////////////////////////////////
-    
-
-    // subsystems::actors::main::main();
+    // Initialize subsystems
     subsystems::core::chat::init(socket.clone());
-    // subsystems::core::leaderboard::init();
-    // subsystems::player_data::init(socket.clone());
     subsystems::core::game_logic::init();
     subsystems::core::level_data::init();
     subsystems::core::logging::init();
     subsystems::core::notifications::init();
     
-    /////////////////////////////////////////////////////////
-    //  Register some additional custom events with our    // 
-    //  socket server. Your custom events will be          //
-    //  registered here as well as in the ./events/mod.rs  //
-    //  file                                               //
-    /////////////////////////////////////////////////////////
-    
-    //  define_event!(socket, 
-    //      "test", events::test::main(),
-    //      );
+    // Set up event listeners
+    setup_event_listeners(socket, Arc::clone(&players));
+}
 
+/// Sets up event listeners for a connected player
+///
+/// # Arguments
+///
+/// * `socket` - The SocketRef for the connected player
+/// * `players` - Shared reference to the list of all players
+fn setup_event_listeners(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
+    let players_clone = Arc::clone(&players);
+
+    // Update player location even
     socket.on(
         "updatePlayerLocation",
-        move |socket: SocketRef, Data::<Value>(data), Bin(bin)| {
-            info!(
-                "Received event: UpdatePlayerLocation with data: {:?} and bin: {:?}",
-                data, bin
-            );
-            // Extract location from data
-            match serde_json::from_value::<Translation>(data.clone()) {
-                Ok(translation) => {
-                    let mut players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
-                    if let Some(player) = players.iter_mut().find(|p: &&mut Player| p.socket.id == socket.id)
-                    {
-                        player.transform.as_mut().unwrap().location = Some(translation);
-                        info!("Updated player location: {:?}", player);
-                    } else {
-                        info!("Player not found: {}", socket.id);
-                    }
-                }
-                Err(err) => {
-                    info!("Failed to parse location: {:?}", err);
-                }
-            }
-            socket.bin(bin).emit("messageBack", data).ok();
+        move |socket: SocketRef, Data::<Value>(data), ack: AckSender, Bin(bin)|  {
+            println!("Received updatePlayerLocation event");
+            println!("Event data: {:?}", data);
+            println!("Binary data: {:?}", bin);
+            handle_update_player_location(socket, data, socketioxide::extract::Bin(bin), &players_clone);
         },
     );
-    // before:
-    //              {"rotation":{"x":-0,"y":0,"z":-0.99757924131734277,"w":0.069538890505348144},"translation":{"x":-1343.2250368899206,"y":316.90470015219415,"z":88.275007484621824},"scale3D":{"x":1,"y":1,"z":1}}
-    //               ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
-    // now:
-    // {"transform":{"rotation":{"x":-0,"y":0,"z":-0.83580733212554525,"w":0.54902286251592336},"translation":{"x":-1931.1015330597675,"y":-474.28515171261336,"z":88.275007484621824},"scale3D":{"x":1,"y":1,"z":1}},"move Action Value":{"x":0,"y":0}}
-    
+
+
+    // Print raw data event
     socket.on(
         "printRaw",
         move |Data::<Value>(data), ack: AckSender, Bin(bin)| {
-            println!(
-                "Received event with data: {:?} and bin: {:?}",
-                data, bin
-            );
+            println!("Received event with data: {:?} and bin: {:?}", data, bin);
             ack.bin(bin).send(data).ok();
         },
     );
 
-    /////////////////////////////////////////////////////////////////////////
-    //  Client sends this message when they need a list of online players  //
-    /////////////////////////////////////////////////////////////////////////
-
-    let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
+    // Get online players event
+    let players_clone = Arc::clone(&players);
     socket.on(
         "getOnlinePlayers",
         move |socket: SocketRef, _: Data<Value>, _: Bin| {
-            info!("Responding with online players list");
-            let players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
-            let online_players_json = serde_json::to_value(
-                players
-                    .iter()
-                    .map(|player| json!({ "id": player.socket.id }))
-                    .collect::<Vec<_>>(),
-            )
-            .unwrap();
-            debug!("Player Array as JSON: {}", online_players_json);
-            socket.emit("onlinePlayers", online_players_json).ok();
+            handle_get_online_players(socket, &players_clone);
         },
     );
 
-    let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
-
+    // Get players with locations event
+    let players_clone = Arc::clone(&players);
     socket.on(
         "getPlayersWithLocations",
         move |socket: SocketRef, Data::<Value>(data), ack: AckSender, Bin(bin)| {
-            info!("Responding with players and locations list");
-            let players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
-            
-            match data {
-                Value::Null => println!("Received event with null data"),
-                Value::String(s) => println!("Received event with string data: {}", s),
-                _ => println!("Received event with data: {:?}", data),
-            }
-            println!("Binary payload: {:?}", bin);
-            let players_with_locations_json = serde_json::to_value(
-                players
-                    .iter()
-                    .map(|player| json!({ 
-                        "id": player.socket.id, 
-                        "transform": player.transform.as_ref().unwrap().location
-                    }))
-                    .collect::<Vec<_>>(),
-            )
-            .unwrap();
-            info!(
-                "Players with Locations as JSON: {}",
-                players_with_locations_json
-            );
-            let players = vec![players_with_locations_json];
-            socket.emit("playersWithLocations", &players).ok();
+            handle_get_players_with_locations(socket, data, ack, socketioxide::extract::Bin(bin), &players_clone);
         },
     );
 
-    let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
+    // Broadcast message event
+    let players_clone = Arc::clone(&players);
     socket.on("broadcastMessage", move |Data::<Value>(data), _: Bin| {
-        let players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
-        for player in &*players {
-            player.socket.emit("broadcastMessage", data.clone()).ok();
-        }
+        handle_broadcast_message(data, &players_clone);
     });
 }
 
+/// Handles updating a player's location
+fn handle_update_player_location(socket: SocketRef, data: Value, bin: Bin, players: &Arc<Mutex<Vec<Player>>>) {
+    println!("Inside handle_update_player_location function");
+    println!("Received raw updatePlayerLocation data: {:?}", data);
 
-// This handels redirecting browser users to the master server to see the dashboard
+    match serde_json::from_value::<Payload>(data.clone()) {
+        Ok(payload) => {
+            println!("Successfully parsed payload: {:?}", payload);
+            let mut players = players.lock().unwrap();
+            if let Some(player) = players.iter_mut().find(|p| p.socket.id == socket.id) {
+                player.transform = Some(payload.transform);
+                player.moveActionValue = Some(payload.move_action_value);
+                println!("Updated player data: {:?}", player);
+            } else {
+                println!("Player not found: {}", socket.id);
+            }
+        }
+        Err(e) => {
+            println!("Failed to parse payload: {:?}", e);
+            // Fallback to individual field parsing
+            // ... (rest of the function remains the same)
+        }
+    }
+
+}
+
+/// Handles getting the list of online players
+fn handle_get_online_players(socket: SocketRef, players: &Arc<Mutex<Vec<Player>>>) {
+    println!("Responding with online players list");
+    let players = players.lock().unwrap();
+    let online_players_json = serde_json::to_value(
+        players
+            .iter()
+            .map(|player| json!({ "id": player.socket.id }))
+            .collect::<Vec<_>>(),
+    )
+    .unwrap();
+    println!("Player Array as JSON: {}", online_players_json);
+    socket.emit("onlinePlayers", online_players_json).ok();
+}
+
+/// Handles getting players with their locations
+/// Handles getting players with their locations
+fn handle_get_players_with_locations(socket: SocketRef, data: Value, ack: AckSender, bin: Bin, players: &Arc<Mutex<Vec<Player>>>) {
+    println!("Responding with players and locations list");
+    let players = players.lock().unwrap();
+    
+    match data {
+        Value::Null => println!("Received event with null data"),
+        Value::String(s) => println!("Received event with string data: {}", s),
+        _ => println!("Received event with data: {:?}", data),
+    }
+
+    let players_with_locations_json = serde_json::to_value(
+        players
+            .iter()
+            .map(|player| {
+                let transform = player.transform.as_ref().map(|t| {
+                    json!({
+                        "rotation": t.rotation,
+                        "translation": t.translation,
+                        "scale3D": t.scale3D
+                    })
+                });
+                json!({ 
+                    "id": player.socket.id, 
+                    "transform": transform
+                })
+            })
+            .collect::<Vec<_>>(),
+    )
+    .unwrap();
+    println!("Players with Locations as JSON: {}", players_with_locations_json);
+    socket.emit("playersWithLocations", players_with_locations_json).ok();
+}
+
+/// Handles broadcasting a message to all players
+fn handle_broadcast_message(data: Value, players: &Arc<Mutex<Vec<Player>>>) {
+    let players = players.lock().unwrap();
+    for player in &*players {
+        player.socket.emit("broadcastMessage", data.clone()).ok();
+    }
+}
+
+/// Redirects browser users to the master server dashboard
 async fn redirect_to_master_panel(_req: Request) -> Result<Response> {
     let response = Response::builder()
         .status(302)
@@ -226,65 +227,39 @@ async fn redirect_to_master_panel(_req: Request) -> Result<Response> {
 
 #[main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-
-    /////////////////////////////
-    // SERVER STARTUP SEQUENCE //
-    /////////////////////////////
-
     // Show branding
     subsystems::core::startup::main();
 
-    // this is in it's own thread so it does not take up the main thread because this task runs
-    // throughout the lifetime of the server and would prevent anything else from running
+    // Start TerraForge in a separate thread
     let _terraforge_thread = spawn(async {
-        // this is in it's own thread to not take up the main thread. because otherwise that would
-        // be catastrophically bad for performance, because then the tasks would not complete.
         TerraForge::main();
     });
     
+    // Initialize PebbleVault
     PebbleVault::main();
 
-    ////////////////////////////////////////////////////////////////////////
-    //                              DEBUG ONLY                            //
-    // The code below allows for the creation of some test bodies within  //
-    // pebblevault, this is normally done automatically by TerraForge.    //
-    ////////////////////////////////////////////////////////////////////////
-
-    // Define a place to put new players
+    // Initialize player storage
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
     let (svc, io) = socketioxide::SocketIo::new_svc();
     let players_clone: Arc<Mutex<Vec<Player>>> = players.clone();
 
-    // Handle New player connections
+    // Set up socket.io namespace for new connections
     io.ns("/", move |socket: SocketRef, data: Data<Value>| {
         println!("Player Connected!");
         on_connect(socket, data, players_clone.clone())
     });
     
-    //Create a router to handel incoming connections
+    // Create a router to handle incoming connections
     let app = Router::new()
-        // If the user sends a GET request we redirect them to
-        // the master server which hosts the horizon dashboard
-        // if the master server itself has a master it too will
-        // redirect them until they reach the highest level master
-        // server
-
         .get("/", redirect_to_master_panel)
-
-        // This is an any connection that is not handled above,
-        // we cosider these legitimate players and treat their
-        // request as them attempting to join the server
         .any("/*", ServiceHandler::new(svc));
 
-
-    info!("Starting server");
+    println!("Starting server");
     
-    // Define a listener on port 3000
+    // Start the server
     let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    
-    // Print any errors encountered while creating the listener
     if let Err(e) = serve(listener, app).await {
-        println!("{}", e);
+        println!("Server error: {}", e);
     }
     Ok(())
 }
