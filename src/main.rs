@@ -160,10 +160,10 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                         let (scale3d_x, scale3d_y, scale3d_z) = parse_xyz(&parse["transform"]["scale3D"]);
                         let (mv_action_value_x, mv_action_value_y) = parse_xy(&parse["move Action Value"]);
 
-                        // let mut transform = player.transform.unwrap();
                         let mut transform = <std::option::Option<structs::Transform> as Clone>::clone(&player.transform).unwrap();
                         let mut rotation = transform.rotation.unwrap();
                         let mut translation = transform.translation.unwrap();
+                        let mut scale3d = transform.scale3D;
                         rotation.w = rot_w;
                         rotation.x = rot_x;
                         rotation.y = rot_y;
@@ -171,6 +171,12 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                         translation.x = trans_x;
                         translation.y = trans_y;
                         translation.z = trans_z;
+                        scale3d.x = scale3d_x;
+                        scale3d.y = scale3d_y;
+                        scale3d.z = scale3d_z;
+                        let mv = &mut player.moveActionValue.as_mut().unwrap();
+                        mv.x = mv_action_value_x;
+                        mv.y = mv_action_value_y;
 
                         transform.rotation = Some(rotation);
                         transform.translation = Some(translation);
