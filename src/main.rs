@@ -141,7 +141,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     socket.on(
         "updatePlayerLocation",
         move |socket: SocketRef, Data::<Value>(data), Bin(bin)| {
-            info!(
+            println!(
                 "Received event: UpdatePlayerLocation with data: {:?} and bin: {:?}",
                 data, bin
             );
@@ -164,6 +164,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                         let mut rotation = transform.rotation.unwrap();
                         let mut translation = transform.translation.unwrap();
                         let mut scale3d = transform.scale3D;
+
                         rotation.w = rot_w;
                         rotation.x = rot_x;
                         rotation.y = rot_y;
@@ -174,7 +175,9 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                         scale3d.x = scale3d_x;
                         scale3d.y = scale3d_y;
                         scale3d.z = scale3d_z;
+
                         let mv = &mut player.moveActionValue.as_mut().unwrap();
+
                         mv.x = mv_action_value_x;
                         mv.y = mv_action_value_y;
 
@@ -182,13 +185,13 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                         transform.translation = Some(translation);
 
                         player.transform.as_mut().unwrap().location = Some(translation);
-                        info!("Updated player location: {:?}", player);
+                        println!("Updated player location: {:?}", player);
                     } else {
-                        info!("Player not found: {}", socket.id);
+                        println!("Player not found: {}", socket.id);
                     }
                 }
                 Err(err) => {
-                    info!("Failed to parse location: {:?}", err);
+                    println!("Failed to parse location: {:?}", err);
                 }
             }
             socket.bin(bin).emit("messageBack", data).ok();
