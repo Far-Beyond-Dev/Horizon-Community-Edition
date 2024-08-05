@@ -1,150 +1,125 @@
 # Contributing to Horizon
 
-Thank you for your interest in contributing to Horizon! Your contributions are valuable to us. This document provides guidelines to help you get started, maintain consistency, and make the development process smooth for everyone involved.
+Thank you for your interest in contributing to Horizon! We value the contributions of our community members and are excited to have you on board. This document provides detailed guidelines to help you get started, maintain consistency, and make the development process smooth for everyone involved.
 
 ## Table of Contents
 
-- [Contributing to Horizon](#contributing-to-horizon)
-  - [Table of Contents](#table-of-contents)
-  - [Code of Conduct](#code-of-conduct)
-  - [Getting Started](#getting-started)
-    - [Prerequisites](#prerequisites)
-    - [Setting Up Your Development Environment](#setting-up-your-development-environment)
-  - [Making Changes](#making-changes)
-    - [Branching](#branching)
-    - [Coding Standards](#coding-standards)
-    - [Testing](#testing)
-  - [Submitting a Pull Request](#submitting-a-pull-request)
-  - [Code Reviews](#code-reviews)
-  - [Additional Resources](#additional-resources)
+1. [Code of Conduct](#code-of-conduct)
+2. [Getting Started](#getting-started)
+   - [Prerequisites](#prerequisites)
+   - [Setting Up Your Development Environment](#setting-up-your-development-environment)
+3. [Making Contributions](#making-contributions)
+   - [Finding Issues to Work On](#finding-issues-to-work-on)
+   - [Creating a Pull Request](#creating-a-pull-request)
+4. [Coding Standards](#coding-standards)
+5. [Testing](#testing)
+6. [Documentation](#documentation)
 
 ## Code of Conduct
 
-We are committed to fostering a welcoming and inclusive community. Please read and adhere to our [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a positive experience for all contributors.
+We are committed to fostering an inclusive and welcoming community. Please read and adhere to our [Code of Conduct](CODE_OF_CONDUCT.md) in all interactions.
 
 ## Getting Started
 
 ### Prerequisites
 
-Before you start contributing, ensure you have the following installed:
+Before you begin, ensure you have the following installed on your system:
 
-- [Docker](https://www.docker.com/get-started)
-- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- Basic knowledge of Docker and containerized applications.
+- Git
+- Docker
+- Visual Studio Code (VSCode)
 
 ### Setting Up Your Development Environment
 
-1. **Clone the Repository**
-
-   ```bash
-   git clone https://github.com/AstroVerse-Studios/Horizon.git
-   cd Horizon
+1. **Clone the repository:**
+   ```
+   git clone https://github.com/your-organization/horizon.git
+   cd horizon
    ```
 
-2. **Install Dependencies**
-
-   Navigate to the project directory and install dependencies using `npm` or `yarn`:
-
-   ```bash
-   ./setup.sh
+2. **Clone all submodules:**
+   ```
+   git submodule update --init --recursive
    ```
 
-3. **Build the Project**
+3. **Install Docker:**
+   If you haven't already, download and install Docker from [docker.com](https://www.docker.com/). Follow the installation instructions for your operating system.
 
-   Use Docker to build the Horizon service:
+4. **Start Docker engine:**
+   Ensure the Docker daemon is running on your system.
 
-   ```bash
-   docker-compose up --build
+5. **Install the Dev Containers extension in VSCode:**
+   - Open VSCode
+   - Go to the Extensions view (Ctrl+Shift+X or Cmd+Shift+X)
+   - Search for "Dev Containers"
+   - Click Install
+
+6. **Open the project in VSCode:**
+   ```
+   code .
    ```
 
-4. **Configure Environment Variables**
+7. **Open the Command Palette in VSCode:**
+   - Windows/Linux: Ctrl+Shift+P
+   - Mac: Cmd+Shift+P
 
-   Copy the sample configuration file and update the settings as necessary:
+8. **Set up the Dev Container:**
+   - Type "Open Folder in Container" in the Command Palette
+   - Select this option and press Enter
+   - VSCode will build and start the container (this may take a few minutes the first time)
 
-   ```bash
-   cp .env.sample .env
-   # Edit .env with your configurations
+9. **Run the installers script:**
+   Once inside the Dev Container, open a terminal in VSCode and run:
+   ```
+   ./installers-deb.sh
    ```
 
-## Making Changes
+You're now set up and ready to contribute to Horizon!
 
-### Branching
+## Making Contributions
 
-1. **Create a Branch**
+### Finding Issues to Work On
 
-   Always create a new branch for your changes. Use a descriptive name for your branch, e.g., `feature/add-new-endpoint` or `bugfix/resolve-issue`.
+- Check our [Issues](https://github.com/your-organization/horizon/issues) page for open tasks.
+- Look for issues tagged with `good first issue` or `help wanted`.
+- If you have an idea for a new feature, please open an issue to discuss it before starting work.
 
-   ```bash
-   git checkout -b feature/add-new-endpoint
+### Creating a Pull Request
+
+1. Create a new branch for your work:
+   ```
+   git checkout -b feature/your-feature-name
    ```
 
-2. **Commit Your Changes**
+2. Make your changes and commit them with a clear, descriptive commit message.
 
-   Write clear, concise commit messages. Follow the conventional commit format:
-
-   ```bash
-   git commit -m "feat: add new endpoint for user authentication"
+3. Push your branch to your fork:
+   ```
+   git push origin feature/your-feature-name
    ```
 
-### Coding Standards
+4. Go to the Horizon repository on GitHub and create a new Pull Request.
 
-Follow the coding standards used in the project. Ensure code consistency by adhering to:
+5. Fill out the Pull Request template with all relevant information.
 
-- **JavaScript/TypeScript:** Use `ESLint` with the project’s configuration.
-- **Python:** Follow PEP 8 guidelines.
+6. Wait for review. We aim to review PRs within a week.
 
-### Testing
+## Coding Standards
 
-1. **Run Tests**
+- Follow the existing code style in the project.
+- Use meaningful variable and function names.
+- Comment your code where necessary, especially for complex logic.
+- Write clean, readable, and maintainable code.
 
-   Ensure all tests pass before submitting your pull request:
+## Testing
 
-   ```bash
-   ./test.sh
-   ```
+- Ensure all GitHub actions checks pass before pubmitting your PR.
 
-2. **Write Tests**
+## Documentation
 
-   Add tests for new features or bug fixes. Use the existing testing framework and structure:
-
-   ```javascript
-   // Example test case
-   test('should return the correct result', () => {
-     expect(myFunction()).toBe(expectedValue);
-   });
-   ```
-
-## Submitting a Pull Request
-
-1. **Push Your Branch**
-
-   Push your changes to your forked repository:
-
-   ```bash
-   git push origin feature/add-new-endpoint
-   ```
-
-2. **Create a Pull Request**
-
-   Navigate to the GitHub repository and create a new pull request. Provide a clear description of your changes, reference any relevant issues, and explain the rationale behind your modifications.
-
-3. **Request Review**
-
-   Tag reviewers and ensure you follow any discussion threads. Be open to feedback and willing to make changes based on review comments.
-
-## Code Reviews
-
-- **Respond Promptly:** Address feedback and comments from reviewers promptly.
-- **Be Constructive:** Provide and accept constructive feedback.
-- **Maintain Respect:** Uphold a respectful and collaborative tone in all discussions.
-
-## Additional Resources
-
-- **Documentation:** [Horizon Documentation](https://github.com/Stars-Beyond/Horizon-Community-Edition/wiki)
-- **Community:** Join our Discord server or community forums.
-- **Issue Tracker:** Report bugs and request features on [GitHub Issues](https://github.com/Stars-Beyond/Horizon-Community-Edition/issues/new/choose).
+- Update relevant documentation when making changes.
+- If you're adding new features, include appropriate documentation.
+- Use clear and concise language in your documentation.
 
 
----
-
-Thank you for your contributions! Together, we can make Horizon an amazing game server solution.
+Thank you for contributing to Horizon! Your efforts help make our project better for everyone.
