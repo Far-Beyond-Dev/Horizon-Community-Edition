@@ -57,36 +57,36 @@ mod subsystems;
 ///////////////////////////////////////////////////////////////
 
 fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
-    fn parse_f64(n: &serde_json::Value) -> Result<f64, std::io::Error> {
-        match n.as_f64() {
-            Some(result) => Ok(result),
-            None => todo!("proper error handling"),
-        }
+    // Update the parsing functions to handle the data without Object wrappers
+
+    fn parse_rotation(parse: &Value) -> (f64, f64, f64, f64) {
+        (
+            parse_f64(&parse["w"]).unwrap_or(0.0),
+            parse_f64(&parse["x"]).unwrap_or(0.0),
+            parse_f64(&parse["y"]).unwrap_or(0.0),
+            parse_f64(&parse["z"]).unwrap_or(0.0),
+        )
     }
 
-    fn parse_rotation(parse: &serde_json::Value) -> (f64, f64, f64, f64) {
-        let w = parse_f64(&parse["w"]).unwrap();
-        let x = parse_f64(&parse["x"]).unwrap();
-        let y = parse_f64(&parse["y"]).unwrap();
-        let z = parse_f64(&parse["z"]).unwrap();
-
-        (w, x, y, z)
+    fn parse_xyz(parse: &Value) -> (f64, f64, f64) {
+        (
+            parse_f64(&parse["x"]).unwrap_or(0.0),
+            parse_f64(&parse["y"]).unwrap_or(0.0),
+            parse_f64(&parse["z"]).unwrap_or(0.0),
+        )
     }
 
-    fn parse_xyz(parse: &serde_json::Value) -> (f64, f64, f64) {
-        let x = parse_f64(&parse["x"]).unwrap();
-        let y = parse_f64(&parse["y"]).unwrap();
-        let z = parse_f64(&parse["z"]).unwrap();
-
-        (x, y, z)
+    fn parse_xy(parse: &Value) -> (f64, f64) {
+        (
+            parse_f64(&parse["x"]).unwrap_or(0.0),
+            parse_f64(&parse["y"]).unwrap_or(0.0),
+        )
     }
 
-    fn parse_xy(parse: &serde_json::Value) -> (f64, f64) {
-        let x = parse_f64(&parse["x"]).unwrap();
-        let y = parse_f64(&parse["y"]).unwrap();
-
-        (x, y)
+    fn parse_f64(n: &Value) -> Result<f64, std::io::Error> {
+        n.as_f64().ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid f64 value"))
     }
+
 
     let id = socket.id.as_str();
     println!("Starting subsystems for player: {}", id);
@@ -145,72 +145,64 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
                 "Received event: UpdatePlayerLocation with data: {:?} and bin: {:?}",
                 data, bin
             );
-            // example json; switch out later
-            let body = "{\"transform\":{\"rotation\":{\"x\":-0,\"y\":0,\"z\":-0.83580733212554525,\"w\":0.54902286251592336},\"translation\":{\"x\":-1931.1015330597675,\"y\":-474.28515171261336,\"z\":88.275007484621824},\"scale3D\":{\"x\":1,\"y\":1,\"z\":1}},\"move Action Value\":{\"x\":0,\"y\":0}}";
-            let parse: serde_json::Value = serde_json::from_str(&body).unwrap();
+        
             // Extract location from data
-            match serde_json::from_value::<Translation>(data.clone()) {
-                Ok(translation) => {
-                    let mut players: std::sync::MutexGuard<Vec<Player>> = players_clone_updateloc.lock().unwrap();
-                    if let Some(player) = players.iter_mut().find(|p: &&mut Player| p.socket.id == socket.id)
-                    {
-                        // TODO; refactor
-                        let (rot_w, rot_x, rot_y, rot_z) = parse_rotation(&parse["transform"]["rotation"]);
-                        let (trans_x, trans_y, trans_z) = parse_xyz(&parse["transform"]["translation"]);
-                        let (scale3d_x, scale3d_y, scale3d_z) = parse_xyz(&parse["transform"]["scale3D"]);
-                        let (mv_action_value_x, mv_action_value_y) = parse_xy(&parse["move Action Value"]);
-
-                        let mut transform = <std::option::Option<structs::Transform> as Clone>::clone(&player.transform).unwrap();
-                        let mut rotation = transform.rotation.unwrap();
-                        let mut translation = transform.translation.unwrap();
-                        let mut scale3d = transform.scale3D;
-
-                        rotation.w = rot_w;
-                        rotation.x = rot_x;
-                        rotation.y = rot_y;
-                        rotation.z = rot_z;
-                        translation.x = trans_x;
-                        translation.y = trans_y;
-                        translation.z = trans_z;
-                        scale3d.x = scale3d_x;
-                        scale3d.y = scale3d_y;
-                        scale3d.z = scale3d_z;
-
-                        let mv = &mut player.moveActionValue.as_mut().unwrap();
-
-                        mv.x = mv_action_value_x;
-                        mv.y = mv_action_value_y;
-
-                        transform.rotation = Some(rotation);
-                        transform.translation = Some(translation);
-
-                        player.transform.as_mut().unwrap().location = Some(translation);
+            if let Some(transform) = data.get("transform").and_then(|t| t.as_object()) {
+                let mut players: std::sync::MutexGuard<Vec<Player>> = players_clone_updateloc.lock().unwrap();
+                if let Some(player) = players.iter_mut().find(|p: &&mut Player| p.socket.id == socket.id)
+                {
+                    // Do the actual parsing
+                    if let (Some(rotation), Some(translation), Some(scale3d)) = (
+                        transform.get("rotation"),
+                        transform.get("translation"),
+                        transform.get("scale3D")
+                    ) {
+                        let (rot_w, rot_x, rot_y, rot_z) = parse_rotation(rotation);
+                        let (trans_x, trans_y, trans_z) = parse_xyz(translation);
+                        let (scale3d_x, scale3d_y, scale3d_z) = parse_xyz(scale3d);
+                    
+                        // Create or update the transform
+                        let mut transform = player.transform.take().unwrap_or_else(|| structs::Transform {
+                            rotation: None,
+                            translation: None,
+                            scale3D: structs::Scale3D { x: 1.0, y: 1.0, z: 1.0 },
+                            location: None,
+                        });
+                    
+                        // Update rotation
+                        transform.rotation = Some(structs::Rotation { w: rot_w, x: rot_x, y: rot_y, z: rot_z });
+                    
+                        // Update translation
+                        let new_translation = structs::Translation { x: trans_x, y: trans_y, z: trans_z };
+                        transform.translation = Some(new_translation.clone());
+                        transform.location = Some(new_translation);
+                    
+                        // Update scale3D
+                        transform.scale3D = structs::Scale3D { x: scale3d_x, y: scale3d_y, z: scale3d_z };
+                    
+                        // Update the player's transform
+                        player.transform = Some(transform);
+                    
+                        // Parse player movement axis values
+                        if let Some(move_action) = data.get("move Action Value") {
+                            let (mv_action_value_x, mv_action_value_y) = parse_xy(move_action);
+                            player.moveActionValue = Some(structs::MoveActionValue { x: mv_action_value_x, y: mv_action_value_y });
+                        }
+                    
+                        // Print a debug statement
                         println!("Updated player location: {:?}", player);
                     } else {
-                        println!("Player not found: {}", socket.id);
+                        println!("Invalid transform data structure");
                     }
+                } else {
+                    println!("Player not found: {}", socket.id);
                 }
-                Err(err) => {
-                    println!("Failed to parse location: {:?}", err);
-                }
+            } else {
+                println!("Failed to parse location: transform field not found or is not an object");
             }
+        
+            // Send a reply containing the correct data
             socket.bin(bin).emit("messageBack", data).ok();
-        },
-    );
-    // before:
-    //              {"rotation":{"x":-0,"y":0,"z":-0.99757924131734277,"w":0.069538890505348144},"translation":{"x":-1343.2250368899206,"y":316.90470015219415,"z":88.275007484621824},"scale3D":{"x":1,"y":1,"z":1}}
-    //               ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
-    // now:
-    // {"transform":{"rotation":{"x":-0,"y":0,"z":-0.83580733212554525,"w":0.54902286251592336},"translation":{"x":-1931.1015330597675,"y":-474.28515171261336,"z":88.275007484621824},"scale3D":{"x":1,"y":1,"z":1}},"move Action Value":{"x":0,"y":0}}
-    
-    socket.on(
-        "printRaw",
-        move |Data::<Value>(data), ack: AckSender, Bin(bin)| {
-            println!(
-                "Received event with data: {:?} and bin: {:?}",
-                data, bin
-            );
-            ack.bin(bin).send(data).ok();
         },
     );
 
