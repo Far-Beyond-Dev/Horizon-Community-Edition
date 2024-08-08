@@ -2,12 +2,43 @@ services:
   horizon-game-server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.rust
     ports:
       - "3000:3000"
       - "3001:3001"
     environment:
       - RUST_LOG=info
+    networks:
+      - horizon-network
+
+  horizon-memory-db:
+    build:
+      context: .
+      dockerfile: Dockerfile.golang
+    restart: always
+    depends_on:
+      - horizon-game-server
+    ports:
+      - "3003:3003"
+    environment:
+      - DB_USER=admin
+      - DB_PASSWORD=secret
+    volumes:
+      - memory-db-data:/var/lib/horizon-memory-db
+    networks:
+      - horizon-network
+
+  horizon-physics-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    restart: always
+    depends_on:
+      - horizon-memory-db
+    ports:
+      - "3002:3002"
+    environment:
+      - PYTHONUNBUFFERED=1
     networks:
       - horizon-network
 
