@@ -1,3 +1,15 @@
+///////////////////////////////////////////////////////////////
+//                       INFORMATION                         //
+//  This file contains Horizon's global struct definitions.  //
+//  Because of this anything that is public in this file     //
+//  can be imported by any part of Horizon using             //
+//  crate::structs::                                         //
+///////////////////////////////////////////////////////////////
+//                    !!!! WARNING !!!!                      //
+//  Anything made public in this file *WILL* me imported by  //
+//  main.rs                                                  //
+///////////////////////////////////////////////////////////////
+
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use socketioxide::extract::SocketRef;
@@ -104,6 +116,9 @@ impl ChildServer {
         neighbors
     }
 
+
+    // TODO: Finish this implementation and move to its own file
+    
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     // * Event Transmission:                                                                            //
     // - After determining the target neighbors, the child server sends the event to the master server. //
@@ -141,12 +156,6 @@ impl ChildServer {
     //  }
 }
 
-// Define a struct for Player
-#[derive(Debug, Clone)]
-pub struct Player {
-    pub socket: SocketRef,
-    pub location: Option<Location>, // Optional to handle players who haven't sent location updates yet
-}
 
 /////////////////////////////////////////////////////////////////////////////
 //                         World object structs:                           //
@@ -156,35 +165,59 @@ pub struct Player {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Rotation {
-    w: f64,
-    x: f64,
-    y: f64,
-    z: f64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub w: f64,
 }
 
-// Define a struct for Scale of objects
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Scale {
-    x: f64,
-    y: f64,
-    z: f64,
-}
-
-// Define a struct for Translation of objects
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Translation {
-    x: f64,
-    y: f64,
-    z: f64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
-// Define a struct for Location of objects
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Location {
-    rotation: Rotation,
-    scale3D: Scale, // Update field name to match the JSON data
-    translation: Translation,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Scale3D {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Transform {
+    pub location: Option<Translation>,
+    pub rotation: Option<Rotation>,
+    pub translation: Option<Translation>,
+    pub scale3D: Scale3D,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MoveActionValue {
+    pub x: f64,
+    pub y: f64,
+}
+
+
+////////////////////////////////
+//  Define the player struct  //
+////////////////////////////////
+
+#[derive(Debug, Clone)]
+pub struct Player {
+    pub socket: SocketRef,
+    pub moveActionValue: Option<MoveActionValue>,
+    pub transform: Option<Transform>
+}
+
 
 pub struct PlayerManager {
     players: Mutex<HashMap<String, Arc<Notify>>>,

@@ -34,8 +34,11 @@ use viz::{future::ok, handler::ServiceHandler, serve, Response, Result, Router, 
 use TerraForge;
 use PebbleVault;
 
-// WARNING
-// Import all structs (when we have a ton of structs this will be very bad but should be fine for now)
+//////////////////////////////////////////////////////////////
+//                    !!!! WARNING !!!!                     //
+// Import all structs (when we have a ton of structs this   //
+// will be very bad but should be fine for now)             //
+//////////////////////////////////////////////////////////////
 use structs::*;
 
 /////////////////////////////////////
@@ -48,19 +51,56 @@ mod structs;
 mod subsystems;
 
 ///////////////////////////////////////////////////////////////
-//                         WARNING                           //
+//                    !!!! WARNING !!!!                      //
 // on_connect runs every time a new player connects to the   //
 // server avoid putting memory hungry code here if possible! //
 ///////////////////////////////////////////////////////////////
 
 fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
+    // Update the parsing functions to handle the data without Object wrappers
+
+    fn parse_rotation(parse: &Value) -> (f64, f64, f64, f64) {
+        (
+            parse_f64(&parse["w"]).unwrap_or(0.0),
+            parse_f64(&parse["x"]).unwrap_or(0.0),
+            parse_f64(&parse["y"]).unwrap_or(0.0),
+            parse_f64(&parse["z"]).unwrap_or(0.0),
+        )
+    }
+
+    fn parse_xyz(parse: &Value) -> (f64, f64, f64) {
+        (
+            parse_f64(&parse["x"]).unwrap_or(0.0),
+            parse_f64(&parse["y"]).unwrap_or(0.0),
+            parse_f64(&parse["z"]).unwrap_or(0.0),
+        )
+    }
+
+    fn parse_xy(parse: &Value) -> (f64, f64) {
+        (
+            parse_f64(&parse["x"]).unwrap_or(0.0),
+            parse_f64(&parse["y"]).unwrap_or(0.0),
+        )
+    }
+
+    fn parse_f64(n: &Value) -> Result<f64, std::io::Error> {
+        n.as_f64().ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid f64 value"))
+    }
+
+
     let id = socket.id.as_str();
     println!("Starting subsystems for player: {}", id);
 
+    ///////////////////////////////////////////////////////////////////
+    //
+    //
+    ///////////////////////////////////////////////////////////////////
+
     // Authenticate the user
-    let player = Player {
+    let player =  Player {
         socket: socket.clone(),
-        location: None, // Initialize with no location
+        moveActionValue: None,
+        transform: None
     };
 
     players.lock().unwrap().push(player);
@@ -70,10 +110,10 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     socket.emit("connected", true).ok();
     socket.emit("auth", true).ok();
          
-    /////////////////////////////////////////////////////////
-    // Setup external event listeners for the more complex //
-    // systems                                             //
-    /////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
+    //  Setup external event listeners for the more complex  //
+    //  systems                                              //
+    ///////////////////////////////////////////////////////////
     
 
     // subsystems::actors::main::main();
@@ -85,63 +125,91 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     subsystems::core::logging::init();
     subsystems::core::notifications::init();
     
-    ////////////////////////////////////////////////////////
-    // Register some additional custom events with our    // 
-    // socket server. Your custom events will be          //
-    // registered here as well as in the ./events/mod.rs  //
-    // file                                               //
-    ////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
+    //  Register some additional custom events with our    // 
+    //  socket server. Your custom events will be          //
+    //  registered here as well as in the ./events/mod.rs  //
+    //  file                                               //
+    /////////////////////////////////////////////////////////
     
-    //define_event!(socket, 
-    //    "test", events::test::main(),
-    //    );
+    //  define_event!(socket, 
+    //      "test", events::test::main(),
+    //      );
 
-    let players_clone = Arc::clone(&players);
-    
-    ////////////////////////////////////////////////////////////////////////////////
-    //                              !!!TEMPORARY!!!                               //
-    // see subsystems/player_data.rs this code will be moved there in the future  //
-    ////////////////////////////////////////////////////////////////////////////////
-
+    let players_clone_updateloc: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
+    let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
     socket.on(
-        "UpdatePlayerLocation",
+        "updatePlayerLocation",
         move |socket: SocketRef, Data::<Value>(data), Bin(bin)| {
-            info!(
+            println!(
                 "Received event: UpdatePlayerLocation with data: {:?} and bin: {:?}",
                 data, bin
             );
+        
             // Extract location from data
-            match serde_json::from_value::<Location>(data.clone()) {
-                Ok(location) => {
-                    let mut players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
-                    if let Some(player) = players.iter_mut().find(|p: &&mut Player| p.socket.id == socket.id)
-                    {
-                        player.location = Some(location);
-                        info!("Updated player location: {:?}", player);
+            if let Some(transform) = data.get("transform").and_then(|t| t.as_object()) {
+                let mut players: std::sync::MutexGuard<Vec<Player>> = players_clone_updateloc.lock().unwrap();
+                if let Some(player) = players.iter_mut().find(|p: &&mut Player| p.socket.id == socket.id)
+                {
+                    // Do the actual parsing
+                    if let (Some(rotation), Some(translation), Some(scale3d)) = (
+                        transform.get("rotation"),
+                        transform.get("translation"),
+                        transform.get("scale3D")
+                    ) {
+                        let (rot_w, rot_x, rot_y, rot_z) = parse_rotation(rotation);
+                        let (trans_x, trans_y, trans_z) = parse_xyz(translation);
+                        let (scale3d_x, scale3d_y, scale3d_z) = parse_xyz(scale3d);
+                    
+                        // Create or update the transform
+                        let mut transform = player.transform.take().unwrap_or_else(|| structs::Transform {
+                            rotation: None,
+                            translation: None,
+                            scale3D: structs::Scale3D { x: 1.0, y: 1.0, z: 1.0 },
+                            location: None,
+                        });
+                    
+                        // Update rotation
+                        transform.rotation = Some(structs::Rotation { w: rot_w, x: rot_x, y: rot_y, z: rot_z });
+                    
+                        // Update translation
+                        let new_translation = structs::Translation { x: trans_x, y: trans_y, z: trans_z };
+                        transform.translation = Some(new_translation.clone());
+                        transform.location = Some(new_translation);
+                    
+                        // Update scale3D
+                        transform.scale3D = structs::Scale3D { x: scale3d_x, y: scale3d_y, z: scale3d_z };
+                    
+                        // Update the player's transform
+                        player.transform = Some(transform);
+                    
+                        // Parse player movement axis values
+                        if let Some(move_action) = data.get("move Action Value") {
+                            let (mv_action_value_x, mv_action_value_y) = parse_xy(move_action);
+                            player.moveActionValue = Some(structs::MoveActionValue { x: mv_action_value_x, y: mv_action_value_y });
+                        }
+                    
+                        // Print a debug statement
+                        println!("Updated player location: {:?}", player);
                     } else {
-                        info!("Player not found: {}", socket.id);
+                        println!("Invalid transform data structure");
                     }
+                } else {
+                    println!("Player not found: {}", socket.id);
                 }
-                Err(err) => {
-                    info!("Failed to parse location: {:?}", err);
-                }
+            } else {
+                println!("Failed to parse location: transform field not found or is not an object");
             }
+        
+            // Send a reply containing the correct data
             socket.bin(bin).emit("messageBack", data).ok();
         },
     );
 
-    socket.on(
-        "message-with-ack",
-        move |Data::<Value>(data), ack: AckSender, Bin(bin)| {
-            info!(
-                "Received event: message-with-ack with data: {:?} and bin: {:?}",
-                data, bin
-            );
-            ack.bin(bin).send(data).ok();
-        },
-    );
+    /////////////////////////////////////////////////////////////////////////
+    //  Client sends this message when they need a list of online players  //
+    /////////////////////////////////////////////////////////////////////////
 
-    let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
     socket.on(
         "getOnlinePlayers",
         move |socket: SocketRef, _: Data<Value>, _: Bin| {
@@ -163,17 +231,27 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 
     socket.on(
         "getPlayersWithLocations",
-        move |socket: SocketRef, _: Data<Value>, _: Bin| {
-            println!("Responding with players and locations list");
+        move |socket: SocketRef, Data::<Value>(data), ack: AckSender, Bin(bin)| {
+            info!("Responding with players and locations list");
             let players: std::sync::MutexGuard<Vec<Player>> = players_clone.lock().unwrap();
+            
+            match data {
+                Value::Null => println!("Received event with null data"),
+                Value::String(s) => println!("Received event with string data: {}", s),
+                _ => println!("Received event with data: {:?}", data),
+            }
+            println!("Binary payload: {:?}", bin);
             let players_with_locations_json = serde_json::to_value(
                 players
                     .iter()
-                    .map(|player| json!({ "id": player.socket.id, "location": player.location }))
+                    .map(|player| json!({ 
+                        "id": player.socket.id, 
+                        "transform": player.transform.as_ref().unwrap().location
+                    }))
                     .collect::<Vec<_>>(),
             )
             .unwrap();
-            println!(
+            info!(
                 "Players with Locations as JSON: {}",
                 players_with_locations_json
             );
