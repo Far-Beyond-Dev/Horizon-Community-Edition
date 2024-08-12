@@ -69,9 +69,10 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     };
 
     players.lock().unwrap().push(player);
-    println!("Player {} added to players list", id);
 
+    println!("Player {} added to players list", id);
     println!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
+
     socket.emit("connected", true).ok();
     socket.emit("auth", true).ok();
          
