@@ -100,8 +100,36 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     
 
     // Register events using the definevent macro
-    define_event!(socket, 
-        "test", events::test::main(),
+    // N.B. due to issues that i haven't been able to track down, the define_event! macro may not
+    // work. however, please do try to use it first. if it breaks, then use socket.on
+    // i will fix the macro when i get back; coding on a phone isnt very ergonomic
+    // define_event!(socket, 
+    //     "test", events::test::main(),
+    // );
+
+    let players_clone = Arc::clone(&players);
+    socket.on("updatePlayerLocation", move |s, d|
+        update_player_location(s, d, players_clone.clone()),
+    );
+
+    let players_clone = Arc::clone(&players);
+    socket.on("getOnlinePlayers", move |s|
+        get_online_players(s, players_clone.clone()),
+    );
+
+    let players_clone = Arc::clone(&players);
+    socket.on("getPlayersWithLocations", move |s, d|
+        get_players_with_locations(s, d, players_clone.clone()),
+    );
+
+    let players_clone = Arc::clone(&players);
+    socket.on("getPlayersWithLocations", move |s, d| {
+        get_players_with_locations(s, d, players_clone.clone())
+    });
+
+    let players_clone = Arc::clone(&players);
+    socket.on("broadcastMessage", move |d|
+        broadcast_message(d, players_clone.clone()),
     );
 
     // Register events using the socketioxide API directly
