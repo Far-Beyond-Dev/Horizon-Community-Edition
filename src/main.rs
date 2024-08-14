@@ -65,7 +65,8 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     let player =  Player {
         socket: socket.clone(),
         moveActionValue: None,
-        transform: None
+        transform: None,
+        controlRotation: None
     };
 
     players.lock().unwrap().push(player);

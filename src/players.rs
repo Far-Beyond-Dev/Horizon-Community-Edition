@@ -42,7 +42,7 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc
             
                 // Update scale3D
                 transform.scale3D = Scale3D { x: scale3d_x, y: scale3d_y, z: scale3d_z };
-            
+
                 // Update the player's transform
                 player.transform = Some(transform);
             
@@ -51,7 +51,10 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc
                     let (mv_action_value_x, mv_action_value_y) = parse_xy(move_action);
                     player.moveActionValue = Some(MoveActionValue { x: mv_action_value_x, y: mv_action_value_y });
                 }
-            
+
+                if let Some(controlRotation) = data.0.get("control Rotation") {
+                    let (ctrl_rot_x, ctrl_rot_y, ctrl_rot_z) = parse_xyz(controlRotation);
+                }
                 // Print a debug statement
                 println!("Updated player location: {:?}", player);
             } else {
@@ -91,8 +94,10 @@ pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players:
         players
             .iter()
             .map(|player| json!({ 
-                "id": player.socket.id, 
-                "transform": player.transform.as_ref().unwrap().location
+               "Id": player.socket.id, 
+                "Transform": player.transform.as_ref().unwrap(),
+                "Move Action Value": player.moveActionValue.as_ref().unwrap(),
+                "    Rotation": player.controlRotation.as_ref().unwrap()
             }))
             .collect::<Vec<_>>(),
     )

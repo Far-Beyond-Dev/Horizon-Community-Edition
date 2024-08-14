@@ -39,6 +39,7 @@ pub struct ChildServer {
     socket: UdpSocket,
 }
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // * The `ChildServer` struct contains methods for:                                             //
 // - Initializing the server with its ID, coordinate, parent server address, and local address. //
@@ -215,7 +216,8 @@ pub struct MoveActionValue {
 pub struct Player {
     pub socket: SocketRef,
     pub moveActionValue: Option<MoveActionValue>,
-    pub transform: Option<Transform>
+    pub transform: Option<Transform>,
+    pub controlRotation: Option<Rotation>
 }
 
 
@@ -260,6 +262,7 @@ pub struct Region {
     chunks: i64,
 }
 
+
 //////////////////////////////////////////////////////////////////////////
 //                               Actor Structs                          //
 // The actor structs describee the data attatched to an actor, this may //
@@ -276,7 +279,6 @@ pub struct Planet {
     object_file: Vec<Region>,
 }
 
- 
  
 ///////////////////////////////// Example planet ////////////////////////////////
 //  fn main() {
