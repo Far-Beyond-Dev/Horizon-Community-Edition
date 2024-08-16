@@ -28,7 +28,6 @@ use tokio::{main, task::spawn};
 use tracing::{debug, info};
 use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
 
-
 // Import some custom crates from the crates folder in /src
 use TerraForge;
 use PebbleVault;
@@ -57,24 +56,47 @@ mod subsystems;
 // server avoid putting memory hungry code here if possible! //
 ///////////////////////////////////////////////////////////////
 
+/// Handles new player connections to the server.
+///
+/// This function is called every time a new player connects to the server. It initializes
+/// player data, sets up event listeners, and starts necessary subsystems.
+///
+/// # Arguments
+///
+/// * `socket` - A reference to the socket connection for the new player.
+/// * `data` - Data received with the connection event.
+/// * `players` - A thread-safe reference to the collection of all connected players.
+///
+/// # Warning
+///
+/// Avoid putting memory-hungry code in this function as it runs for every new connection.
 fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
+    // Send an optional event to the player that they can hook into to run some post-connection functions
+    socket.emit("connected", true).ok();
+
+    // Fetch ID from socket data
     let id = socket.id.as_str();
-    println!("Starting subsystems for player: {}", id);
+
+    // Display join message in log
+    println!("Welcome player {} to the game!", id);
 
     // Authenticate the user
-    let player =  Player {
+    let player = Player {
         socket: socket.clone(),
         moveActionValue: None,
         transform: None,
         controlRotation: None
     };
+    // Init the player-related event handlers
+    players::init(socket.clone());
 
     players.lock().unwrap().push(player);
 
+    // Display player join debug messages
     println!("Player {} added to players list", id);
     println!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
 
-    socket.emit("connected", true).ok();
+    // Send an optional event to the player that they can hook into to run some post-authentication functions
     socket.emit("auth", true).ok();
          
     ///////////////////////////////////////////////////////////
@@ -82,81 +104,36 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     //  systems                                              //
     ///////////////////////////////////////////////////////////
     
-
-    // subsystems::actors::main::main();
+    // Initialize extra subsystems
     subsystems::core::chat::init(socket.clone());
-    // subsystems::core::leaderboard::init();
-    // subsystems::player_data::init(socket.clone());
     subsystems::core::game_logic::init();
     subsystems::core::level_data::init();
     subsystems::core::logging::init();
     subsystems::core::notifications::init();
-    
-    /////////////////////////////////////////////////////////
-    //  Register some additional custom events with our    // 
-    //  socket server. Your custom events will be          //
-    //  registered here as well as in the ./events/mod.rs  //
-    //  file                                               //
-    /////////////////////////////////////////////////////////
-    
 
-    // Register events using the definevent macro
-    // N.B. due to issues that i haven't been able to track down, the define_event! macro may not
-    // work. however, please do try to use it first. if it breaks, then use socket.on
-    // i will fix the macro when i get back; coding on a phone isnt very ergonomic
-    // define_event!(socket, 
-    //     "test", events::test::main(),
-    // );
+    /////////////////////////////////////////////////////////////////////////////
+    /////////         DO NOT INIT SUBSYSTEMS BEYOND THIS POINT      /////////////
+    /////////  The player will now begin the client-side game logic /////////////
+    /////////////////////////////////////////////////////////////////////////////
 
-    let players_clone = Arc::clone(&players);
-    socket.on("updatePlayerLocation", move |s, d|
-        update_player_location(s, d, players_clone.clone()),
-    );
+    // Send an optional event to the player that they can hook into to start the game client side
+    // This event confirms that the server is fully ready to handle data from the player
+    socket.emit("auth", true).ok();
 
-    let players_clone = Arc::clone(&players);
-    socket.on("getOnlinePlayers", move |s|
-        get_online_players(s, players_clone.clone()),
-    );
-
-    let players_clone = Arc::clone(&players);
-    socket.on("getPlayersWithLocations", move |s, d|
-        get_players_with_locations(s, d, players_clone.clone()),
-    );
-
-    let players_clone = Arc::clone(&players);
-    socket.on("getPlayersWithLocations", move |s, d| {
-        get_players_with_locations(s, d, players_clone.clone())
-    });
-
-    let players_clone = Arc::clone(&players);
-    socket.on("broadcastMessage", move |d|
-        broadcast_message(d, players_clone.clone()),
-    );
-
-    // Register events using the socketioxide API directly
-    let players_clone = Arc::clone(&players);
-    socket.on("updatePlayerLocation", move |s: SocketRef, d: Data<Value>| {
-        update_player_location(s, d, players_clone.clone())
-    });
-
-    let players_clone = Arc::clone(&players);
-    socket.on("getOnlinePlayers", move |s: SocketRef| {
-        get_online_players(s, players_clone.clone())
-    });
-
-    let players_clone = Arc::clone(&players);
-    socket.on("getPlayersWithLocations", move |s: SocketRef, d: Data<Value>| {
-        get_players_with_locations(s, d, players_clone.clone())
-    });
-
-    let players_clone = Arc::clone(&players);
-    socket.on("broadcastMessage", move |d: Data<Value>| {
-        broadcast_message(d, players_clone.clone())
-    });
 }
 
-
-// This handels redirecting browser users to the master server to see the dashboard
+/// Redirects browser users to the master server dashboard.
+///
+/// This function handles HTTP GET requests to the root path and redirects
+/// the user to the master server's dashboard.
+///
+/// # Arguments
+///
+/// * `_req` - The incoming HTTP request (unused in this function).
+///
+/// # Returns
+///
+/// A `Result` containing the HTTP response with a 302 redirect status.
 async fn redirect_to_master_panel(_req: Request) -> Result<Response> {
     let response = Response::builder()
         .status(302)
@@ -167,9 +144,16 @@ async fn redirect_to_master_panel(_req: Request) -> Result<Response> {
     Ok(response)
 }
 
+/// The main entry point for the Horizon Game Server.
+///
+/// This function initializes the server, sets up necessary components,
+/// and starts listening for incoming connections.
+///
+/// # Returns
+///
+/// A `Result` indicating whether the server started successfully or encountered an error.
 #[main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-
     /////////////////////////////
     // SERVER STARTUP SEQUENCE //
     /////////////////////////////
@@ -177,55 +161,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Show branding
     subsystems::core::startup::main();
 
-    // this is in it's own thread so it does not take up the main thread because this task runs
-    // throughout the lifetime of the server and would prevent anything else from running
+    // Start TerraForge in a separate thread
     let _terraforge_thread = spawn(async {
-        // this is in it's own thread to not take up the main thread. because otherwise that would
-        // be catastrophically bad for performance, because then the tasks would not complete.
         TerraForge::main();
     });
     
     PebbleVault::main();
-
-    ////////////////////////////////////////////////////////////////////////
-    //                              DEBUG ONLY                            //
-    // The code below allows for the creation of some test bodies within  //
-    // pebblevault, this is normally done automatically by TerraForge.    //
-    ////////////////////////////////////////////////////////////////////////
 
     // Define a place to put new players
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
     let (svc, io) = socketioxide::SocketIo::new_svc();
     let players_clone: Arc<Mutex<Vec<Player>>> = players.clone();
 
-    // Handle New player connections
+    // Handle new player connections
     io.ns("/", move |socket: SocketRef, data: Data<Value>| {
         println!("Player Connected!");
         on_connect(socket, data, players_clone.clone())
     });
     
-    //Create a router to handel incoming connections
+    // Create a router to handle incoming connections
     let app = Router::new()
-        // If the user sends a GET request we redirect them to
-        // the master server which hosts the horizon dashboard
-        // if the master server itself has a master it too will
-        // redirect them until they reach the highest level master
-        // server
-
         .get("/", redirect_to_master_panel)
-
-        // This is an any connection that is not handled above,
-        // we cosider these legitimate players and treat their
-        // request as them attempting to join the server
         .any("/*", ServiceHandler::new(svc));
-
 
     info!("Starting server");
     
     // Define a listener on port 3000
     let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     
-    // Print any errors encountered while creating the listener
+    // Start the server and handle any errors
     if let Err(e) = serve(listener, app).await {
         println!("{}", e);
     }
