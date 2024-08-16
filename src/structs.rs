@@ -187,6 +187,13 @@ pub struct Location {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Vec3D {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Scale3D {
     pub x: f64,
     pub y: f64,
@@ -217,7 +224,7 @@ pub struct Player {
     pub socket: SocketRef,
     pub moveActionValue: Option<MoveActionValue>,
     pub transform: Option<Transform>,
-    pub controlRotation: Option<Rotation>
+    pub controlRotation: Option<Vec3D>
 }
 
 

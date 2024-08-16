@@ -138,6 +138,7 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc
                 }
                 if let Some(controlRotation) = data.0.get("control Rotation") {
                     let (ctrl_rot_x, ctrl_rot_y, ctrl_rot_z) = parse_xyz(controlRotation);
+                    player.controlRotation = Some(Vec3D { x: ctrl_rot_x, y: ctrl_rot_y, z: ctrl_rot_z });
                 }
                 // Print a debug statement
                 println!("Updated player location: {:?}", player);
