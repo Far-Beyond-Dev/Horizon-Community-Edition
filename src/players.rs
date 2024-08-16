@@ -20,12 +20,17 @@ pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     );
 
     let players_clone = Arc::clone(&players);
+    socket.on("playerJump", move |s: SocketRef, d: Data<Value>| {
+        player_jump(s, d)
+    });
+
+    let players_clone = Arc::clone(&players);
     socket.on("getOnlinePlayers", move |s|
         get_online_players(s, players_clone.clone()),
     );
 
     let players_clone = Arc::clone(&players);
-    socket.on("getPlayersWithLocations", move |s, d|
+    socket.on("getPlayersWithLocations", move |s, d: Data<Value>|
         get_players_with_locations(s, d, players_clone.clone()),
     );
 
@@ -266,6 +271,15 @@ pub fn broadcast_message(data: Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
     for player in &*players {
         player.socket.emit("broadcastMessage", data.0.clone()).ok();
     }
+}
+
+
+fn player_jump(socket: SocketRef, data: Data<Value>) {
+    // Process the jump event
+    // You might want to update the player's state or notify other players
+
+    // Emit the playerJumped event
+    socket.emit("playerJumped", true).expect("Failed to emit playerJumped event");
 }
 
 
