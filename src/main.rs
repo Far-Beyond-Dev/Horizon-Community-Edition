@@ -104,21 +104,18 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     //  systems                                              //
     ///////////////////////////////////////////////////////////
     
-    // Initialize extra subsystems
+    // Initialize extra subsystems to listen to events from the client
     subsystems::core::chat::init(socket.clone());
     subsystems::core::game_logic::init();
     subsystems::core::level_data::init();
     subsystems::core::logging::init();
     subsystems::core::notifications::init();
 
-    /////////////////////////////////////////////////////////////////////////////
-    /////////         DO NOT INIT SUBSYSTEMS BEYOND THIS POINT      /////////////
-    /////////  The player will now begin the client-side game logic /////////////
-    /////////////////////////////////////////////////////////////////////////////
-
+    // DO NOT INIT SUBSYSTEMS BEYOND THIS POINT
     // Send an optional event to the player that they can hook into to start the game client side
     // This event confirms that the server is fully ready to handle data from the player
-    socket.emit("auth", true).ok();
+    let _ = socket.emit("preplay", true);
+    socket.emit("beginplay", true).ok();
 
 }
 

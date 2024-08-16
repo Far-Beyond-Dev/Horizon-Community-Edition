@@ -243,7 +243,7 @@ pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players:
                 "Id": player.socket.id, 
                 "Transform": player.transform.as_ref().unwrap(),
                 "Move Action Value": player.moveActionValue.as_ref().unwrap(),
-                "Rotation": player.controlRotation.as_ref().unwrap()
+                "Control Rotation": player.controlRotation.as_ref().unwrap()
             }))
             .collect::<Vec<_>>(),
     )
