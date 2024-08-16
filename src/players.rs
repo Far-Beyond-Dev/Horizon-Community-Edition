@@ -25,6 +25,11 @@ pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     });
 
     let players_clone = Arc::clone(&players);
+    socket.on("playerWalkToggle", move |s: SocketRef, d: Data<Value>| {
+        player_walk_toggle(s, d)
+    });
+
+    let players_clone = Arc::clone(&players);
     socket.on("getOnlinePlayers", move |s|
         get_online_players(s, players_clone.clone()),
     );
@@ -282,6 +287,13 @@ fn player_jump(socket: SocketRef, data: Data<Value>) {
     socket.emit("playerJumped", true).expect("Failed to emit playerJumped event");
 }
 
+fn player_walk_toggle(socket: SocketRef, data: Data<Value>) {
+    // Process the jump event
+    // You might want to update the player's state or notify other players
+
+    // Emit the playerJumped event
+    socket.emit("playerWalkToggled", true).expect("Failed to emit playerWalkToggled event");
+}
 
 ///////////////////////////////////////////////////////
 //                 Parsing Functions                 //
