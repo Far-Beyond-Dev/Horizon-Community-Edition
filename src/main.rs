@@ -88,7 +88,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
         controlRotation: None
     };
     // Init the player-related event handlers
-    players::init(socket.clone());
+    players::init(socket.clone(), players.clone());
 
     players.lock().unwrap().push(player);
 

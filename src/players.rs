@@ -5,7 +5,7 @@ use tracing::{debug, info};
 use crate::structs::*;
 
 
-pub fn init(socket: SocketRef) {
+pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     /////////////////////////////////////////////////////////
     //  Register some additional custom events with our    // 
     //  socket server. Your custom events will be          //
@@ -55,6 +55,7 @@ pub fn init(socket: SocketRef) {
         broadcast_message(d, players_clone.clone())
     });
 }
+
 
 /// Updates the location and related information of a player based on received data.
 ///
