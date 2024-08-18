@@ -17,6 +17,7 @@ use tokio::net::UdpSocket;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tokio::sync::Notify;
+use std::time::{Duration, Instant};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Event {
@@ -164,6 +165,13 @@ impl ChildServer {
 // in the instance grid define a struct for Rotation of objects.           //
 /////////////////////////////////////////////////////////////////////////////
 
+#[derive(Debug, Clone)]
+pub struct TrajectoryPoint {
+    pub accumulated_seconds: f64,
+    pub facing: Rotation,
+    pub position: Translation,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Rotation {
     pub x: f64,
@@ -208,6 +216,17 @@ pub struct Transform {
     pub scale3D: Scale3D,
 }
 
+impl Default for Transform {
+    fn default() -> Self {
+        Transform {
+            location: None,
+            rotation: None,
+            scale3D: Scale3D { x: 1.0, y: 1.0, z: 1.0 },
+            translation: None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MoveActionValue {
     pub x: f64,
@@ -218,16 +237,53 @@ pub struct MoveActionValue {
 ////////////////////////////////
 //  Define the player struct  //
 ////////////////////////////////
-
+/// 
 #[derive(Debug, Clone)]
 pub struct Player {
+    // Socket and connection info
     pub socket: SocketRef,
-    pub moveActionValue: Option<MoveActionValue>,
+    pub id: String,
+    pub last_update: Instant,
+    pub is_active: bool,
+
+    // Basic transform data
     pub transform: Option<Transform>,
-    pub controlRotation: Option<Vec3D>
+    pub moveActionValue: Option<MoveActionValue>,
+    pub controlRotation: Option<Vec3D>,
+
+    // Motion matching specific data
+    pub trajectory_path: Option<Vec<TrajectoryPoint>>,
+    pub key_joints: Option<Vec<Vec3D>>,
+    pub root_velocity: Option<Vec3D>,
+
+    // Additional data that might be useful
+    pub animation_state: Option<String>,
+    pub last_input_time: Instant,
 }
 
+impl Player {
+    pub fn new(socket: SocketRef, id: String) -> Self {
+        Player {
+            socket,
+            id,
+            last_update: Instant::now(),
+            is_active: true,
+            transform: None,
+            moveActionValue: None,
+            controlRotation: None,
+            trajectory_path: None,
+            key_joints: None,
+            root_velocity: None,
+            animation_state: None,
+            last_input_time: Instant::now(),
+        }
+    }
 
+    pub fn update_from_data(&mut self, data: &serde_json::Value) {
+        // Implementation of updating player from received data
+        // This would be similar to what we did in the update_player_location function
+    }
+}
 pub struct PlayerManager {
     players: Mutex<HashMap<String, Arc<Notify>>>,
 }

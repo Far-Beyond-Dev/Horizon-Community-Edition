@@ -21,11 +21,11 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 ///////////////////////////////////////////
 
 // Imported some third party crates
-use serde_json::{json, Value};
-use socketioxide::extract::{AckSender, Bin, Data, SocketRef};
+use serde_json::Value;
+use socketioxide::extract::{Data, SocketRef};
 use std::sync::{Arc, Mutex};
 use tokio::{main, task::spawn};
-use tracing::{debug, info};
+use tracing::info;
 use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
 
 // Import some custom crates from the crates folder in /src
@@ -38,7 +38,6 @@ use PebbleVault;
 // will be very bad but should be fine for now)             //
 //////////////////////////////////////////////////////////////
 use structs::*;
-use players::*;
 
 /////////////////////////////////////
 // Import the modules we will need //
@@ -81,12 +80,8 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     println!("Welcome player {} to the game!", id);
 
     // Authenticate the user
-    let player = Player {
-        socket: socket.clone(),
-        moveActionValue: None,
-        transform: None,
-        controlRotation: None
-    };
+    let player = Player::new(socket.clone(), id.to_string());
+    
     // Init the player-related event handlers
     players::init(socket.clone(), players.clone());
 
@@ -155,14 +150,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // SERVER STARTUP SEQUENCE //
     /////////////////////////////
 
-    // Show branding
+    // Show startup ascii art
     subsystems::core::startup::main();
 
-    // Start TerraForge in a separate thread
+    // Start the TerraForge thread
     let _terraforge_thread = spawn(async {
         TerraForge::main();
     });
     
+    // Start up the database
     PebbleVault::main();
 
     // Define a place to put new players

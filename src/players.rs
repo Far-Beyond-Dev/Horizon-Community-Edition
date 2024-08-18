@@ -1,9 +1,22 @@
 use serde_json::{json, Value};
+use serde::Serialize;
 use socketioxide::extract::{Data, SocketRef};
 use std::sync::{Arc, Mutex};
 use tracing::{debug, info};
+use std::time::{Duration, Instant};
 use crate::structs::*;
 
+impl Default for MoveActionValue {
+    fn default() -> Self {
+        MoveActionValue { x: 0.0, y: 0.0 }
+    }
+}
+
+impl Default for Vec3D {
+    fn default() -> Self {
+        Vec3D { x: 0.0, y: 0.0, z: 0.0 }
+    }
+}
 
 pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     /////////////////////////////////////////////////////////
@@ -13,6 +26,11 @@ pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     //  file                                               //
     /////////////////////////////////////////////////////////
     
+    let players_disconnect = players.clone();
+    socket.on_disconnect(move |s| {
+        on_disconnect(s, players_disconnect.clone())
+    });
+
     // Register events for player interactions
     let players_clone = Arc::clone(&players);
     socket.on("updatePlayerLocation", move |s, d|
@@ -66,6 +84,15 @@ pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     });
 }
 
+pub fn on_disconnect(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
+    let mut players = players.lock().unwrap();
+    if let Some(index) = players.iter().position(|p| p.socket.id == socket.id) {
+        players.remove(index);
+        println!("Player {} disconnected and removed from players list", socket.id);
+    } else {
+        println!("Player {} disconnected, but was not found in players list", socket.id);
+    }
+}
 
 /// Updates the location and related information of a player based on received data.
 ///
@@ -104,70 +131,96 @@ pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
 pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
     println!("Received event: UpdatePlayerLocation with data: {:?}", data.0);
 
-    if let Some(transform) = data.0.get("transform").and_then(|t| t.as_object()) {
-        let mut players = players.lock().unwrap();
-        if let Some(player) = players.iter_mut().find(|p| p.socket.id == socket.id) {
-            // Parse location
-            if let Some(location) = transform.get("location") {
-                let (trans_x, trans_y, trans_z) = parse_xyz(location);
-                
-                // Parse rotation
-                let (rot_x, rot_y, rot_z) = transform.get("rotation")
-                    .map(parse_xyz)
-                    .unwrap_or((0.0, 0.0, 0.0));
-                
-                // Parse scale3D
-                let (scale3d_x, scale3d_y, scale3d_z) = transform.get("scale3D")
-                    .map(parse_xyz)
-                    .unwrap_or((1.0, 1.0, 1.0));
-
-                // Create or update the transform
-                let mut transform = player.transform.take().unwrap_or_else(|| Transform {
-                    rotation: None,
-                    translation: None,
-                    scale3D: Scale3D { x: 1.0, y: 1.0, z: 1.0 },
-                    location: None,
-                });
-
-                // Update rotation (note: we're missing 'w' component, so we'll set it to 1.0)
-                transform.rotation = Some(Rotation { w: 1.0, x: rot_x, y: rot_y, z: rot_z });
-
-                // Update translation and location
-                let new_translation = Translation { x: trans_x, y: trans_y, z: trans_z };
-                transform.translation = Some(new_translation.clone());
-                transform.location = Some(new_translation);
-
-                // Update scale3D
-                transform.scale3D = Scale3D { x: scale3d_x, y: scale3d_y, z: scale3d_z };
-
-                // Update the player's transform
-                player.transform = Some(transform);
-
-                // Parse player movement axis values
-                if let Some(move_action) = data.0.get("move Action Value") {
-                    let (mv_action_value_x, mv_action_value_y) = parse_xy(move_action);
-                    player.moveActionValue = Some(MoveActionValue { x: mv_action_value_x, y: mv_action_value_y });
-                }
-
-                if let Some(control_rotation) = data.0.get("control Rotation") {
-                    let (ctrl_rot_x, ctrl_rot_y, ctrl_rot_z) = parse_xyz(control_rotation);
-                    player.controlRotation = Some(Vec3D { x: ctrl_rot_x, y: ctrl_rot_y, z: ctrl_rot_z });
-                }
-
-                // Print a debug statement
-                println!("Updated player location: {:?}", player);
-            } else {
-                println!("Invalid transform data structure: missing location");
-            }
-        } else {
-            println!("Player not found: {}", socket.id);
+    let player_data = &data.0;
+    let mut players = players.lock().unwrap();
+    if let Some(player) = players.iter_mut().find(|p| p.socket.id == socket.id) {
+        // Update control rotation
+        if let Some(control_rotation) = player_data.get("controlRotation") {
+            player.controlRotation = Some(Vec3D {
+                x: control_rotation["x"].as_f64().unwrap_or(0.0),
+                y: control_rotation["y"].as_f64().unwrap_or(0.0),
+                z: control_rotation["z"].as_f64().unwrap_or(0.0),
+            });
         }
+
+        // Update root position
+        if let Some(root_position) = player_data.get("rootPosition") {
+            let new_position = Translation {
+                x: root_position["x"].as_f64().unwrap_or(0.0),
+                y: root_position["y"].as_f64().unwrap_or(0.0),
+                z: root_position["z"].as_f64().unwrap_or(0.0),
+            };
+            player.transform.get_or_insert(Transform::default()).location = Some(new_position);
+        }
+
+        // Update root rotation
+        if let Some(root_rotation) = player_data.get("rootRotation") {
+            let new_rotation = Rotation {
+                x: root_rotation["x"].as_f64().unwrap_or(0.0),
+                y: root_rotation["y"].as_f64().unwrap_or(0.0),
+                z: root_rotation["z"].as_f64().unwrap_or(0.0),
+                w: 1.0, // Assuming w is not provided in the data
+            };
+            player.transform.get_or_insert(Transform::default()).rotation = Some(new_rotation);
+        }
+
+        // Update root velocity
+        if let Some(root_velocity) = player_data.get("rootVelocity") {
+            player.root_velocity = Some(Vec3D {
+                x: root_velocity["x"].as_f64().unwrap_or(0.0),
+                y: root_velocity["y"].as_f64().unwrap_or(0.0),
+                z: root_velocity["z"].as_f64().unwrap_or(0.0),
+            });
+        }
+
+        // Update key bone data
+        if let Some(key_bone_data) = player_data.get("keyBoneData").and_then(|v| v.as_array()) {
+            let key_joints: Vec<Vec3D> = key_bone_data.iter()
+                .filter_map(|bone| {
+                    Some(Vec3D {
+                        x: bone["x"].as_f64()?,
+                        y: bone["y"].as_f64()?,
+                        z: bone["z"].as_f64()?,
+                    })
+                })
+                .collect();
+            // You might want to store this key_joints data in your Player struct
+        }
+
+        // Process trajectory path
+        if let Some(trajectory) = player_data.get("trajectoryPath").and_then(|v| v.as_array()) {
+            let path: Vec<TrajectoryPoint> = trajectory.iter()
+                .filter_map(|point| {
+                    Some(TrajectoryPoint {
+                        accumulated_seconds: point["accumulatedSeconds"].as_f64()?,
+                        facing: Rotation {
+                            w: point["facing"]["w"].as_f64()?,
+                            x: point["facing"]["x"].as_f64()?,
+                            y: point["facing"]["y"].as_f64()?,
+                            z: point["facing"]["z"].as_f64()?,
+                        },
+                        position: Translation {
+                            x: point["position"]["x"].as_f64()?,
+                            y: point["position"]["y"].as_f64()?,
+                            z: point["position"]["z"].as_f64()?,
+                        },
+                    })
+                })
+                .collect();
+            // Store this path in your Player struct for prediction and smoothing
+            player.trajectory_path = Some(path);
+        }
+
+        println!("Updated player state: {:?}", player);
     } else {
-        println!("Failed to parse location: transform field not found or is not an object");
+        println!("Player not found: {}", socket.id);
     }
 
     // Send a reply containing the correct data
-    socket.emit("messageBack", data.0).ok();
+    socket.emit("messageBack", json!({
+        "status": "success",
+        "message": "Player location updated successfully"
+    })).ok();
 }
 
 /// Retrieves and sends a list of online players to a connected client.
@@ -244,31 +297,59 @@ pub fn get_online_players(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
 ///
 /// While the function itself doesn't return a Result, it silently ignores any errors
 /// that occur when emitting the event to the socket.
-pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
-    info!("Responding with players and locations list");
-    let players = players.lock().unwrap();
-    
-    println!("Received event with data: {:?}", data.0);  // Access the inner Value
-    let players_with_locations_json = serde_json::to_value(
-        
-        // Create response packet structure
-        players
-            .iter()
-            .map(|player| json!({ 
-                "Id": player.socket.id, 
-                "Transform": player.transform.as_ref().unwrap(),
-                "Move Action Value": player.moveActionValue.as_ref().unwrap(),
-                "Control Rotation": player.controlRotation.as_ref().unwrap()
-            }))
-            .collect::<Vec<_>>(),
-    )
-    .unwrap();
 
-    // Prepare and send the data
-    let players = vec![players_with_locations_json];
-    socket.emit("playersWithLocations", &players).ok();
+#[derive(Serialize)]
+struct PlayersResponse {
+    players: Vec<serde_json::Value>
 }
 
+pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
+    println!("Responding with players and locations list");
+    let players = players.lock().unwrap();
+   
+    println!("Received event with data: {:?}", data.0);
+
+    let players_with_locations_json: Vec<serde_json::Value> = players
+        .iter()
+        .map(|player| {
+            json!({
+                "Id": player.id,
+                "Root Position": player.transform.as_ref().and_then(|t| t.location.as_ref()),
+                "Root Rotation": player.transform.as_ref().and_then(|t| t.rotation.as_ref()),                
+                "Root Velocity": player.root_velocity,
+                "Control Rotation": player.controlRotation,
+                "Move Action Value": player.moveActionValue,
+                "Trajectory Path": player.trajectory_path.as_ref().map(|path| 
+                    path.iter().take(10).map(|point| json!({
+                        "accumulatedSeconds": point.accumulated_seconds,
+                        "facing": point.facing,
+                        "position": point.position,
+                    })).collect::<Vec<_>>()
+                ),
+                "KeyJoints": player.key_joints,
+                "AnimationState": player.animation_state,
+                "IsActive": player.is_active,
+                "LastUpdateTime": player.last_update.elapsed().as_secs_f64(),
+            })
+        })
+        .collect();
+
+    println!("Number of players: {}", players_with_locations_json.len());
+    
+    // Create the response with a "players" field
+    let response = PlayersResponse {
+        players: players_with_locations_json
+    };
+    
+    // Serialize the response
+    let response_json = serde_json::to_value(response).unwrap();
+    
+    println!("Sending players data: {:?}", response_json);
+    println!("JSON string being sent: {}", serde_json::to_string(&response_json).unwrap());
+    
+    // Send the data
+    socket.emit("playersWithLocations", response_json).ok();
+}
 
 /// Forward the message content to all clients
 pub fn broadcast_message(data: Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
@@ -294,6 +375,27 @@ fn player_walk_toggle(socket: SocketRef, data: Data<Value>) {
     // Emit the playerJumped event
     socket.emit("playerWalkToggled", true).expect("Failed to emit playerWalkToggled event");
 }
+
+pub async fn cleanup_inactive_players(players: Arc<Mutex<Vec<Player>>>) {
+    let inactive_threshold = Duration::from_secs(60); // 1 minute
+
+    loop {
+        tokio::time::sleep(Duration::from_secs(30)).await; // Run every 30 seconds
+
+        let mut players = players.lock().unwrap();
+        let now = Instant::now();
+
+        players.retain(|player| {
+            if !player.is_active && now.duration_since(player.last_update) > inactive_threshold {
+                println!("Removing inactive player: {}", player.socket.id);
+                false // Remove the player
+            } else {
+                true // Keep the player
+            }
+        });
+    }
+}
+
 
 ///////////////////////////////////////////////////////
 //                 Parsing Functions                 //
