@@ -59,6 +59,8 @@ Horizon utilizes a sophisticated Parent-Child socket synchronization mechanism t
 
 #### How it Works
 
+![Diagram](https://github.com/user-attachments/assets/96bdd2a1-e17a-44a2-b07b-04eacbdec4eb)
+
 ##### Parent-Child Relationship
 
 In the Horizon architecture, one instance acts as the Parent node, while others serve as Child nodes. The Parent node orchestrates and synchronizes actions across all Child nodes, ensuring that all game-related events and states are consistently and accurately propagated throughout the network of servers.
@@ -140,7 +142,6 @@ Horizon uses a 64-bit floating-point coordinate system to manage server position
 ##### Region Mapping
 
 Servers are organized into a grid-based region map, where each region corresponds to a specific set of spatial coordinates. This mapping enables efficient routing of events between servers, as servers can quickly determine which neighboring servers should receive specific events based on their region coordinates.
-
 
 </br>
 
