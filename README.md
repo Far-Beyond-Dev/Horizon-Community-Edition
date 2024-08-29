@@ -48,68 +48,63 @@
 
 </br>
 
----
 <h1 align="center" id='introduction'> 🚀 Introduction </h1>
 
 Horizon is a custom game server software designed to facilitate seamless interaction between Unreal Engine 5 (UE5) and client applications through socket.io. It provides a scalable and customizable solution for hosting multiplayer games and managing real-time communication between players and a limitless number of game servers or "Hosts".
 
-### Synchronized Game Server Architecture
+## Synchronized Game Server Architecture
 
-Horizon utilizes a sophisticated Parent-Child socket synchronization mechanism to ensure seamless coordination between multiple Horizon instances, effectively creating a unified game server environment with minimal latency. This innovative approach enhances the overall performance and reliability of multiplayer gaming experiences by providing efficient and reliable synchronization across distributed server instances.
+Horizon offers two distinct architectural models for game server synchronization:
+
+---
+
+### 1. Peer-to-Peer Model (Community Edition)
+
+In the Community Edition, Horizon utilizes a peer-to-peer model for synchronizing multiple game server instances. This approach allows for efficient communication and coordination between servers without the need for a central authority.
 
 #### How it Works
 
+- Each Horizon server instance operates as an equal peer in the network.
+- Servers communicate directly with each other to share game state updates, player actions, and other relevant information.
+- The peer-to-peer model enables horizontal scalability, allowing new server instances to be added seamlessly to the network.
+
+#### Benefits
+
+- Decentralized architecture, reducing single points of failure.
+- Lower operational complexity, ideal for smaller deployments or community-driven projects.
+- Efficient resource utilization across all participating servers.
+
+---
+
+### 2. Parent-Child-Master Architecture (Enterprise Edition)
+
+For larger-scale deployments and enterprise use cases, Horizon offers an advanced Parent-Child-Master architecture. This model provides enhanced control, scalability, and management capabilities.
+
+#### How it Works
+
+- **Master Node**: Oversees the entire network, managing global state and coordination.
+- **Parent Nodes**: Act as regional coordinators, managing a subset of Child nodes.
+- **Child Nodes**: Handle individual game instances or regions, reporting to their Parent node.
+
+This hierarchical structure allows for more sophisticated load balancing, fault tolerance, and centralized management as well as limitless scalability.
+
 ![Diagram](https://github.com/user-attachments/assets/96bdd2a1-e17a-44a2-b07b-04eacbdec4eb)
 
-##### Parent-Child Relationship
+#### Benefits
 
-In the Horizon architecture, one instance acts as the Parent node, while others serve as Child nodes. The Parent node orchestrates and synchronizes actions across all Child nodes, ensuring that all game-related events and states are consistently and accurately propagated throughout the network of servers.
+- Highly scalable architecture suitable for massive multiplayer environments.
+- Advanced load balancing and resource allocation capabilities.
+- Centralized monitoring and management through the Master node.
+- Enhanced fault tolerance and redundancy options.
+---
+### Choosing the Right Architecture
 
-##### Socket Communication
+- The Peer-to-Peer model (Community Edition) is ideal for smaller projects, community servers, or deployments that prioritize simplicity and decentralization.
+- The Parent-Child-Master architecture (Enterprise Edition) is designed for large-scale commercial games, MMOs, or any project requiring advanced management and scalability features.
 
-Horizon employs socket.io for real-time communication between Parent and Child nodes. This allows for near-instantaneous data transmission, crucial for maintaining synchronization in fast-paced multiplayer games. Socket.io provides a robust and flexible framework for handling bi-directional event-based communication, enabling the seamless exchange of data between servers.
+Both architectures leverage Horizon's core strengths in real-time synchronization and efficient data propagation, ensuring a consistent and responsive gaming experience regardless of the chosen model.
 
-##### Data Exchange Protocol
-
-The Parent node continuously sends updates to Child nodes regarding game state, player actions, and other relevant information. Conversely, Child nodes report back to the Parent node, ensuring bidirectional communication for accurate synchronization. This protocol ensures that all nodes are kept up-to-date with the latest game events, reducing the likelihood of discrepancies or inconsistencies in the game state.
-
-##### Latency Optimization
-
-To achieve near-zero latency, Horizon optimizes data transmission by minimizing overhead and prioritizing critical updates. This ensures that actions performed on one Child node propagate swiftly to all others, maintaining a cohesive game experience for all players. Techniques such as data compression, efficient serialization, and prioritization of critical packets are employed to reduce latency and enhance performance.
-
-##### Dynamic Load Balancing
-
-The system dynamically adjusts the load across Child nodes based on current server performance and player distribution. This load balancing mechanism helps prevent any single node from becoming a bottleneck, thereby enhancing the overall scalability and reliability of the server network.
-
-##### Event Consistency
-
-Each event generated within the game is timestamped and ordered to ensure consistency. The Parent node manages a global event timeline, allowing all Child nodes to process events in the correct sequence, maintaining a consistent game state across the entire network.
-
-### Benefits
-
-##### Scalability
-
-The Parent-Child architecture allows Horizon to scale effortlessly, accommodating a growing player base without sacrificing performance. New Child nodes can be added to the network to handle increased load, and the Parent node can manage these additions seamlessly.
-
-##### Fault Tolerance
-
-In the event of node failure, the Parent node seamlessly redistributes responsibilities to remaining Child nodes, ensuring uninterrupted gameplay for players. This fault tolerance mechanism enhances the reliability and availability of the game server network, reducing the impact of hardware or software failures on the gaming experience.
-
-##### Consistency
-
-By synchronizing game state across all instances, Horizon guarantees a consistent experience for all players, regardless of their geographical location or server proximity. This consistency is crucial for maintaining fair and balanced gameplay, as all players interact with the same game state and events.
-
-##### Improved User Experience
-
-The low-latency and high-consistency nature of the Parent-Child synchronization model significantly enhances the user experience. Players benefit from faster response times, smoother gameplay, and reduced instances of lag or desynchronization.
-
-##### Ease of Management
-
-The centralized coordination provided by the Parent node simplifies the management of the game server network. Administrators can monitor and control the entire network from a single point, making it easier to deploy updates, manage resources, and troubleshoot issues.
-
-##### Customizable Synchronization
-
-Administrators can customize synchronization parameters, such as update frequency and data prioritization, to optimize performance based on specific game requirements. This flexibility allows Horizon to be tailored to a wide range of game types and player behaviors.
+---
 
 ### Implementation Details
 
