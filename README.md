@@ -60,6 +60,7 @@ Horizon utilizes a sophisticated Parent-Child socket synchronization mechanism t
 #### How it Works
 
 ![Diagram](https://github.com/user-attachments/assets/96bdd2a1-e17a-44a2-b07b-04eacbdec4eb)
+(Server PNG By FreePik)
 
 ##### Parent-Child Relationship
 
