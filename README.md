@@ -9,7 +9,7 @@
     <img src="https://img.shields.io/website?url=https%3A%2F%2Fstars-beyond.com%2F" alt="Website">
     <img src="https://img.shields.io/github/license/Stars-Beyond/Horizon-Community-Edition" alt="GitHub License">
     <img src="https://img.shields.io/github/discussions/Stars-Beyond/Horizon-Community-Edition" alt="GitHub Discussions">
-    <img src="https://img.shields.io/github/sponsors/Stars-Beyond" alt="GitHub Sponsors">
+    <img src="https://img.shields.io/github/sponsors/Far-Beyond-Dev" alt="GitHub Sponsors">
     <img src="https://img.shields.io/github/forks/Stars-Beyond/Horizon-Community-Edition" alt="GitHub forks">
     <img src="https://img.shields.io/github/stars/Stars-Beyond/Horizon-Community-Edition" alt="GitHub Repo stars">
 </p>
