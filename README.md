@@ -89,6 +89,7 @@ For larger-scale deployments and enterprise use cases, Horizon offers an advance
 This hierarchical structure allows for more sophisticated load balancing, fault tolerance, and centralized management as well as limitless scalability.
 
 ![Diagram](https://github.com/user-attachments/assets/96bdd2a1-e17a-44a2-b07b-04eacbdec4eb)
+(Server PNG By FreePik)
 
 #### Benefits
 
