@@ -31,6 +31,7 @@ mimalloc = "0.1.43"
 nalgebra = "0.33.0"
 v = "0.1.0"
 rayon = "1.10.0"
+log = "0.4.22"
 
 [[bin]]
 name = "horizon"
