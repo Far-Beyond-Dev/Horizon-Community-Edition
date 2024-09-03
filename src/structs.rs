@@ -1,13 +1,13 @@
-///////////////////////////////////////////////////////////////
-//                       INFORMATION                         //
+/////////////////////////////////////////////////////////////////
+//                       INFORMATION                                 //
 //  This file contains Horizon's global struct definitions.  //
-//  Because of this anything that is public in this file     //
-//  can be imported by any part of Horizon using             //
-//  crate::structs::                                         //
+//  Because of this anything that is public in this file      //
+//  can be imported by any part of Horizon using           //
+//  crate::structs::                                                   //
 ///////////////////////////////////////////////////////////////
-//                    !!!! WARNING !!!!                      //
-//  Anything made public in this file *WILL* me imported by  //
-//  main.rs                                                  //
+//                    !!!! WARNING !!!!                             //
+//  Anything made public in this file *WILL* me           //
+//  imported by main.rs                                            //
 ///////////////////////////////////////////////////////////////
 
 use serde::{Deserialize, Serialize};
@@ -41,14 +41,14 @@ pub struct ChildServer {
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// * The `ChildServer` struct contains methods for:                                             //
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// * The `ChildServer` struct contains methods for:                                                       //
 // - Initializing the server with its ID, coordinate, parent server address, and local address. //
-// - Receiving events from the master server.                                                   //
-// - Determining which neighboring servers should receive an event.                             //
-// - Sending events to the parent server for further multicast.                                 //
-// - Running the server to continuously listen for and handle events.                           //
-//////////////////////////////////////////////////////////////////////////////////////////////////
+// - Receiving events from the master server.                                                                //
+// - Determining which neighboring servers should receive an event.                                //
+// - Sending events to the parent server for further multicast.                                         //
+// - Running the server to continuously listen for and handle events.                                //
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 
 impl ChildServer {
     pub async fn new(
@@ -66,11 +66,11 @@ impl ChildServer {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    //                                          Event Handling:                                          //
-    // The child server receives events from the master server. Each event contains its origin, data     //
-    // and a propagation distance, which determines how far the event should spread.                     //
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                      Event Handling:                                                       //
+    //  The child server receives events from the master server. Each event contains its origin, data  //
+    //  and a propagation distance, which determines how far the event should spread.                    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub async fn receive_event(&self) -> Event {
         let mut buf = [0u8; 1024];
@@ -83,13 +83,13 @@ impl ChildServer {
         event
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // * Event Propagation:                                                                               //
-    // - Upon receiving an event, the child server calculates which neighboring child servers             //
-    //    should receive the event based on the event's origin and the specified propagation distance.    //
-    // - This calculation considers all adjacent coordinates within a 3x3x3 cube centered on the          //
-    //    server's coordinate, ensuring that all relevant neighbors are included.                         //
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // * Event Propagation:                                                                                                       //
+    // - Upon receiving an event, the child server calculates which neighboring child servers               //
+    //    should receive the event based on the event's origin and the specified propagation distance.   //
+    // - This calculation considers all adjacent coordinates within a 3x3x3 cube centered on the           //
+    //    server's coordinate, ensuring that all relevant neighbors are included.                                  //
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub fn determine_propagation(&self, event: &Event) -> Vec<Coordinate> {
         let mut neighbors = Vec::new();
