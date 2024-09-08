@@ -1,14 +1,14 @@
 /////////////////////////////////////////////////////////////////
-//                       INFORMATION                                 //
-//  This file contains Horizon's global struct definitions.  //
-//  Because of this anything that is public in this file      //
-//  can be imported by any part of Horizon using           //
-//  crate::structs::                                                   //
-///////////////////////////////////////////////////////////////
-//                    !!!! WARNING !!!!                             //
-//  Anything made public in this file *WILL* me           //
-//  imported by main.rs                                            //
-///////////////////////////////////////////////////////////////
+//                       INFORMATION                           //
+//  This file contains Horizon's global struct definitions.    //
+//  Because of this anything that is public in this file       //
+//  can be imported by any part of Horizon using               //
+//  crate::structs::                                           //
+/////////////////////////////////////////////////////////////////
+//                    !!!! WARNING !!!!                        //
+//  Anything made public in this file *WILL* me                //
+//  imported by main.rs                                        //
+/////////////////////////////////////////////////////////////////
 
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
