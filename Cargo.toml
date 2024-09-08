@@ -32,6 +32,9 @@ nalgebra = "0.33.0"
 v = "0.1.0"
 rayon = "1.10.0"
 log = "0.4.22"
+csv = "1.3.0"
+uuid = "1.10.0"
+uid = "0.1.7"
 
 [[bin]]
 name = "horizon"
