@@ -153,7 +153,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Show startup ascii art
     subsystems::core::startup::main();
-
+    subsystems::recipe_smith::src::lib::main();
     // Start the TerraForge thread
     let _terraforge_thread = spawn(async {
         TerraForge::main();
