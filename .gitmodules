@@ -13,3 +13,6 @@ url = https://github.com/Stars-Beyond/core
 [submodule "src/subsystems/RecipeSmith"]
 	path = src/subsystems/RecipeSmith
 	url = https://github.com/Stars-Beyond/RecipeSmith
+[submodule "src/subsystems/recipe_smith"]
+	path = src/subsystems/recipe_smith
+	url = https://github.com/Far-Beyond-Dev/RecipeSmith
