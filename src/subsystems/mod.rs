@@ -4,3 +4,4 @@
 //pub mod actors;
 pub mod core;
 pub mod sample_sybsystem;
+pub mod recipe_smith;

@@ -105,6 +105,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     subsystems::core::level_data::init();
     subsystems::core::logging::init();
     subsystems::core::notifications::init();
+    subsystems::recipe_smith::src::lib::main();
 
     // DO NOT INIT SUBSYSTEMS BEYOND THIS POINT
     // Send an optional event to the player that they can hook into to start the game client side
@@ -129,7 +130,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 async fn redirect_to_master_panel(_req: Request) -> Result<Response> {
     let response = Response::builder()
         .status(302)
-        .header("Location", "https://google.com")
+        .header("Location", "https://youtu.be/dQw4w9WgXcQ")
         .body(Body::empty())
         .unwrap();
     println!("Someone tried to access this server via a browser, redirecting them to the master dashboard");
@@ -152,7 +153,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Show startup ascii art
     subsystems::core::startup::main();
-
+    subsystems::recipe_smith::src::lib::main();
     // Start the TerraForge thread
     let _terraforge_thread = spawn(async {
         TerraForge::main();
