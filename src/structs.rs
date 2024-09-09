@@ -1,14 +1,14 @@
 /////////////////////////////////////////////////////////////////
-//                       INFORMATION                                 //
-//  This file contains Horizon's global struct definitions.  //
-//  Because of this anything that is public in this file      //
-//  can be imported by any part of Horizon using           //
-//  crate::structs::                                                   //
-///////////////////////////////////////////////////////////////
-//                    !!!! WARNING !!!!                             //
-//  Anything made public in this file *WILL* me           //
-//  imported by main.rs                                            //
-///////////////////////////////////////////////////////////////
+//                       INFORMATION                           //
+//  This file contains Horizon's global struct definitions.    //
+//  Because of this anything that is public in this file       //
+//  can be imported by any part of Horizon using               //
+//  crate::structs::                                           //
+/////////////////////////////////////////////////////////////////
+//                    !!!! WARNING !!!!                        //
+//  Anything made public in this file *WILL* me                //
+//  imported by main.rs                                        //
+/////////////////////////////////////////////////////////////////
 
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
@@ -42,13 +42,13 @@ pub struct ChildServer {
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-// * The `ChildServer` struct contains methods for:                                                       //
-// - Initializing the server with its ID, coordinate, parent server address, and local address. //
-// - Receiving events from the master server.                                                                //
-// - Determining which neighboring servers should receive an event.                                //
-// - Sending events to the parent server for further multicast.                                         //
+// * The `ChildServer` struct contains methods for:                                                  //
+// - Initializing the server with its ID, coordinate, parent server address, and local address.      //
+// - Receiving events from the master server.                                                        //
+// - Determining which neighboring servers should receive an event.                                  //
+// - Sending events to the parent server for further multicast.                                      //
 // - Running the server to continuously listen for and handle events.                                //
-//////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 impl ChildServer {
     pub async fn new(
