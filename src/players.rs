@@ -20,10 +20,10 @@ impl Default for Vec3D {
 
 pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     /////////////////////////////////////////////////////////////
-    //  Register some additional custom events with our  // 
-    //  socket server. Your custom events will be            //
-    //  registered here as well as in the ./events/mod.rs  //
-    //  file                                                                 //
+    //  Register some additional custom events with our        // 
+    //  socket server. Your custom events will be              //
+    //  registered here as well as in the ./events/mod.rs      //
+    //  file                                                   //
     /////////////////////////////////////////////////////////////
     
     let players_disconnect = players.clone();

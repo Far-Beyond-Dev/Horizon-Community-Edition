@@ -100,7 +100,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     ///////////////////////////////////////////////////////////
     
     // Initialize extra subsystems to listen to events from the client
-    subsystems::core::chat::init(socket.clone(), players.clone());
+    subsystems::core::chat::chat::init(socket.clone(), players.clone());
     subsystems::core::game_logic::init();
     subsystems::core::level_data::init();
     subsystems::core::logging::init();
@@ -153,7 +153,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Show startup ascii art
     subsystems::core::startup::main();
-    subsystems::recipe_smith::src::lib::main();
+    
+    let _recipie_smith_thread = spawn(async {
+        subsystems::recipe_smith::src::lib::main();
+    });
+
     // Start the TerraForge thread
     let _terraforge_thread = spawn(async {
         TerraForge::main();
