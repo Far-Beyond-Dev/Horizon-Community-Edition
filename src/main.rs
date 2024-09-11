@@ -154,9 +154,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Show startup ascii art
     subsystems::core::startup::main();
     
-    let _recipe_smith_thread = spawn(async {
+    let recipe_smith_thread = tokio::task::spawn(async {
         subsystems::recipe_smith::src::lib::main();
     });
+
 
     // Start the TerraForge thread
     let _terraforge_thread = spawn(async {
