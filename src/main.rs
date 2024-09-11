@@ -154,7 +154,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Show startup ascii art
     subsystems::core::startup::main();
     
-    let _recipie_smith_thread = spawn(async {
+    let _recipe_smith_thread = spawn(async {
         subsystems::recipe_smith::src::lib::main();
     });
 
