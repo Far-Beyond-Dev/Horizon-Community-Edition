@@ -13,6 +13,7 @@
 // Use the mimalloc allocator, which boasts excellent performance //
 // across a variety of tasks, while being small (8k LOC)          //
 ////////////////////////////////////////////////////////////////////
+#[cfg(target_os = "linux")]
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
