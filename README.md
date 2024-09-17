@@ -16,6 +16,8 @@
 </p>
 </center>
 
+## Join Discord
+[Far Beyond LLC Discrord](https://discord.gg/NM4awJWGWu)
 
 ## Table Of Contents
 
