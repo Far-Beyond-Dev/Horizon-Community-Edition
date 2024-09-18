@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="8Sja1tul4LKNi_w8vkZC" name="Page-1">
-        <mxGraphModel dx="988" dy="314" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="2074" dy="660" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -48,6 +48,83 @@
                 </mxCell>
                 <mxCell id="13" value="Horizon Binary Executable" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.cloud_service_package_file;" vertex="1" parent="1">
                     <mxGeometry x="510" y="272" width="42.5" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=2;align=center;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="380" width="390" height="300" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="28" target="29">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="95" y="460"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="36" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="28" target="35">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="95" y="570"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="28" value="My-Plugin" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="20" y="420" width="150" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" style="edgeStyle=none;html=1;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="29" target="31">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="205" y="495"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="34" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="29" target="33">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="205" y="520"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="29" value="Src" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="130" y="450" width="150" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="37" style="edgeStyle=none;html=1;entryX=0.001;entryY=0.367;entryDx=0;entryDy=0;entryPerimeter=0;fontColor=#FFFF66;strokeColor=#FFFF66;" edge="1" parent="1" source="31" target="38">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="460" y="490" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="420" y="490"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="31" value="lib.rs" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="480" width="150" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" value="other-file.rs" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="510" width="150" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="44" style="edgeStyle=none;html=1;entryX=0;entryY=0.067;entryDx=0;entryDy=0;entryPerimeter=0;fontColor=#FFFF66;strokeColor=#FFFF66;" edge="1" parent="1" source="35" target="42">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="420" y="570"/>
+                            <mxPoint x="420" y="740"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="35" value="cargo.toml" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="130" y="560" width="150" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="38" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=2;align=center;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="450" y="380" width="390" height="300" as="geometry"/>
+                </mxCell>
+                <mxCell id="41" value="&lt;span style=&quot;&quot;&gt;Example Lib File&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;spacing=0;" vertex="1" parent="1">
+                    <mxGeometry x="450" y="380" width="390" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="42" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=2;align=center;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="450" y="720" width="390" height="300" as="geometry"/>
+                </mxCell>
+                <mxCell id="43" value="&lt;span style=&quot;&quot;&gt;Example Cargo.toml File&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;spacing=0;" vertex="1" parent="1">
+                    <mxGeometry x="450" y="720" width="390" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" value="&lt;span style=&quot;&quot;&gt;Plugin Structure (WIP)&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;spacing=0;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="380" width="390" height="20" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
