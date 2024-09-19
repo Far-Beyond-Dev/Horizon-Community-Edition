@@ -1,19 +1,19 @@
 <mxfile host="65bd71144e">
     <diagram id="8Sja1tul4LKNi_w8vkZC" name="Page-1">
-        <mxGraphModel dx="2074" dy="660" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="1728" dy="550" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="20" value="Horiozon Coimpile-time plugins target workflow" style="rounded=1;whiteSpace=wrap;html=1;arcSize=2;align=center;verticalAlign=top;" vertex="1" parent="1">
-                    <mxGeometry x="10" y="150" width="830" height="220" as="geometry"/>
+                    <mxGeometry x="10" y="120" width="820" height="219" as="geometry"/>
                 </mxCell>
                 <mxCell id="3" value="Horizon Game Server Instance" style="aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image;image=img/lib/active_directory/generic_server.svg;" vertex="1" parent="1">
-                    <mxGeometry x="720" y="272" width="28.000000000000004" height="50" as="geometry"/>
+                    <mxGeometry x="700" y="248.04999999999998" width="60.42" height="41" as="geometry"/>
                 </mxCell>
                 <mxCell id="6" style="edgeStyle=none;html=1;" edge="1" parent="1" source="4" target="5">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="262" y="195"/>
+                            <mxPoint x="268" y="165"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
@@ -23,31 +23,31 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="4" value="My-Horizon-Plugin" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.git_repository;" vertex="1" parent="1">
-                    <mxGeometry x="70" y="170" width="50" height="50" as="geometry"/>
+                    <mxGeometry x="80" y="140" width="50" height="49" as="geometry"/>
                 </mxCell>
                 <mxCell id="12" style="edgeStyle=none;html=1;" edge="1" parent="1" source="5" target="11">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="5" value="Open Via Editor" style="aspect=fixed;html=1;points=[];align=center;image;fontSize=12;image=img/lib/azure2/general/Code.svg;" vertex="1" parent="1">
-                    <mxGeometry x="230" y="270" width="64" height="52" as="geometry"/>
+                    <mxGeometry x="190" y="243.7" width="155.43" height="51" as="geometry"/>
                 </mxCell>
                 <mxCell id="8" style="edgeStyle=none;html=1;" edge="1" parent="1" source="7" target="5">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="7" value="Horizon-Community-Edition" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.git_repository;" vertex="1" parent="1">
-                    <mxGeometry x="70" y="272" width="50" height="50" as="geometry"/>
+                    <mxGeometry x="80" y="243.7" width="50" height="51" as="geometry"/>
                 </mxCell>
                 <mxCell id="16" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="11" target="13">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="11" value="Compiler" style="pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#4495D1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;shape=mxgraph.veeam.cpu;" vertex="1" parent="1">
-                    <mxGeometry x="370" y="274.6" width="44.8" height="44.8" as="geometry"/>
+                    <mxGeometry x="370" y="251.95" width="44.8" height="38.4" as="geometry"/>
                 </mxCell>
                 <mxCell id="19" style="edgeStyle=none;html=1;" edge="1" parent="1" source="13" target="3">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="13" value="Horizon Binary Executable" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.cloud_service_package_file;" vertex="1" parent="1">
-                    <mxGeometry x="510" y="272" width="42.5" height="50" as="geometry"/>
+                    <mxGeometry x="510" y="249.35" width="42.5" height="41" as="geometry"/>
                 </mxCell>
                 <mxCell id="21" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=2;align=center;verticalAlign=top;" vertex="1" parent="1">
                     <mxGeometry x="10" y="380" width="390" height="300" as="geometry"/>
@@ -112,16 +112,16 @@
                     <mxGeometry x="130" y="560" width="150" height="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="38" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=2;align=center;verticalAlign=top;" vertex="1" parent="1">
-                    <mxGeometry x="450" y="380" width="390" height="300" as="geometry"/>
+                    <mxGeometry x="440" y="380" width="390" height="300" as="geometry"/>
                 </mxCell>
                 <mxCell id="41" value="&lt;span style=&quot;&quot;&gt;Example Lib File&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;spacing=0;" vertex="1" parent="1">
-                    <mxGeometry x="450" y="380" width="390" height="20" as="geometry"/>
+                    <mxGeometry x="440" y="380" width="390" height="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="42" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=2;align=center;verticalAlign=top;" vertex="1" parent="1">
-                    <mxGeometry x="450" y="720" width="390" height="300" as="geometry"/>
+                    <mxGeometry x="440" y="720" width="390" height="300" as="geometry"/>
                 </mxCell>
                 <mxCell id="43" value="&lt;span style=&quot;&quot;&gt;Example Cargo.toml File&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;spacing=0;" vertex="1" parent="1">
-                    <mxGeometry x="450" y="720" width="390" height="20" as="geometry"/>
+                    <mxGeometry x="440" y="720" width="390" height="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="45" value="&lt;span style=&quot;&quot;&gt;Plugin Structure (WIP)&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;spacing=0;" vertex="1" parent="1">
                     <mxGeometry x="10" y="380" width="390" height="20" as="geometry"/>
