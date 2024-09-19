@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="8Sja1tul4LKNi_w8vkZC" name="Page-1">
-        <mxGraphModel dx="1728" dy="550" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="1430" dy="455" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -47,7 +47,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="13" value="Horizon Binary Executable" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.cloud_service_package_file;" vertex="1" parent="1">
-                    <mxGeometry x="510" y="249.35" width="42.5" height="41" as="geometry"/>
+                    <mxGeometry x="510" y="250" width="42.5" height="40.35" as="geometry"/>
                 </mxCell>
                 <mxCell id="21" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=2;align=center;verticalAlign=top;" vertex="1" parent="1">
                     <mxGeometry x="10" y="380" width="390" height="300" as="geometry"/>
@@ -125,6 +125,18 @@
                 </mxCell>
                 <mxCell id="45" value="&lt;span style=&quot;&quot;&gt;Plugin Structure (WIP)&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;spacing=0;" vertex="1" parent="1">
                     <mxGeometry x="10" y="380" width="390" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="icon.png" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="130" y="590" width="150" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="47" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="46">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="95" y="440" as="sourcePoint"/>
+                        <mxPoint x="130" y="570" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="95" y="600"/>
+                        </Array>
+                    </mxGeometry>
                 </mxCell>
             </root>
         </mxGraphModel>
