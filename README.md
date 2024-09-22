@@ -180,11 +180,16 @@ Before installing Horizon, ensure that you have the following prerequisites:
 
     Debian (Or the DevContainer)
     ```bash
-    sudo apt-get update && sudo apt-get install -y clang libsqlite3-dev libssl-dev golang curl libclang-dev gcc-multilib
+    sudo apt-get update && sudo apt-get install -y clang libsqlite3-dev libssl-dev golang curl libclang-dev curl gcc-multilib
     ```
     Alpine
     ```bash
-    sudo apk update && sudo apk add clang sqlite-dev openssl-dev build-base go rustup curl libclang gcc-multilib
+    sudo apk update && sudo apk add clang sqlite-dev openssl-dev build-base go rustup curl libclang gcc-multilib curl
+    ```
+6. Install Cargo using the official installation script:
+
+    ```bash
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
     ```
 5. Use cargo to compile and run Horizon
 
