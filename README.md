@@ -170,7 +170,7 @@ Before installing Horizon, ensure that you have the following prerequisites:
     cd Horizon
     ```
 
-3. enter WSL or upen the project in a [VSCode Devcontainer](https://code.visualstudio.com/docs/devcontainers/containers#_open-an-existing-workspace-in-a-container)
+3. enter WSL or open the project in a [VSCode Devcontainer](https://code.visualstudio.com/docs/devcontainers/containers#_open-an-existing-workspace-in-a-container)
 
     ```bash
     wsl
