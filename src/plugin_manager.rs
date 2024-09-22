@@ -54,33 +54,6 @@ impl PluginManager {
     
         Ok(())
     }
-    //pub unsafe fn load_plugin<P: AsRef<std::path::Path>>(&mut self, path: P) -> Result<(), String> {
-    //    let path: &OsStr = path.as_ref().as_os_str();
-    //    let lib = unsafe { Library::new(path).map_err(|e| e.to_string())};
-    //
-    //
-    //    unsafe {
-    //        let metadata: Symbol<fn() -> PluginMetadata> =  lib.unwrap().get(b"get_plugin_metadata").map_err(|e| e.to_string())?;
-    //    }
-    //    unsafe {let create: Symbol<PluginCreateFn> = lib.get(b"create_plugin").map_err(|e| e.to_string())?;}
-    //    let plugin_metadata = metadata();
-    //    let plugin_name = plugin_metadata.name;
-    //    let plugin = create();
-    //    
-    //    if self.plugins.contains_key(plugin_name.clone()) {
-    //        return Err(format!("Plugin '{}' is already loaded.", plugin_name.clone()));
-    //    }
-    //
-    //    let plugin = create();
-    //    println!(
-    //        "Loaded plguin: {} (v{})",
-    //        plugin_metadata.name, plugin_metadata.version
-    //    );
-    //
-    //    self.plugins.insert(plugin_metadata.name.to_string(), Arc::from(plugin));
-    //    self.libraries.push(lib.unwrap());
-    //    Ok(())
-    //}
 
     /// Unloads a plugin by name.
     pub fn unload_plugin(&mut self, name: &str) -> Result<(), String> {
@@ -169,23 +142,6 @@ impl PluginManager {
          Ok(rx)
          }
 
-        // let entries = std::fs::read_dir(dir_path).map_err(|e| e.to_string())?;
-
-        // // Damn you and your unsafe shit Stephen!
-        // unsafe {
-        //     for entry in entries {
-        //         if let Ok(entry) = entry {
-        //             let path = entry.path();
-        //             if self.is_plugin_file(&path) {
-        //                 if let Err(e) = self.load_plugin(&path) {
-        //                     eprintln!("Failed to load plugin from {}: {}", path.display(), e);
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        // Ok(())
-
         /// Handles the events received from the directory mon and reloads plugins as needed
     pub unsafe fn handle_directory_events(&mut self, rx: Receiver<Result<Event, Error>>) {
         loop {
@@ -219,32 +175,6 @@ impl PluginManager {
                 Err(e) => println!("Channel receive error: {:?}", e),
             }
         }
-        // while let Ok(event) = rx.recv() {
-        //     match event.event.kind {
-        //         EventKind::Create(_) | EventKind::Modify(_) => {
-        //             let path = event.event.paths.get(0).cloned();
-        //             if let Some(path) = path {
-        //                 if self.is_plugin_file(&path) {
-        //                     let name = path.file_stem().unwrap().to_string_lossy().to_string();
-        //                     if self.reload_plugin(&path, &name).is_err() {
-        //                         println!("Failed to reload plugin '{}'", name);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         EventKind::Remove(_) => {
-        //             let path = event.event.paths.get(0).cloned();
-        //             if let Some(path) = path {
-        //                 if self.is_plugin_file(&path) {
-        //                     let name = path.file_stem().unwrap().to_string_lossy().to_string();
-        //                     if self.unload_plugin(&name).is_err() {
-        //                         println!("Failed to unload plugin '{}'", name);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         _ => {}
-        //     }
-        // }
+
     }
     }
