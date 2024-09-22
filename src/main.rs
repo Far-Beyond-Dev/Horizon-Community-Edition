@@ -178,7 +178,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Start the plugin Manager thread
     let mut plugin_manager = spawn(async {
-        let manager = plugin_manager::PluginManager::new();
+        let mut manager = plugin_manager::PluginManager::new();
 
         // manager.load_plugins_from_directory("./plugins/").is_err() {
         //     println!("Error: Failed to load plugins from dir");
