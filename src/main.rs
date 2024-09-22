@@ -24,7 +24,7 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 // Imported some third party crates
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
-use std::sync::{Arc, Mutex};
+use std::{sync::{Arc, Mutex}, time::Duration};
 use tokio::{main, task::spawn};
 use tracing::info;
 use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
@@ -189,10 +189,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let manager_ref = Arc::new(Mutex::new(manager));
         let manager_handle = Arc::clone(&manager_ref);
 
-        thread::spawn(move || {
-            let mut locked_manager = manager_handle.lock().unwrap();
-            locked_manager.handle_directory_events(rx);
-        });
+        // thread::spawn(move || {
+        //     let mut locked_manager = manager_handle.lock().unwrap();
+        //     unsafe {
+        //         locked_manager.handle_directory_events(rx);
+        //     }
+        // });
 
         loop {
             // Example of execution of a plugin
