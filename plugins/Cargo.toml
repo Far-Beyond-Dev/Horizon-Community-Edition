@@ -1,0 +1,14 @@
+# generated file, do not edit manually
+[dependencies]
+nom = "^3"
+
+[dependencies.plugin-test-api]
+path = "../plugin-api"
+version = "^0.1"
+
+[package]
+authors = ["Geoffroy Couprie <geo.couprie@gmail.com>"]
+description = "plugins crate for the plugin-test experiment"
+license = "MIT"
+name = "plugin-test-plugins"
+version = "0.1.2"

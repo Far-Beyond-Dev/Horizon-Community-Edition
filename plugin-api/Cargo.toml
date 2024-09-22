@@ -1,0 +1,8 @@
+[package]
+name = "plugin-test-api"
+version = "0.1.2"
+authors = ["Geoffroy Couprie <geo.couprie@gmail.com>"]
+description = "plugin base API for the plugin-test experiment"
+license = "MIT"
+
+[dependencies]

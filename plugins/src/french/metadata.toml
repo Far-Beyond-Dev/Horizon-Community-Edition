@@ -1,0 +1,5 @@
+name = "french"
+
+# we might refer directly to a crate instead of copying the code in
+crate = { name = "french", version = "^0.1" }
+
