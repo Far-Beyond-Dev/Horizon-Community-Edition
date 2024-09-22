@@ -21,6 +21,8 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 // Import a few things to get us started //
 ///////////////////////////////////////////
 
+use plugin_api::Plugin;
+use plugins::English;
 // Imported some third party crates
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
@@ -175,6 +177,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let instance = plugin.get_instance();
         println!("\t{}: \"{}\"", name, (*instance).say_hello());
     }
+
+    // Test some custom expansions to the API
+    English::init();
+    English::deinit();
+
 
     // Start the plugin Manager thread
     let mut plugin_manager = spawn(async {
