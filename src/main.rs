@@ -24,10 +24,14 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 // Imported some third party crates
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
-use std::sync::{Arc, Mutex};
+use std::{sync::{Arc, Mutex}, time::Duration};
 use tokio::{main, task::spawn};
 use tracing::info;
 use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
+
+// Load the plugins API
+extern crate plugin_test_api as plugin_api;
+extern crate plugin_test_plugins as plugins;
 
 // Import some custom crates from the crates folder in /src
 use TerraForge;
@@ -49,6 +53,8 @@ mod macros;
 mod structs;
 mod players;
 mod subsystems;
+mod plugin_manager;
+
 
 ///////////////////////////////////////////////////////////////
 //                    !!!! WARNING !!!!                      //
@@ -157,6 +163,47 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     let recipe_smith_thread = tokio::task::spawn(async {
         subsystems::recipe_smith::src::lib::main();
+    });
+
+
+    // Test the plugins API
+
+    let all_plugins = plugins::plugins();
+
+    println!("saying hello in:");
+    for (ref name, ref plugin) in all_plugins.list.iter() {
+        let instance = plugin.get_instance();
+        println!("\t{}: \"{}\"", name, (*instance).say_hello());
+    }
+
+    // Start the plugin Manager thread
+    let mut plugin_manager = spawn(async {
+        let mut manager = plugin_manager::PluginManager::new();
+
+        // manager.load_plugins_from_directory("./plugins/").is_err() {
+        //     println!("Error: Failed to load plugins from dir");
+        // }
+
+        let rx = manager.monitor_directory_for_changes("./plugins").expect("Failed to monitor directory");
+
+        let manager_ref = Arc::new(Mutex::new(manager));
+        let manager_handle = Arc::clone(&manager_ref);
+
+        // thread::spawn(move || {
+        //     let mut locked_manager = manager_handle.lock().unwrap();
+        //     unsafe {
+        //         locked_manager.handle_directory_events(rx);
+        //     }
+        // });
+
+        loop {
+            // Example of execution of a plugin
+            let manager = manager_ref.lock().unwrap();
+            manager.execute_plugin("English Plugin");
+
+            std::thread::sleep(Duration::from_secs(10));
+        }
+
     });
 
 
