@@ -21,7 +21,6 @@ impl PluginManager {
         }
     }
 
-
     /// Load any plugin
     pub unsafe fn load_plugin<P: AsRef<std::path::Path>>(&mut self, path: P) -> Result<(), String> {
         let path: &OsStr = path.as_ref().as_os_str();
