@@ -37,7 +37,7 @@ impl PluginManager {
         let plugin_name = plugin_metadata.name.clone();
         
         // Check if the plugin is already loaded
-        if self.plugins.contains_key(plugin_name) {
+        if self.plugins.contains_key(&plugin_name) {
             return Err(format!("Plugin '{}' is already loaded.", plugin_name));
         }
     
@@ -247,4 +247,4 @@ impl PluginManager {
         //     }
         // }
     }
-    }
+}
