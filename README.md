@@ -2,7 +2,7 @@
 > Horizon is still in early development and is not meant to be used in any production environments.
 
 > [!NOTE]  
-> Out installation methods have recently changed, please review them if you are experiencing difficulty
+> Our installation methods have recently changed, please review them if you are experiencing difficulty with the installation process
 
 ![horizon-server-high-resolution-logo-transparent](/branding/horizon-server-high-resolution-logo-transparent.png)
 <center>
