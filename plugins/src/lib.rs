@@ -4,10 +4,10 @@
 extern crate plugin_test_api;
 
 #[macro_use] extern crate nom;
-mod english;
+// mod english;
 mod french;
 mod greek;
-pub use english::*;
+// pub use english::*;
 pub use french::*;
 pub use greek::*;
 
@@ -21,7 +21,7 @@ pub struct Plugins {
 pub fn plugins() -> Plugins {
     let mut h: HashMap<String, Box<PluginInformation>> = HashMap::new();
 
-    h.insert("english".to_string(), Box::new(english::PLUGIN_METADATA));
+//     h.insert("english".to_string(), Box::new(english::PLUGIN_METADATA));
     h.insert("french".to_string(), Box::new(french::PLUGIN_METADATA));
     h.insert("greek".to_string(), Box::new(greek::PLUGIN_METADATA));
     Plugins { list: h }

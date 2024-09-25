@@ -228,16 +228,25 @@ impl Default for Transform {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MoveActionValue {
+pub struct Vec2D {
     pub x: f64,
     pub y: f64,
 }
+
+//  #[derive(Debug, Clone, Serialize, Deserialize)]
+//  pub struct BlendSpacePosition {
+//      pub blend_pos: Vec2D,
+//      pub blend_pos_x_classname: str,
+//      pub blend_neg_x_classname: str,
+//      pub blend_pos_y_classname: str,
+//      pub blend_neg_y_classname: str
+//  }
 
 
 ////////////////////////////////
 //  Define the player struct  //
 ////////////////////////////////
-/// 
+
 #[derive(Debug, Clone)]
 pub struct Player {
     // Socket and connection info
@@ -248,7 +257,7 @@ pub struct Player {
 
     // Basic transform data
     pub transform: Option<Transform>,
-    pub moveActionValue: Option<MoveActionValue>,
+    pub Vec2D: Option<Vec2D>,
     pub controlRotation: Option<Vec3D>,
 
     // Motion matching specific data
@@ -256,8 +265,11 @@ pub struct Player {
     pub key_joints: Option<Vec<Vec3D>>,
     pub root_velocity: Option<Vec3D>,
 
-    // Additional data that might be useful
+    // Useful data for animation state machine replication
     pub animation_state: Option<String>,
+    // pub blend_position: BlendSpacePosition,
+
+    // Additional data that might be useful to plugins
     pub last_input_time: Instant,
 }
 
@@ -269,12 +281,13 @@ impl Player {
             last_update: Instant::now(),
             is_active: true,
             transform: None,
-            moveActionValue: None,
+            Vec2D: None,
             controlRotation: None,
             trajectory_path: None,
             key_joints: None,
             root_velocity: None,
             animation_state: None,
+            // blend_position: None,
             last_input_time: Instant::now(),
         }
     }

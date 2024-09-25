@@ -6,11 +6,11 @@ use tracing::{debug, info};
 use std::time::{Duration, Instant};
 use crate::structs::*;
 
-impl Default for MoveActionValue {
-    fn default() -> Self {
-        MoveActionValue { x: 0.0, y: 0.0 }
-    }
-}
+// impl Default for MoveActionValue {
+//     fn default() -> Self {
+//         MoveActionValue { x: 0.0, y: 0.0 }
+//     }
+// }
 
 impl Default for Vec3D {
     fn default() -> Self {
@@ -63,7 +63,7 @@ pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     );
 
     // Register events using the socketioxide API directly
-    let players_clone = Arc::clone(&players);
+    let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
     socket.on("updatePlayerLocation", move |s: SocketRef, d: Data<Value>| {
         update_player_location(s, d, players_clone.clone())
     });
@@ -318,7 +318,7 @@ pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players:
                 "Root Rotation": player.transform.as_ref().and_then(|t| t.rotation.as_ref()),                
                 "Root Velocity": player.root_velocity,
                 "Control Rotation": player.controlRotation,
-                "Move Action Value": player.moveActionValue,
+//              "Move Action Value": player.moveActionValue,
                 "Trajectory Path": player.trajectory_path.as_ref().map(|path| 
                     path.iter().take(10).map(|point| json!({
                         "accumulatedSeconds": point.accumulated_seconds,

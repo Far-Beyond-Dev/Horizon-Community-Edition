@@ -1,5 +1,6 @@
 use plugin_test_api::{Plugin, PluginInformation, SayHello, PluginContext};
 use std::any::Any;
+use std::future;
 
 pub struct PluginMetadataType;
 

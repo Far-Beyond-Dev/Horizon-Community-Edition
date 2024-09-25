@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use async_trait::async_trait;
+use horizon_data_types::{ Player, PlayerManager };
 
 // Basic types
 pub type PlayerId = u64;
@@ -16,10 +17,10 @@ pub type Position = (f32, f32, f32);
 pub enum GameEvent {
     PlayerJoined(PlayerId),
     PlayerLeft(PlayerId),
-    ChatMessage { sender: PlayerId, content: String },
-    ItemPickup { player: PlayerId, item: ItemId },
-    PlayerMoved { player: PlayerId, new_position: Position },
-    DamageDealt { attacker: PlayerId, target: PlayerId, amount: f32 },
+    ChatMessage { sender: Player, content: String },
+    ItemPickup { player: Player, item: ItemId },
+    PlayerMoved { player: Player, new_position: Position },
+    DamageDealt { attacker: Player, target: Player, amount: f32 },
     // Add more event types as needed
 }
 
@@ -57,27 +58,27 @@ pub trait Plugin: Send + Sync {
     fn name(&self) -> &'static str;
     fn version(&self) -> &'static str;
     fn description(&self) -> &'static str;
-    
+
     async fn initialize(&self, context: &mut PluginContext);
     async fn shutdown(&self, context: &mut PluginContext);
-    
+
     async fn on_enable(&self, context: &mut PluginContext);
     async fn on_disable(&self, context: &mut PluginContext);
-    
+
     async fn on_game_event(&self, event: &GameEvent, context: &mut PluginContext);
-    
+
     async fn on_game_tick(&self, delta_time: f32, context: &mut PluginContext);
-    
+
     fn get_config(&self) -> Option<&dyn PluginConfig> { None }
     fn get_logger(&self) -> Option<&dyn PluginLogger> { None }
-    
+
     fn as_any(&self) -> &dyn Any;
 }
 
 // Command handler trait
 #[async_trait]
 pub trait CommandHandler: Send + Sync {
-    async fn handle_command(&self, sender: PlayerId, command: &str, args: Vec<String>, context: &mut PluginContext) -> bool;
+    async fn handle_command(&self, sender: Player, command: &str, args: Vec<String>, context: &mut PluginContext) -> bool;
 }
 
 // Metadata for describing a plugin
@@ -107,7 +108,7 @@ impl GameServer {
         // Implementation for broadcasting a message to all players
     }
 
-    pub async fn get_player(&self, _id: PlayerId) -> Option<Player> {
+    pub async fn get_player(&self, _id: Player) -> Option<Player> {
         // Implementation for retrieving a player by ID
         None
     }
@@ -116,14 +117,14 @@ impl GameServer {
         // Implementation for spawning an item in the game world
     }
 
-    pub async fn apply_damage(&self, _target: PlayerId, _amount: f32) {
+    pub async fn apply_damage(&self, _target: Player, _amount: f32) {
         // Implementation for applying damage to a player
     }
 }
 
 // Player struct (placeholder for actual implementation)
-pub struct Player {
-    pub id: PlayerId,
+pub struct PlayerDetails {
+    pub player: Player,
     pub name: String,
     pub position: Position,
     pub health: f32,
