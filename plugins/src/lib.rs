@@ -15,11 +15,11 @@ use plugin_test_api::PluginInformation;
 use std::collections::hash_map::HashMap;
 
 pub struct Plugins {
-    pub list: HashMap<String, Box<PluginInformation>>,
+    pub list: HashMap<String, Box<dyn PluginInformation>>,
 }
 
 pub fn plugins() -> Plugins {
-    let mut h: HashMap<String, Box<PluginInformation>> = HashMap::new();
+    let mut h: HashMap<String, Box<dyn PluginInformation>> = HashMap::new();
 
 //     h.insert("english".to_string(), Box::new(english::PLUGIN_METADATA));
     h.insert("french".to_string(), Box::new(french::PLUGIN_METADATA));

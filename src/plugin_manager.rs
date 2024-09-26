@@ -5,12 +5,12 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use notify::{Watcher,RecursiveMode, Config, PollWatcher, Event, Error, EventKind};
 use std::sync::mpsc::{channel, Receiver};
-use crate::plugin_api::components::{Plugin, PluginCreateFn, PluginMetadata};
+use crate::plugin_api::{Plugin, PluginCreateFn, PluginMetadata};
 use std::ffi::OsStr;
 
 pub struct PluginManager {
-    plugins: HashMap<String, Arc<dyn Plugin>>,
-    libraries: Vec<Library>,
+    plugins: Arc<RwLock<HashMap<String, Arc<dyn Plugin>>>>,
+    libraries: Arc<RwLock<HashMap<String, Library>>>,
 }
 
 impl PluginManager {

@@ -1,6 +1,7 @@
 extern crate tokio;
 extern crate async_trait;
 
+use std::fmt::Debug;
 use std::any::Any;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -12,9 +13,40 @@ use horizon_data_types::{ Player, PlayerManager };
 pub type PlayerId = u64;
 pub type ItemId = u32;
 pub type Position = (f32, f32, f32);
+pub mod components;
+pub use components::{Plugin, PluginCreateFn, PluginMetadata};
+
+/// Represents the version of the plugin API.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ApiVersion {
+    pub major: u32,
+    pub minor: u32,
+    pub hotfix: u32,
+}
+
+impl ApiVersion {
+    pub const fn new(major: u32, minor: u32, hotfix: u32) -> Self {
+        Self { major, minor, hotfix }
+    }
+}
+
+/// The current version of the plugin API.
+/// Plugins must specify this version in their metadata to ensure compatibility.
+pub const PLUGIN_API_VERSION: ApiVersion = ApiVersion::new(0, 0, 0);
+
+pub trait AsAny {
+    fn as_any(&self) -> & dyn Any;
+}
+
+impl<T: Plugin + 'static> AsAny for T {
+    fn as_any(&self) -> & dyn Any {
+        self
+    }
+}
 
 // Event types
 pub enum GameEvent {
+    None,
     PlayerJoined(PlayerId),
     PlayerLeft(PlayerId),
     ChatMessage { sender: Player, content: String },
@@ -54,24 +86,17 @@ pub enum LogLevel {
 
 // Main plugin trait
 #[async_trait]
-pub trait Plugin: Send + Sync {
-    fn name(&self) -> &'static str;
-    fn version(&self) -> &'static str;
-    fn description(&self) -> &'static str;
+pub trait BaseAPI: Send + Sync {
+    // Define Async methods
+    async fn on_game_event(&self, event: &GameEvent);
 
-    async fn initialize(&self, context: &mut PluginContext);
-    async fn shutdown(&self, context: &mut PluginContext);
+    async fn on_game_tick(&self, delta_time: f64);
 
-    async fn on_enable(&self, context: &mut PluginContext);
-    async fn on_disable(&self, context: &mut PluginContext);
-
-    async fn on_game_event(&self, event: &GameEvent, context: &mut PluginContext);
-
-    async fn on_game_tick(&self, delta_time: f32, context: &mut PluginContext);
-
+    // Define optional methods with default implementations
     fn get_config(&self) -> Option<&dyn PluginConfig> { None }
     fn get_logger(&self) -> Option<&dyn PluginLogger> { None }
 
+    // Method for dumbnamic casting
     fn as_any(&self) -> &dyn Any;
 }
 
@@ -79,16 +104,6 @@ pub trait Plugin: Send + Sync {
 #[async_trait]
 pub trait CommandHandler: Send + Sync {
     async fn handle_command(&self, sender: Player, command: &str, args: Vec<String>, context: &mut PluginContext) -> bool;
-}
-
-// Metadata for describing a plugin
-#[derive(Debug, Clone)]
-pub struct PluginMetadata {
-    pub name: &'static str,
-    pub version: &'static str,
-    pub description: &'static str,
-    pub dependencies: Vec<&'static str>,
-    pub commands: Vec<&'static str>,
 }
 
 // Context provided to plugins for interacting with the game server
@@ -130,58 +145,3 @@ pub struct PlayerDetails {
     pub health: f32,
     // Add more player fields as needed
 }
-
-
-/////////////////////////////////////////////////////////
-//                      WARNING                        //
-//  The components section is depricated and will be   //
-//  removed in a future version of the API             //
-/////////////////////////////////////////////////////////
-
-pub mod components {
-    use std::any::Any;
-
-    pub trait Plugin: Any + Send + Sync {
-        fn name(&self) -> &'static str;
-
-        fn version(&self) -> &'static str;
-
-        fn initialize(&self);
-
-        fn execute(&self);
-    }
-
-    pub trait AsAny {
-        fn as_any(&self) -> &dyn Any;
-    }
-
-    impl<T: Plugin+ 'static> AsAny for T {
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-    }
-
-    // Plugin metadata to descript the plguin.
-    #[derive(Debug, Clone)]
-    pub struct PluginMetadata {
-        pub name: &'static str,
-        pub version: &'static str,
-        pub description: &'static str,
-    }
-
-    pub type PluginCreateFn = fn() -> Box<dyn Plugin>;
-    
-    #[macro_export]
-    macro_rules! declare_plugin {
-        ($metadata:expr, %create_fn:expr) => {
-            pub fn get_plugin_metadata() -> plugin_api::PluginMetadata {
-                metadata
-            }
-
-            pub fn create_plugin() -> Box<dyn plugin_api::Plugin> {
-                create_fn()
-            }
-        };
-    }
-}
-

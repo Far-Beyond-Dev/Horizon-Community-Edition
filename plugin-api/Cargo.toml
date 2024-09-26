@@ -7,6 +7,6 @@ license = "MIT"
 edition = "2021"
 
 [dependencies]
-async-trait = "0.1.82"
+async-trait = "0.1.83"
 horizon_data_types = { git = "https://github.com/Far-Beyond-Dev/Horizon-Data-Types", version = "0.1.1" }
-tokio = { version = "1.40.0", features = ["full"] }
+tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }

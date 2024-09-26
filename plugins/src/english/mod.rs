@@ -11,7 +11,7 @@ impl PluginInformation for PluginMetadataType {
         "english".to_string()
     }
 
-    fn get_instance(&self) -> Box<SayHello> {
+    fn get_instance(&self) -> Box<dyn SayHello> {
         Box::new(English)
     }
 }
