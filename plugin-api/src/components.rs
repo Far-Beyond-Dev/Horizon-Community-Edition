@@ -1,3 +1,9 @@
+////////////////////////////////////////////////////////////////
+//                     Components.rs file                     //
+//  Hanndles all manditory plugin API functions, if a plugin  //
+//  does not implement these it will refuse to compile.       //
+////////////////////////////////////////////////////////////////
+
 use std::any::Any;
 use std::fmt::Debug;
 use crate::{ApiVersion, PluginContext};
