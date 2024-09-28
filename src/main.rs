@@ -216,45 +216,44 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pebble_vault_thread = spawn(async {
         _ = PebbleVault::tests::run_tests();
 
+        /*
 
-    //    // Create a BarnesHutManager instance
-    //    let db_path = "/data"; // Adjust this path as needed
-    //    let barnes_hut_config = PebbleVault::BarnesHutConfig {
-    //        theta: 0.5,
-    //        dt: 0.01,
-    //        epsilon: 1e-5,
-    //    };
-    //    let octree_size = 1000.0; // Adjust this value based on your simulation needs
-
-    //    let mut manager = match PebbleVault::BarnesHutManager::new(db_path, barnes_hut_config, octree_size) {
-    //        Ok(m) => m,
-    //        Err(e) => {
-    //            eprintln!("Failed to create BarnesHutManager: {}", e);
-    //            return;
-    //        }
-    //    };
-
-    //    // Create or load a region
-    //    let center = [0.0, 0.0, 0.0];
-    //    let radius = 500.0;
-    //    let region_id = match manager.create_or_load_region(center, radius) {
-    //        Ok(id) => id,
-    //        Err(e) => {
-    //            eprintln!("Failed to create or load region: {}", e);
-    //            return;
-    //        }
-    //    };
-
-    //    // Create a simulation for the region
-    //    if let Err(e) = manager.create_simulation(region_id) {
-    //        eprintln!("Failed to create simulation: {}", e);
-    //        return;
-    //    }
-
-    //    // Run the visualization
-    //    if let Err(e) = manager.run_visualization(region_id) {
-    //        eprintln!("Failed to run visualization: {}", e);
-    //    }
+        // Create a BarnesHutManager instance
+        let db_path = "/data"; // Adjust this path as needed
+        let barnes_hut_config = PebbleVault::BarnesHutConfig {
+            theta: 0.5,
+            dt: 0.01,
+            epsilon: 1e-5,
+        };
+        let octree_size = 1000.0; // Adjust this value based on your simulation needs
+        let mut manager = match PebbleVault::BarnesHutManager::new(db_path, barnes_hut_config, octree_size) {
+            Ok(m) => m,
+            Err(e) => {
+                eprintln!("Failed to create BarnesHutManager: {}", e);
+                return;
+            }
+        };
+        // Create or load a region
+        let center = [0.0, 0.0, 0.0];
+        let radius = 500.0;
+        let region_id = match manager.create_or_load_region(center, radius) {
+            Ok(id) => id,
+            Err(e) => {
+                eprintln!("Failed to create or load region: {}", e);
+                return;
+            }
+        };
+        // Create a simulation for the region
+        if let Err(e) = manager.create_simulation(region_id) {
+            eprintln!("Failed to create simulation: {}", e);
+            return;
+        }
+        // Run the visualization
+        if let Err(e) = manager.run_visualization(region_id) {
+            eprintln!("Failed to run visualization: {}", e);
+        }
+        
+         */
     });
 
     // Define a place to put new players
