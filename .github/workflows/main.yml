@@ -47,7 +47,7 @@ jobs:
         info:
           - { os: "ubuntu-latest", target: "x86_64-unknown-linux-gnu", cross: false, rust: "beta" }
           - { os: "macos-12", target: "x86_64-apple-darwin", cross: false, rust: "beta" }
-#          - { os: "windows-2019", target: "x86_64-pc-windows-msvc", cross: false, rust: "beta" }
+          - { os: "windows-2019", target: "x86_64-pc-windows-msvc", cross: false, rust: "beta" }
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.1
