@@ -10,66 +10,80 @@ use std::ffi::OsStr;
 use std::sync::RwLock;
 
 pub struct PluginManager {
-    plugins: Arc<RwLock<HashMap<String, Arc<dyn Plugin>>>>,
+    plugins: Arc<RwLock<HashMap<String, Box<dyn Plugin>>>>,
     libraries: Arc<RwLock<HashMap<String, Library>>>,
 }
 
 impl PluginManager {
     pub fn new() -> Self {
         PluginManager {
-            plugins: HashMap::new(),
-            libraries: Vec::new(),
+            plugins: Arc::new(RwLock::new(HashMap::new())),
+            libraries: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
+    pub fn contains_plugin(&self, plugin_name: &str) -> bool {
+        self.plugins.read().unwrap().contains_key(plugin_name)
+    }
+
+    // Example of how to add a plugin
+    pub fn add_plugin(&self, name: String, plugin: Box<dyn Plugin>) {
+        self.plugins.write().unwrap().insert(name, plugin);
+    }
+
+    // Example of how to get a plugin
+    pub fn get_plugin(&self, name: &str) -> Option<Box<dyn Plugin>> {
+        self.plugins.read().unwrap().get(name).cloned()
+    }
 
     /// Load any plugin
-    pub unsafe fn load_plugin<P: AsRef<std::path::Path>>(&mut self, path: P) -> Result<(), String> {
+    pub unsafe fn load_plugin<P: AsRef<Path>>(&self, path: P) -> Result<(), String> {
         let path: &OsStr = path.as_ref().as_os_str();
+        
         // Load the library and store it in a variable
         let lib = Library::new(path).map_err(|e| e.to_string())?;
-    
+   
         // Load metadata and create function symbols
-        let metadata: Symbol<fn() -> PluginMetadata> = lib.get(b"get_plugin_metadata").map_err(|e| e.to_string())?;
-        let create: Symbol<PluginCreateFn> = lib.get(b"create_plugin").map_err(|e| e.to_string())?;
-    
+        let metadata: Symbol<fn() -> PluginMetadata> = lib.get(b"get_plugin_metadata")
+            .map_err(|e| e.to_string())?;
+        let create: Symbol<PluginCreateFn> = lib.get(b"create_plugin")
+            .map_err(|e| e.to_string())?;
+   
         // Retrieve plugin metadata and create the plugin instance
         let plugin_metadata = metadata();
         let plugin_name = plugin_metadata.name.clone();
-        
+       
         // Check if the plugin is already loaded
-        if self.plugins.contains_key(plugin_name) {
+        if self.plugins.read().unwrap().contains_key(&plugin_name) {
             return Err(format!("Plugin '{}' is already loaded.", plugin_name));
         }
-    
+   
         let plugin = create();
-    
+   
         println!(
             "Loaded plugin: {} (v{})",
             plugin_metadata.name, plugin_metadata.version
         );
-    
-        // Insert the plugin into the plugin map and store the library in the vector
-        self.plugins.insert(plugin_metadata.name.to_string(), Arc::from(plugin));
-        self.libraries.push(lib);
-    
+   
+        // Insert the plugin into the plugin map and store the library in the map
+        self.plugins.write().unwrap().insert(plugin_name.clone(), Box::new(plugin));
+        self.libraries.write().unwrap().insert(plugin_name, lib);
+   
         Ok(())
     }
 
     /// Unloads a plugin by name.
-    pub fn unload_plugin(&mut self, name: &str) -> Result<(), String> {
-        if let Some(_) = self.plugins.remove(name) {
-            if let Some(index) = self.libraries.iter().position(|lib| {
-                // You need to implement a way to identify the correct library
-                // This is a placeholder and needs to be replaced with actual logic
-                true
-            }) {
-                let lib = self.libraries.remove(index);
+    pub fn unload_plugin(&self, name: &str) -> Result<(), String> {
+        // Try to remove the plugin
+        if self.plugins.write().unwrap().remove(name).is_some() {
+            // If the plugin was found and removed, also remove and drop the library
+            if let Some(lib) = self.libraries.write().unwrap().remove(name) {
                 drop(lib); // Unload the Library
                 println!("Unloaded Plugin: {}", name);
                 Ok(())
             } else {
-                Err(format!("Error: Library for plugin '{}' not found.", name))
+                // This shouldn't happen if our state is consistent
+                Err(format!("Error: Library for plugin '{}' not found, but plugin was removed. This is an inconsistent state.", name))
             }
         } else {
             Err(format!("Error: Plugin '{}' is not loaded.", name))
@@ -178,4 +192,4 @@ impl PluginManager {
         }
 
     }
-    }
+}

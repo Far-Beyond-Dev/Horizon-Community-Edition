@@ -19,11 +19,11 @@ pub trait Plugin: Any + Debug + Send + Sync {
     /// Executes the plugin's main functionality.
     fn execute(&self);
     
-    async fn initialize(&self, context: &mut PluginContext);
-    async fn shutdown(&self, context: &mut PluginContext);
+    fn initialize(&self, context: &mut PluginContext);
+    fn shutdown(&self, context: &mut PluginContext);
 
-    async fn on_enable(&self, context: &mut PluginContext);
-    async fn on_disable(&self, context: &mut PluginContext);
+    fn on_enable(&self, context: &mut PluginContext);
+    fn on_disable(&self, context: &mut PluginContext);
 }
 
 /// Struct representing metadata about the plugin.
