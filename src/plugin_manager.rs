@@ -7,6 +7,7 @@ use notify::{Watcher,RecursiveMode, Config, PollWatcher, Event, Error, EventKind
 use std::sync::mpsc::{channel, Receiver};
 use crate::plugin_api::{Plugin, PluginCreateFn, PluginMetadata};
 use std::ffi::OsStr;
+use std::sync::RwLock;
 
 pub struct PluginManager {
     plugins: Arc<RwLock<HashMap<String, Arc<dyn Plugin>>>>,
