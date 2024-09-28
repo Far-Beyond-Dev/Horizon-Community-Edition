@@ -4,19 +4,13 @@ use socketioxide::extract::{Data, SocketRef};
 use std::sync::{Arc, Mutex};
 use tracing::{debug, info};
 use std::time::{Duration, Instant};
-use crate::structs::*;
+use horizon_data_types::*;
 
 // impl Default for MoveActionValue {
 //     fn default() -> Self {
 //         MoveActionValue { x: 0.0, y: 0.0 }
 //     }
 // }
-
-impl Default for Vec3D {
-    fn default() -> Self {
-        Vec3D { x: 0.0, y: 0.0, z: 0.0 }
-    }
-}
 
 pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     /////////////////////////////////////////////////////////////

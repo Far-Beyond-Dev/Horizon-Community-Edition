@@ -29,6 +29,7 @@ use socketioxide::extract::{Data, SocketRef};
 use std::{sync::{Arc, Mutex}, time::Duration};
 use tokio::{main, task::spawn};
 use tracing::info;
+use horizon_data_types::*;
 use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
 
 // Load the plugins API
@@ -44,7 +45,6 @@ use PebbleVault;
 // Import all structs (when we have a ton of structs this   //
 // will be very bad but should be fine for now)             //
 //////////////////////////////////////////////////////////////
-use structs::*;
 
 /////////////////////////////////////
 // Import the modules we will need //
@@ -52,7 +52,6 @@ use structs::*;
 
 mod events;
 mod macros;
-mod structs;
 mod players;
 mod subsystems;
 mod plugin_manager;

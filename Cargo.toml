@@ -10,7 +10,7 @@ hyper = "1.3.1"
 reqwest = "0.12.5"
 serde = "1.0.210"
 serde_json = "1.0.128"
-socketioxide = "0.13.0"
+socketioxide = "0.14.1"
 tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
@@ -43,7 +43,7 @@ chrono = "0.4.38"
 libloading = "0.8.5"
 notify = "6.1.1"
 notify-debouncer-full = "0.3.1"
-horizon_data_types = { git = "https://github.com/Far-Beyond-Dev/Horizon-Data-Types", version = "0.1.1" }
+horizon_data_types = "0.1.4"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 mimalloc = "0.1.43"
