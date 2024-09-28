@@ -23,7 +23,8 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 use plugin_api::Plugin;
 // use plugins::English;
-// Imported some third party crates
+
+// Import some third party crates
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
 use std::{sync::{Arc, Mutex}, time::Duration};
@@ -221,6 +222,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Start up the database
     PebbleVault::main();
 
+    ////////////////////////////////////////////////////
+    //                      WARNING                   //
+    //  In future versions of Horizon players will    //
+    //  likely be stored in PebbleVault to be in an   //
+    //  easy-to-access central location.              //
+    ////////////////////////////////////////////////////
+
     // Define a place to put new players
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
     let (svc, io) = socketioxide::SocketIo::new_svc();
@@ -232,10 +240,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         on_connect(socket, data, players_clone.clone())
     });
     
-    // Create a router to handle incoming connections
+    // Create a router to handle incoming network requests
     let app = Router::new()
-        .get("/", redirect_to_master_panel)
-        .any("/*", ServiceHandler::new(svc));
+        .get("/", redirect_to_master_panel) // Handle accessing server from browser
+        .any("/*", ServiceHandler::new(svc)); // Any other protocalls go to socket server
 
     info!("Starting server");
     
