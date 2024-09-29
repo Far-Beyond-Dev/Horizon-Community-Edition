@@ -170,13 +170,34 @@ Before installing Horizon, ensure that you have the following prerequisites:
     cd Horizon
     ```
 
-3. Build and deploy the horizon service via docker-compose:
+3. enter WSL or open the project in a [VSCode Devcontainer](https://code.visualstudio.com/docs/devcontainers/containers#_open-an-existing-workspace-in-a-container)
 
     ```bash
-    docker-compose up --build
+    wsl
     ```
 
-4. Follow the prompts to configure any necessary settings in the `server-config.json` file.
+4. Run the following to install deps
+
+    Debian (Or the DevContainer)
+    ```bash
+    sudo apt-get update && sudo apt-get install -y clang libsqlite3-dev libssl-dev golang curl libclang-dev curl gcc-multilib
+    ```
+    Alpine
+    ```bash
+    sudo apk update && sudo apk add clang sqlite-dev openssl-dev build-base go rustup curl libclang gcc-multilib curl
+    ```
+6. Install Cargo using the official installation script:
+
+    ```bash
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    ```
+5. Use cargo to compile and run Horizon
+
+    ```bash
+    cargo run
+    ```
+
+6. Follow the prompts to configure any necessary settings in the `server-config.json` file.
 
 For more detailed instructions and troubleshooting tips, refer to the [Installation Guide](installation.md).
 
