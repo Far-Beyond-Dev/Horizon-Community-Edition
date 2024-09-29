@@ -21,12 +21,16 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 // Import a few things to get us started //
 ///////////////////////////////////////////
 
-// Imported some third party crates
+use plugin_api::Plugin;
+// use plugins::English;
+
+// Import some third party crates
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
 use std::{sync::{Arc, Mutex}, time::Duration};
 use tokio::{main, task::spawn};
 use tracing::info;
+use horizon_data_types::*;
 use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
 
 // Load the plugins API
@@ -42,7 +46,6 @@ use PebbleVault;
 // Import all structs (when we have a ton of structs this   //
 // will be very bad but should be fine for now)             //
 //////////////////////////////////////////////////////////////
-use structs::*;
 
 /////////////////////////////////////
 // Import the modules we will need //
@@ -50,7 +53,6 @@ use structs::*;
 
 mod events;
 mod macros;
-mod structs;
 mod players;
 mod subsystems;
 mod plugin_manager;
@@ -176,6 +178,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("\t{}: \"{}\"", name, (*instance).say_hello());
     }
 
+    // Test some custom expansions to the API
+    // English::init();
+    // English::deinit();
+
+
     // Start the plugin Manager thread
     let mut plugin_manager = spawn(async {
         let mut manager = plugin_manager::PluginManager::new();
@@ -214,6 +221,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Start the PebbleVault thread
     let pebble_vault_thread = spawn(async {
+        PebbleVault::tests::run_tests();
+
         // Create a BarnesHutManager instance
         let db_path = "/data"; // Adjust this path as needed
         let barnes_hut_config = PebbleVault::BarnesHutConfig {
@@ -257,6 +266,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
 
+    ////////////////////////////////////////////////////
+    //                      WARNING                   //
+    //  In future versions of Horizon players will    //
+    //  likely be stored in PebbleVault to be in an   //
+    //  easy-to-access central location.              //
+    ////////////////////////////////////////////////////
+
     // Define a place to put new players
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
     let (svc, io) = socketioxide::SocketIo::new_svc();
@@ -268,10 +284,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         on_connect(socket, data, players_clone.clone())
     });
     
-    // Create a router to handle incoming connections
+    // Create a router to handle incoming network requests
     let app = Router::new()
-        .get("/", redirect_to_master_panel)
-        .any("/*", ServiceHandler::new(svc));
+        .get("/", redirect_to_master_panel) // Handle accessing server from browser
+        .any("/*", ServiceHandler::new(svc)); // Any other protocalls go to socket server
 
     info!("Starting server");
     

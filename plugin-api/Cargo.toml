@@ -4,5 +4,9 @@ version = "0.1.2"
 authors = ["Geoffroy Couprie <geo.couprie@gmail.com>"]
 description = "plugin base API for the plugin-test experiment"
 license = "MIT"
+edition = "2021"
 
 [dependencies]
+async-trait = "0.1.83"
+horizon_data_types = "0.1.4"
+tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }

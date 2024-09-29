@@ -9,7 +9,7 @@ impl PluginInformation for PluginMetadataType {
         "ελληνικά".to_string()
     }
 
-    fn get_instance(&self) -> Box<SayHello> {
+    fn get_instance(&self) -> Box<dyn SayHello> {
         Box::new(Greek)
     }
 }
