@@ -221,6 +221,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Start the PebbleVault thread
     let pebble_vault_thread = spawn(async {
+        PebbleVault::tests::run_tests();
+
         // Create a BarnesHutManager instance
         let db_path = "/data"; // Adjust this path as needed
         let barnes_hut_config = PebbleVault::BarnesHutConfig {
