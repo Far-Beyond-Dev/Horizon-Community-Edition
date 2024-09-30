@@ -208,52 +208,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
     // Start the TerraForge thread
-    let _terraforge_thread = spawn(async {
-        TerraForge::main();
-    });
+    // let _terraforge_thread = spawn(async {
+    //     TerraForge::main();
+    // });
     
     // Start the PebbleVault thread
     let pebble_vault_thread = spawn(async {
-        _ = PebbleVault::tests::run_tests();
-
-        /*
-
-        // Create a BarnesHutManager instance
-        let db_path = "/data"; // Adjust this path as needed
-        let barnes_hut_config = PebbleVault::BarnesHutConfig {
-            theta: 0.5,
-            dt: 0.01,
-            epsilon: 1e-5,
-        };
-        let octree_size = 1000.0; // Adjust this value based on your simulation needs
-        let mut manager = match PebbleVault::BarnesHutManager::new(db_path, barnes_hut_config, octree_size) {
-            Ok(m) => m,
-            Err(e) => {
-                eprintln!("Failed to create BarnesHutManager: {}", e);
-                return;
-            }
-        };
-        // Create or load a region
-        let center = [0.0, 0.0, 0.0];
-        let radius = 500.0;
-        let region_id = match manager.create_or_load_region(center, radius) {
-            Ok(id) => id,
-            Err(e) => {
-                eprintln!("Failed to create or load region: {}", e);
-                return;
-            }
-        };
-        // Create a simulation for the region
-        if let Err(e) = manager.create_simulation(region_id) {
-            eprintln!("Failed to create simulation: {}", e);
-            return;
+        // Run the initial tests
+        if let Err(e) = PebbleVault::tests::run_tests() {
+            eprintln!("Error running initial PebbleVault tests: {}", e);
         }
-        // Run the visualization
-        if let Err(e) = manager.run_visualization(region_id) {
-            eprintln!("Failed to run visualization: {}", e);
+
+        // Set up parameters for the continuous load test
+        let db_path = "continuous_load_test.db";
+        let num_objects = 10_00;
+        let num_regions = 5;
+        let num_operations = 3;
+        let interval = Duration::from_secs(300); // Run every 5 minutes
+
+        // Continuous load testing loop
+        loop {
+            match PebbleVault::load_test::run_load_test(db_path, num_objects, num_regions, num_operations) {
+                Ok(_) => println!("Continuous load test completed successfully"),
+                Err(e) => eprintln!("Error in continuous load test: {}", e),
+            }
+
+            // Wait for the specified interval before running the next test
+            tokio::time::sleep(interval).await;
         }
-        
-         */
     });
 
     // Define a place to put new players
