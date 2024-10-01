@@ -57,7 +57,6 @@ mod players;
 mod subsystems;
 mod plugin_manager;
 
-
 ///////////////////////////////////////////////////////////////
 //                    !!!! WARNING !!!!                      //
 // on_connect runs every time a new player connects to the   //
@@ -178,13 +177,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("\t{}: \"{}\"", name, (*instance).say_hello());
     }
 
-    // Test some custom expansions to the API
-    // English::init();
-    // English::deinit();
-
-
     // Start the plugin Manager thread
-    let mut plugin_manager = spawn(async {
+    let mut _plugin_manager = spawn(async {
         let mut manager = plugin_manager::PluginManager::new();
 
         // manager.load_plugins_from_directory("./plugins/").is_err() {
@@ -203,13 +197,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         //     }
         // });
 
-        loop {
-            // Example of execution of a plugin
-            let manager = manager_ref.lock().unwrap();
-            manager.execute_plugin("English Plugin");
-
-            std::thread::sleep(Duration::from_secs(10));
-        }
+        //loop {
+        //    // Example of execution of a plugin
+        //    let manager = manager_ref.lock().unwrap();
+        //    manager.execute_plugin("English Plugin");
+        //
+        //    std::thread::sleep(Duration::from_secs(10));
+        //}
 
     });
 
@@ -223,48 +217,45 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pebble_vault_thread = spawn(async {
         PebbleVault::tests::run_tests();
 
-        // Create a BarnesHutManager instance
+        // // Create a BarnesHutManager instance
         let db_path = "/data"; // Adjust this path as needed
-        let barnes_hut_config = PebbleVault::BarnesHutConfig {
-            theta: 0.5,
-            dt: 0.01,
-            epsilon: 1e-5,
-        };
-        let octree_size = 1000.0; // Adjust this value based on your simulation needs
+        // let barnes_hut_config = PebbleVault::BarnesHutConfig {
+        //     theta: 0.5,
+        //     dt: 0.01,
+        //     epsilon: 1e-5,
+        // };
+        // let octree_size = 1000.0; // Adjust this value based on your simulation needs
 
-        let mut manager = match PebbleVault::BarnesHutManager::new(db_path, barnes_hut_config, octree_size) {
-            Ok(m) => m,
-            Err(e) => {
-                eprintln!("Failed to create BarnesHutManager: {}", e);
-                return;
-            }
-        };
+        // let mut manager = match PebbleVault::BarnesHutManager::new(db_path, barnes_hut_config, octree_size) {
+        //     Ok(m) => m,
+        //     Err(e) => {
+        //         eprintln!("Failed to create BarnesHutManager: {}", e);
+        //         return;
+        //     }
+        // };
 
-        // Create or load a region
-        let center = [0.0, 0.0, 0.0];
-        let radius = 500.0;
-        let region_id = match manager.create_or_load_region(center, radius) {
-            Ok(id) => id,
-            Err(e) => {
-                eprintln!("Failed to create or load region: {}", e);
-                return;
-            }
-        };
-
-        // Create a simulation for the region
-        if let Err(e) = manager.create_simulation(region_id) {
-            eprintln!("Failed to create simulation: {}", e);
-            return;
-        }
-
-        // Run the visualization
-        if let Err(e) = manager.run_visualization(region_id) {
-            eprintln!("Failed to run visualization: {}", e);
-        }
-    });
-
-
-
+        // // Create or load a region
+        // let center = [0.0, 0.0, 0.0];
+        // let radius = 500.0;
+        // let region_id = match manager.create_or_load_region(center, radius) {
+        //     Ok(id) => id,
+        //     Err(e) => {
+        //         eprintln!("Failed to create or load region: {}", e);
+        //         return;
+        //     }
+        // };
+// 
+        // // Create a simulation for the region
+        // if let Err(e) = manager.create_simulation(region_id) {
+        //     eprintln!("Failed to create simulation: {}", e);
+        //     return;
+        // }
+// 
+        // // Run the visualization
+        // if let Err(e) = manager.run_visualization(region_id) {
+        //     eprintln!("Failed to run visualization: {}", e);
+        // }
+    }); 
 
     ////////////////////////////////////////////////////
     //                      WARNING                   //
@@ -293,7 +284,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Define a listener on port 3000
     let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    
+    println!("Listening on 0.0.0.0:3000");
+
     // Start the server and handle any errors
     if let Err(e) = serve(listener, app).await {
         println!("{}", e);
