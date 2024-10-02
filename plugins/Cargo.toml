@@ -11,6 +11,7 @@ edition = "2021"
 [dependencies]
 nom = "^3"
 async-trait = "0.1.50" 
+horizon_data_types = "0.1.4"
 
 [dependencies.plugin-test-api]
 path = "../plugin-api"

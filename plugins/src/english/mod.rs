@@ -1,3 +1,4 @@
+use horizon_data_types::Player;
 use plugin_test_api::{BaseAPI, GameEvent, PluginInformation, SayHello};
 use async_trait::async_trait;
 use std::any::Any;
@@ -22,8 +23,8 @@ impl PluginInformation for PluginMetadataType {
 impl BaseAPI for PluginMetadataType {
     async fn on_game_event(&self, event: &GameEvent) {
         match event {
-            GameEvent::PlayerJoined(player_id) => {
-                println!("Player {} has joined the game. Hello!!", player_id);
+            GameEvent::PlayerJoined(player) => {
+                println!("Player {} has joined the game. Hello!!", player.id);
             }
             GameEvent::ChatMessage {sender, content } => {
                 //println!("{} says: {} (in English, we'd say: {}", sender, content, "Hello World");

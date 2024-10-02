@@ -47,8 +47,8 @@ impl<T: Plugin + 'static> AsAny for T {
 // Event types
 pub enum GameEvent {
     None,
-    PlayerJoined(PlayerId),
-    PlayerLeft(PlayerId),
+    PlayerJoined( Player ),
+    PlayerLeft( Player ),
     ChatMessage { sender: Player, content: String },
     ItemPickup { player: Player, item: ItemId },
     PlayerMoved { player: Player, new_position: Position },
