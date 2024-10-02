@@ -22,8 +22,8 @@ impl PluginInformation for PluginMetadataType {
 impl BaseAPI for PluginMetadataType {
     async fn on_game_event(&self, event: &GameEvent) {
         match event {
-            GameEvent::PlayerJoined(player_id) => {
-                println!("Player {} has joined the game. Bienvenue!", player_id);
+            GameEvent::PlayerJoined(player) => {
+                println!("Player {} has joined the game. Bienvenue!", player.id);
             }
             GameEvent::ChatMessage {sender, content } => {
                 //println!("{} says: {} (in French, we'd say: {}", sender, content, "Bonjour");
