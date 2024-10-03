@@ -1,38 +1,40 @@
+// Import plugins API components
 use plugin_test_api::{BaseAPI, GameEvent, PluginInformation, SayHello};
 use async_trait::async_trait;
 use std::any::Any;
+use horizon_data_types::Player;
 
 // Metadata type for the plugin, providing plugin-specific information.
 pub struct PluginMetadataType;
 
-// Constant holding the metadata object for easy access.
+// Register Custom Events
+pub mod horizon_core;
+
+// Define and expose plugin meta
 pub const PLUGIN_METADATA: PluginMetadataType = PluginMetadataType;
+
+// Implement the plugin API calls for Horizon Core
 
 impl PluginInformation for PluginMetadataType {
     fn name(&self) -> String {
-        "français".to_string()
+        "Horizon Core".to_string()
     }
 
-    fn get_instance(&self) -> Box<dyn SayHello> {
-        Box::new(French)
+    fn get_instance(&self) -> Box<dyn SayHello + 'static> {
+        Box::new(Horizon_Core)
     }
 }
 
 #[async_trait]
 impl BaseAPI for PluginMetadataType {
     async fn on_game_event(&self, event: &GameEvent) {
-        match event {
+        match event {   
+            // Set up listeners in all modules
             GameEvent::PlayerJoined(player) => {
-                println!("Player {} has joined the game. Bienvenue!", player.id);
-            }
-            GameEvent::ChatMessage {sender, content } => {
-                //println!("{} says: {} (in French, we'd say: {}", sender, content, "Bonjour");
-            }
-            GameEvent::PlayerMoved { player, new_position } => {
-                //println!("Player {} moved to postion {:?}", player , new_position);
+                horizon_core::init_all(player.clone());
             }
             _=> {
-//              println!("Unhandled game event.");
+                // Unhandled events ignored
             }
         }
     }
@@ -46,10 +48,27 @@ impl BaseAPI for PluginMetadataType {
     }
 }
 
-pub struct French;
+pub struct Horizon_Core;
 
-impl SayHello for French {
+impl SayHello for Horizon_Core {
     fn say_hello(&self) -> String {
-        "Bonjour, tout le monde".to_string()
+        "Hello World!".to_string()
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

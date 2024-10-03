@@ -21,12 +21,16 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 // Import a few things to get us started //
 ///////////////////////////////////////////
 
-// Imported some third party crates
+use plugin_api::Plugin;
+// use plugins::English;
+
+// Import some third party crates
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
 use std::{sync::{Arc, Mutex}, time::Duration, path::Path};
 use tokio::{main, task::spawn};
 use tracing::info;
+use horizon_data_types::*;
 use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
 use uuid::Uuid;
 use rand;
@@ -44,7 +48,6 @@ use PebbleVault;
 // Import all structs (when we have a ton of structs this   //
 // will be very bad but should be fine for now)             //
 //////////////////////////////////////////////////////////////
-use structs::*;
 
 /////////////////////////////////////
 // Import the modules we will need //
@@ -52,11 +55,9 @@ use structs::*;
 
 mod events;
 mod macros;
-mod structs;
 mod players;
 mod subsystems;
 mod plugin_manager;
-
 
 ///////////////////////////////////////////////////////////////
 //                    !!!! WARNING !!!!                      //
@@ -179,7 +180,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Start the plugin Manager thread
-    let mut plugin_manager = spawn(async {
+    let mut _plugin_manager = spawn(async {
         let mut manager = plugin_manager::PluginManager::new();
 
         // manager.load_plugins_from_directory("./plugins/").is_err() {
@@ -198,13 +199,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         //     }
         // });
 
-        loop {
-            // Example of execution of a plugin
-            let manager = manager_ref.lock().unwrap();
-            manager.execute_plugin("English Plugin");
-
-            std::thread::sleep(Duration::from_secs(10));
-        }
+        //loop {
+        //    // Example of execution of a plugin
+        //    let manager = manager_ref.lock().unwrap();
+        //    manager.execute_plugin("English Plugin");
+        //
+        //    std::thread::sleep(Duration::from_secs(10));
+        //}
 
     });
 
@@ -302,16 +303,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         on_connect(socket, data, players_clone.clone())
     });
     
-    // Create a router to handle incoming connections
+    // Create a router to handle incoming network requests
     let app = Router::new()
-        .get("/", redirect_to_master_panel)
-        .any("/*", ServiceHandler::new(svc));
+        .get("/", redirect_to_master_panel) // Handle accessing server from browser
+        .any("/*", ServiceHandler::new(svc)); // Any other protocalls go to socket server
 
     info!("Starting server");
     
     // Define a listener on port 3000
     let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    
+    println!("Listening on 0.0.0.0:3000");
+
     // Start the server and handle any errors
     if let Err(e) = serve(listener, app).await {
         println!("{}", e);
