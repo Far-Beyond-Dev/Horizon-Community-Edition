@@ -30,6 +30,7 @@ dependencies = [
  "notify-debouncer-full",
  "plugin-test-api",
  "plugin-test-plugins",
+ "rand",
  "rayon",
  "reqwest",
  "serde",
