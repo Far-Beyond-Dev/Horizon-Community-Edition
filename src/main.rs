@@ -36,12 +36,13 @@ use uuid::Uuid;
 use rand;
 
 // Load the plugins API
-extern crate plugin_test_api as plugin_api;
-extern crate plugin_test_plugins as plugins;
+use plugin_test_api as plugin_api;
+use plugin_test_plugins as plugins;
 
 // Import some custom crates from the crates folder in /src
 use TerraForge;
 use PebbleVault;
+use recipesmith;
 
 //////////////////////////////////////////////////////////////
 //                    !!!! WARNING !!!!                     //
@@ -115,7 +116,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     subsystems::core::level_data::init();
     subsystems::core::logging::init();
     subsystems::core::notifications::init();
-    subsystems::recipe_smith::src::lib::main();
+    recipesmith::main();
 
     // DO NOT INIT SUBSYSTEMS BEYOND THIS POINT
     // Send an optional event to the player that they can hook into to start the game client side
@@ -165,7 +166,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     subsystems::core::startup::main();
     
     let recipe_smith_thread = tokio::task::spawn(async {
-        subsystems::recipe_smith::src::lib::main();
+        recipesmith::main();
     });
 
 
