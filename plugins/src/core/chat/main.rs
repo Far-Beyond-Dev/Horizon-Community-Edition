@@ -4,6 +4,13 @@ use std::sync::{Arc, Mutex};
 use serde::Deserialize;
 use tracing::{debug, info};
 use horizon_data_types::*;
+use components::*;
+
+
+// Import the plugin API components
+pub mod components;
+
+
 
 #[derive(Debug, Deserialize)]
 struct WhisperData {

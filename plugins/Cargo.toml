@@ -12,6 +12,10 @@ edition = "2021"
 nom = "^3"
 async-trait = "0.1.50" 
 horizon_data_types = "0.1.4"
+serde_json = "1.0.128"
+serde = "1.0.210"
+tracing = "0.1.40"
+socketioxide = "0.14.1"
 
 [dependencies.plugin-test-api]
 path = "../plugin-api"

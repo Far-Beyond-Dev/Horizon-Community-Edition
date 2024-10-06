@@ -1,7 +1,8 @@
 // Import plugins API components
-use plugin_test_api::{BaseAPI, GameEvent, PluginInformation, SayHello};
+use plugin_test_api::{BaseAPI, PlayersAPI, GameEvent, Plugin, PluginContext, PluginInformation, SayHello};
 use async_trait::async_trait;
-use std::any::Any;
+use socketioxide::socket;
+use std::{any::Any, task::Context};
 use horizon_data_types::Player;
 
 // Metadata type for the plugin, providing plugin-specific information.
@@ -9,6 +10,7 @@ pub struct PluginMetadataType;
 
 // Register Custom Events
 pub mod horizon_core;
+pub mod chat;
 
 // Define and expose plugin meta
 pub const PLUGIN_METADATA: PluginMetadataType = PluginMetadataType;
@@ -31,7 +33,8 @@ impl BaseAPI for PluginMetadataType {
         match event {   
             // Set up listeners in all modules
             GameEvent::PlayerJoined(player) => {
-                horizon_core::init_all(player.clone());
+                let players = PlayersAPI::get_online_players().await;
+                horizon_core::init_all(player.socket, players);
             }
             _=> {
                 // Unhandled events ignored

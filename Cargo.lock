@@ -2764,6 +2764,10 @@ dependencies = [
  "horizon_data_types",
  "nom 3.2.1",
  "plugin-test-api",
+ "serde",
+ "serde_json",
+ "socketioxide",
+ "tracing",
 ]
 
 [[package]]
