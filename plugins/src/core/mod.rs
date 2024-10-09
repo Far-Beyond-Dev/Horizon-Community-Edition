@@ -58,20 +58,3 @@ impl SayHello for Horizon_Core {
         "Hello World!".to_string()
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

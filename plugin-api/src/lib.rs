@@ -150,6 +150,29 @@ impl GameServer {
     }
 }
 
+pub trait PlayerAPI {
+    fn get_player_by_id() {
+
+    }
+
+    fn get_all_players() {
+
+    }
+}
+
+pub trait WorldAPI {
+    /// Spawn an object in the world of a particular class
+    fn add_object_to_world() {
+
+    }
+
+    /// Find an object in the world by UUID (bound in a 3D cube
+    /// that defaults to the full region size, reduce size for better performance)
+    fn get_object_by_uuid() {
+
+    }
+}
+
 // Player struct (placeholder for actual implementation)
 pub struct PlayerDetails {
     pub player: Player,
