@@ -47,6 +47,7 @@ libloading = "0.8.5"
 notify = "6.1.1"
 notify-debouncer-full = "0.3.1"
 horizon_data_types = "0.1.4"
+colored = "2.0.0"
 
 rand = "0.8.5"
 

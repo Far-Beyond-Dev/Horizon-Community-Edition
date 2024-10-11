@@ -32,8 +32,7 @@ use tokio::{main, task::spawn};
 use tracing::info;
 use horizon_data_types::*;
 use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
-use uuid::Uuid;
-use rand;
+use colored::Colorize;
 
 // Load the plugins API
 use plugin_test_api as plugin_api;
@@ -217,81 +216,45 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // });
     
     // Start the PebbleVault thread
-    let pebble_vault_thread = spawn(async {
-        // Run the initial tests
-        if let Err(e) = PebbleVault::tests::run_tests() {
-            eprintln!("Error running initial PebbleVault tests: {}", e);
-        }
+let pebble_vault_thread = tokio::spawn(async move {
+    // Run the initial tests
+    if let Err(e) = PebbleVault::tests::run_tests() {
+        eprintln!("Error running initial PebbleVault tests: {}", e);
+    }
 
-        // Set up parameters for the continuous load test
-        let db_path = "continuous_load_test.db";
-        let num_objects = 10_000;
-        let num_regions = 5;
-        let num_operations = 3;
-        let interval = Duration::from_secs(300); // Run every 5 minutes
+    // Set up parameters for the load tests
+    let db_path = "load_test.db";
+    let num_objects = 10_000;
+    let num_regions = 5;
+    let num_operations = 3;
+    let interval = std::time::Duration::from_secs(300); // Run every 5 minutes
 
-        // Check if the database file already exists
-        let db_exists = Path::new(db_path).exists();
-
-        // Create or load the VaultManager
-        let mut vault_manager = match PebbleVault::VaultManager::new(db_path) {
-            Ok(vm) => vm,
-            Err(e) => {
-                eprintln!("Error creating/loading VaultManager: {}", e);
-                return;
-            }
-        };
-
-        if db_exists {
-            println!("Existing database found. Loading data...");
-            // The data is already loaded in the VaultManager constructor
-        } else {
-            println!("No existing database found. Creating new data...");
-            // Create initial regions and objects
-            for i in 0..num_regions {
-                let region_id = match vault_manager.create_or_load_region([i as f64 * 1000.0, 0.0, 0.0], 500.0) {
-                    Ok(id) => id,
-                    Err(e) => {
-                        eprintln!("Error creating region: {}", e);
-                        continue;
-                    }
-                };
-
-                for _ in 0..num_objects / num_regions {
-                    let object_uuid = Uuid::new_v4();
-                    let object_type = match rand::random::<u8>() % 3 {
-                        0 => "player",
-                        1 => "building",
-                        _ => "resource",
-                    };
-                    let x = rand::random::<f64>() * 1000.0 - 500.0;
-                    let y = rand::random::<f64>() * 1000.0 - 500.0;
-                    let z = rand::random::<f64>() * 1000.0 - 500.0;
-                    let data = format!("Object {}", object_uuid);
-
-                    if let Err(e) = vault_manager.add_object(region_id, object_uuid, object_type, x, y, z, &data) {
-                        eprintln!("Error adding object: {}", e);
-                    }
+    loop {
+        // Run the regular load test
+        println!("\n{}", "Running regular load test".blue());
+        match PebbleVault::VaultManager::<PebbleVault::load_test::LoadTestData>::new(db_path) {
+            Ok(mut vault_manager) => {
+                if let Err(e) = PebbleVault::load_test::run_load_test(&mut vault_manager, num_objects, num_regions, num_operations) {
+                    eprintln!("Error in regular load test: {}", e);
+                } else {
+                    println!("{}", "Regular load test completed successfully".green());
                 }
             }
-
-            // Persist the initial data
-            if let Err(e) = vault_manager.persist_to_disk() {
-                eprintln!("Error persisting initial data: {}", e);
-            }
+            Err(e) => eprintln!("Error creating VaultManager for regular load test: {}", e),
         }
 
-        // Continuous load testing loop
-        loop {
-            match PebbleVault::load_test::run_load_test(&mut vault_manager, num_objects, num_regions, num_operations) {
-                Ok(_) => println!("Continuous load test completed successfully"),
-                Err(e) => eprintln!("Error in continuous load test: {}", e),
-            }
-
-            // Wait for the specified interval before running the next test
-            tokio::time::sleep(interval).await;
+        // Run the arbitrary data load test
+        println!("\n{}", "Running arbitrary data load test".blue());
+        if let Err(e) = PebbleVault::load_test::run_arbitrary_data_load_test(num_objects, num_regions) {
+            eprintln!("Error in arbitrary data load test: {}", e);
+        } else {
+            println!("{}", "Arbitrary data load test completed successfully".green());
         }
-    });
+
+        // Wait for the specified interval before running the next tests
+        tokio::time::sleep(interval).await;
+    }
+});
 
     // Define a place to put new players
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
