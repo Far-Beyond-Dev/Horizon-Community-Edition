@@ -32,8 +32,7 @@ use tokio::{main, task::spawn};
 use tracing::info;
 use horizon_data_types::*;
 use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
-use uuid::Uuid;
-use rand;
+use colored::Colorize;
 
 // Load the plugins API
 use plugin_test_api as plugin_api;
