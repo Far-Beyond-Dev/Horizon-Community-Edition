@@ -51,8 +51,8 @@ dependencies = [
 
 [[package]]
 name = "PebbleVault"
-version = "0.5.0"
-source = "git+https://github.com/Far-Beyond-Dev/PebbleVault.git#5bb86fadf7be401ca2a007a3fa90c991a561d523"
+version = "0.6.0"
+source = "git+https://github.com/Far-Beyond-Dev/PebbleVault.git#169169be190cac1da43a9837a9268633d33854d3"
 dependencies = [
  "bindgen",
  "colored",
