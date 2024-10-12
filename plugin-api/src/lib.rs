@@ -102,7 +102,7 @@ pub trait BaseAPI: Send + Sync {
 
 pub trait PlayersAPI: Send + Sync {
     async fn get_online_players() -> Vec<Player> {
-        get_online_players().await
+//        get_online_players().await
     }
 }
 
