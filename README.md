@@ -166,12 +166,16 @@ Before installing Horizon, ensure that you have the following prerequisites:
     ```bash
     git clone https://github.com/AstroVerse-Studios/Horizon.git
     ```
+    ![image](https://github.com/user-attachments/assets/e48ce2eb-28f6-44aa-800c-7c0b7c79eb94)
+
 
 2. Navigate to the project directory:
 
     ```bash
     cd Horizon
     ```
+    ![image](https://github.com/user-attachments/assets/4a186d60-3da6-44b1-8e4c-c21c23360dd7)
+
 
 3. enter WSL or open the project in a [VSCode Devcontainer](https://code.visualstudio.com/docs/devcontainers/containers#_open-an-existing-workspace-in-a-container)
 
@@ -183,22 +187,22 @@ Before installing Horizon, ensure that you have the following prerequisites:
 
     Debian (Or the DevContainer)
     ```bash
-    sudo apt-get update && sudo apt-get install -y clang libsqlite3-dev libssl-dev golang curl libclang-dev curl gcc-multilib
+    ./installers-deb.sh
     ```
+    ![image](https://github.com/user-attachments/assets/74a91770-25f8-43fc-97f3-202136b46250)
+
     Alpine
     ```bash
-    sudo apk update && sudo apk add clang sqlite-dev openssl-dev build-base go rustup curl libclang gcc-multilib curl
+    ./installers-alpine.sh
     ```
-6. Install Cargo using the official installation script:
 
-    ```bash
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-    ```
 5. Use cargo to compile and run Horizon
 
     ```bash
     cargo run
     ```
+    ![image](https://github.com/user-attachments/assets/aacdec93-88ff-4d51-a206-96b9d6a316eb)
+
 
 6. Follow the prompts to configure any necessary settings in the `server-config.json` file.
 
