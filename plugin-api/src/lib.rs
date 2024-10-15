@@ -100,6 +100,12 @@ pub trait BaseAPI: Send + Sync {
     fn as_any(&self) -> &dyn Any;
 }
 
+pub trait PlayersAPI: Send + Sync {
+    async fn get_online_players() -> Vec<Player> {
+//        get_online_players().await
+    }
+}
+
 // Command handler trait
 #[async_trait]
 pub trait CommandHandler: Send + Sync {
