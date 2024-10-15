@@ -1,11 +1,15 @@
 use horizon_data_types::Player;
-use socketioxide::extract::SocketRef;
-use std::sync::{Arc, Mutex};
+
+//
+//
+//
+//
+//
+//
 
 //  pub mod auth; // Auth is not yet being used as it needs to be a more flexible
 //  pub mod actors;
-
-
+//  pub mod chat;
 //  pub mod leaderboard;
 //  pub mod player_data;
 //  pub mod game_logic;
@@ -16,11 +20,11 @@ use std::sync::{Arc, Mutex};
 
 
 
-pub fn init_all(socket: SocketRef, players: Vec<Player>) {
+pub fn init_all(player: Player) {
     println!("Starting core modules...");
 
     // This is where the submodules are started on player join
-    crate::core::chat::main::init(socket, players);
+    // chat::init(player);
     // leaderboard::init(player);
     // player_data::init(player);
     // game_logic::init(player);

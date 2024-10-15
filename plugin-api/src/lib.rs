@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use async_trait::async_trait;
-use horizon_data_types::Player;
+use horizon_data_types::{ Player, PlayerManager };
 
 // Basic types
 pub type PlayerId = u64;
@@ -100,12 +100,6 @@ pub trait BaseAPI: Send + Sync {
     fn as_any(&self) -> &dyn Any;
 }
 
-pub trait PlayersAPI: Send + Sync {
-    async fn get_online_players() -> Vec<Player> {
-        get_online_players().await
-    }
-}
-
 // Command handler trait
 #[async_trait]
 pub trait CommandHandler: Send + Sync {
@@ -118,7 +112,6 @@ pub struct PluginContext {
     pub shared_data: Arc<RwLock<HashMap<String, Box<dyn Any + Send + Sync>>>>,
     pub config: Arc<RwLock<HashMap<String, String>>>,
 }
-
 
 // Game server struct (placeholder for actual implementation)
 pub struct GameServer {
@@ -141,35 +134,6 @@ impl GameServer {
 
     pub async fn apply_damage(&self, _target: Player, _amount: f32) {
         // Implementation for applying damage to a player
-    }
-
-    pub async fn get_line_players(&self) -> Vec<Player> {
-        // Implementation to retrieve and return a list of line players
-        // For now, we'll return an empty vector as a placeholder for this data
-        Vec::new()
-    }
-}
-
-pub trait PlayerAPI {
-    fn get_player_by_id() {
-
-    }
-
-    fn get_all_players() {
-
-    }
-}
-
-pub trait WorldAPI {
-    /// Spawn an object in the world of a particular class
-    fn add_object_to_world() {
-
-    }
-
-    /// Find an object in the world by UUID (bound in a 3D cube
-    /// that defaults to the full region size, reduce size for better performance)
-    fn get_object_by_uuid() {
-
     }
 }
 
