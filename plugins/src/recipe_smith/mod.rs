@@ -1,6 +1,7 @@
 use plugin_test_api::{PluginInformation, SayHello, BaseAPI, GameEvent, CustomEvent, PluginContext, Plugin};
 use std::sync::Arc;
 use async_trait::async_trait;
+use ez_logging::println;
 
 #[derive(Debug, Clone)]
 pub struct RecipeSmith {

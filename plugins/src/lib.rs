@@ -6,6 +6,7 @@ mod greek;
 mod core;
 mod stars_beyond;
 mod recipe_smith;
+// mod unit_test;
 
 use plugin_test_api::PluginInformation;
 use std::collections::hash_map::HashMap;
@@ -23,6 +24,7 @@ pub fn plugins() -> Plugins {
     h.insert("core".to_string(), Box::new(core::PLUGIN_METADATA));
     h.insert("stars_beyond".to_string(), Box::new(stars_beyond::get_plugin()));
     h.insert("recipe_smith".to_string(), Box::new(recipe_smith::PLUGIN_METADATA));
+    //h.insert("unit_test".to_string(), Box::new(unit_test::get_plugin(100)));
 
     Plugins { list: h }
 }

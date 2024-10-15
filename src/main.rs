@@ -34,6 +34,7 @@ use horizon_data_types::*;
 use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
 use uuid::Uuid;
 use rand;
+use ez_logging;
 
 // Load the plugins API
 use plugin_test_api as plugin_api;
@@ -156,9 +157,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // SERVER STARTUP SEQUENCE //
     /////////////////////////////
     
-    let recipe_smith_thread = tokio::task::spawn(async {
-        recipesmith::main();
-    });
+    // let recipe_smith_thread = tokio::task::spawn(async {
+    //     recipesmith::main();
+    // });
 
 
     // Test the plugins API
@@ -284,6 +285,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
+    println!("Finished plugin threads");
+    
     // Define a place to put new players
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
     let (svc, io) = socketioxide::SocketIo::new_svc();

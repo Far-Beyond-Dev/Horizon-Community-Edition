@@ -2,12 +2,14 @@ extern crate tokio;
 extern crate async_trait;
 
 use std::fmt::Debug;
+use std::fmt;
 use std::any::Any;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use async_trait::async_trait;
 use horizon_data_types::{ Player, PlayerManager };
+use ez_logging::println;
 
 // Basic types
 pub type PlayerId = u64;
@@ -54,7 +56,21 @@ pub enum GameEvent {
     PlayerMoved { player: Player, new_position: Position },
     DamageDealt { attacker: Player, target: Player, amount: f32 },
     Custom(CustomEvent),
-    // Add more event types as needed
+}
+
+impl fmt::Debug for GameEvent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            GameEvent::None => write!(f, "None"),
+            GameEvent::PlayerJoined(player) => write!(f, "PlayerJoined(Player {})", player.id),
+            GameEvent::PlayerLeft(player) => write!(f, "PlayerLeft(Player {})", player.id),
+            GameEvent::ChatMessage { sender, content } => write!(f, "ChatMessage(Player {}: {})", sender.id, content),
+            GameEvent::ItemPickup { player, item } => write!(f, "ItemPickup(Player {} picked up item {})", player.id, item),
+            GameEvent::PlayerMoved { player, new_position } => write!(f, "PlayerMoved(Player {} to {:?})", player.id, new_position),
+            GameEvent::DamageDealt { attacker, target, amount } => write!(f, "DamageDealt(Attacker {} dealt {} damage to Target {})", attacker.id, amount, target.id),
+            GameEvent::Custom(custom_event) => write!(f, "CustomEvent({})", custom_event.event_type),
+        }
+    }
 }
 
 pub struct CustomEvent {

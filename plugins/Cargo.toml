@@ -13,6 +13,9 @@ nom = "^3"
 async-trait = "0.1.50" 
 horizon_data_types = "0.1.4"
 tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }
+rand = "0.8.5"
+socketioxide = "0.14.1"
+ez_logging = "0.1.1"
 
 
 [dependencies.plugin-test-api]

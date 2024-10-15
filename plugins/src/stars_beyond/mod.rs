@@ -2,6 +2,8 @@ use plugin_test_api::{PluginInformation, SayHello, BaseAPI, GameEvent, PluginCon
 use std::sync::Arc;
 use async_trait::async_trait;
 use crate::recipe_smith::RecipeSmith;
+use ez_logging::println;
+
 
 #[derive(Debug, Clone)]
 pub struct StarsBeyond {
