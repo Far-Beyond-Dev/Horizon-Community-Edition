@@ -57,7 +57,6 @@ use recipesmith;
 mod events;
 mod macros;
 mod players;
-mod subsystems;
 mod plugin_manager;
 
 ///////////////////////////////////////////////////////////////
@@ -111,11 +110,6 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     ///////////////////////////////////////////////////////////
     
     // Initialize extra subsystems to listen to events from the client
-    subsystems::core::chat::chat::init(socket.clone(), players.clone());
-    subsystems::core::game_logic::init();
-    subsystems::core::level_data::init();
-    subsystems::core::logging::init();
-    subsystems::core::notifications::init();
     recipesmith::main();
 
     // DO NOT INIT SUBSYSTEMS BEYOND THIS POINT
@@ -161,9 +155,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /////////////////////////////
     // SERVER STARTUP SEQUENCE //
     /////////////////////////////
-
-    // Show startup ascii art
-    subsystems::core::startup::main();
     
     let recipe_smith_thread = tokio::task::spawn(async {
         recipesmith::main();

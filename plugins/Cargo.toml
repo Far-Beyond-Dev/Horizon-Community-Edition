@@ -12,6 +12,8 @@ edition = "2021"
 nom = "^3"
 async-trait = "0.1.50" 
 horizon_data_types = "0.1.4"
+tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }
+
 
 [dependencies.plugin-test-api]
 path = "../plugin-api"
