@@ -185,3 +185,5 @@ cython_debug/
 data
 raw_points.txt
 voronoi_edges.txt
+
+*.db
