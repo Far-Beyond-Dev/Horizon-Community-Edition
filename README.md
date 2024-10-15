@@ -196,6 +196,11 @@ Before installing Horizon, ensure that you have the following prerequisites:
     ./installers-alpine.sh
     ```
 
+    Arch Linux
+    ```bash
+    ./installers-arch.sh
+    ```
+
 5. Use cargo to compile and run Horizon
 
     ```bash
