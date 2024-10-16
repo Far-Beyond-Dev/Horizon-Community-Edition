@@ -489,7 +489,7 @@ impl RecipeSmith {
         let mut item_to_transfer: Option<Item> = None;
 
         // Find and remove the item from the source inventory
-        for (slot, item_opt) in from_inventory.slots.iter_mut() {
+        for (_slot, item_opt) in from_inventory.slots.iter_mut() {
             if let Some(item) = item_opt {
                 if item.name == item_name {
                     item_to_transfer = item_opt.take();
@@ -500,14 +500,14 @@ impl RecipeSmith {
 
         // If we found the item, add it to the destination inventory
         if let Some(item) = item_to_transfer {
-            for (slot, item_opt) in to_inventory.slots.iter_mut() {
+            for (_slot, item_opt) in to_inventory.slots.iter_mut() {
                 if item_opt.is_none() {
                     *item_opt = Some(item);
                     return Ok(());
                 }
             }
             // If we couldn't add the item to the destination inventory, put it back in the source
-            for (slot, item_opt) in from_inventory.slots.iter_mut() {
+            for (_slot, item_opt) in from_inventory.slots.iter_mut() {
                 if item_opt.is_none() {
                     *item_opt = Some(item);
                     break;
