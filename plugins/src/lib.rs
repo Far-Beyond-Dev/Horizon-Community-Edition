@@ -23,7 +23,7 @@ pub fn plugins() -> Plugins {
     h.insert("greek".to_string(), Box::new(greek::PLUGIN_METADATA));
     h.insert("core".to_string(), Box::new(core::PLUGIN_METADATA));
     h.insert("stars_beyond".to_string(), Box::new(stars_beyond::get_plugin()));
-    h.insert("recipe_smith".to_string(), Box::new(recipe_smith::PLUGIN_METADATA));
+    h.insert("recipe_smith".to_string(), Box::new(recipe_smith::create_plugin_metadata()));
     //h.insert("unit_test".to_string(), Box::new(unit_test::get_plugin(100)));
 
     Plugins { list: h }
@@ -37,4 +37,3 @@ pub use core::PluginMetadataType as CorePluginMetadataType;
 
 // Export other necessary items
 pub use stars_beyond::{get_plugin as get_stars_beyond_plugin, get_plugin_metadata as get_stars_beyond_metadata};
-pub use recipe_smith::PLUGIN_METADATA as RECIPE_SMITH_PLUGIN_METADATA;

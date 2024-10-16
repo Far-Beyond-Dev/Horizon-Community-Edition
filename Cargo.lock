@@ -2774,13 +2774,17 @@ name = "plugin-test-plugins"
 version = "0.1.2"
 dependencies = [
  "async-trait",
+ "csv",
  "ez_logging",
  "horizon_data_types",
  "nom 3.2.1",
  "plugin-test-api",
  "rand",
+ "serde",
+ "serde_json",
  "socketioxide",
  "tokio",
+ "uuid",
 ]
 
 [[package]]

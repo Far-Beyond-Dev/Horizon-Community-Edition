@@ -55,7 +55,6 @@ use recipesmith;
 // Import the modules we will need //
 /////////////////////////////////////
 
-mod events;
 mod macros;
 mod players;
 mod plugin_manager;
