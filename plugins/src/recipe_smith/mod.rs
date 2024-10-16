@@ -336,6 +336,54 @@ impl BaseAPI for RecipeSmith {
                     "crafting_failed" => println!("RecipeSmith: Crafting failed!"),
                     "storage_container_created" => println!("RecipeSmith: New storage container created!"),
                     "storage_container_accessed" => println!("RecipeSmith: Storage container accessed!"),
+                    "craft_item" => {
+                        if let Some((player_id, recipe_name)) = custom_event.data.downcast_ref::<(String, String)>() {
+                            if let Some(crafted_item) = self.craft_item(player_id, recipe_name, &mut PluginContext::default()).await {
+                                println!("RecipeSmith: Player {} crafted {}", player_id, crafted_item);
+                            } else {
+                                println!("RecipeSmith: Player {} failed to craft {}", player_id, recipe_name);
+                            }
+                        }
+                    },
+                    "add_recipe" => {
+                        if let Some(recipe) = custom_event.data.downcast_ref::<Recipe>() {
+                            self.add_new_recipe(recipe.clone()).await;
+                            println!("RecipeSmith: New recipe added: {}", recipe.name);
+                        }
+                    },
+                    "get_player_inventory" => {
+                        if let Some(player_id) = custom_event.data.downcast_ref::<String>() {
+                            if let Some(inventory) = self.get_player_inventory_contents(player_id).await {
+                                println!("RecipeSmith: Retrieved inventory for player {}", player_id);
+                                // You might want to emit a custom event here with the inventory data
+                            } else {
+                                println!("RecipeSmith: Failed to retrieve inventory for player {}", player_id);
+                            }
+                        }
+                    },
+                    "add_item_to_inventory" => {
+                        if let Some((player_id, item)) = custom_event.data.downcast_ref::<(String, Item)>() {
+                            match self.add_item_to_player_inventory(player_id, item.clone()).await {
+                                Ok(_) => println!("RecipeSmith: Added item {} to player {}'s inventory", item.name, player_id),
+                                Err(e) => println!("RecipeSmith: Failed to add item to player {}'s inventory: {}", player_id, e),
+                            }
+                        }
+                    },
+                    "remove_item_from_inventory" => {
+                        if let Some((player_id, item_name)) = custom_event.data.downcast_ref::<(String, String)>() {
+                            match self.remove_item_from_player_inventory(player_id, item_name).await {
+                                Ok(_) => println!("RecipeSmith: Removed item {} from player {}'s inventory", item_name, player_id),
+                                Err(e) => println!("RecipeSmith: Failed to remove item from player {}'s inventory: {}", player_id, e),
+                            }
+                        }
+                    },
+                    "create_storage_container" => {
+                        if let Some(num_slots) = custom_event.data.downcast_ref::<u32>() {
+                            let container = self.create_storage_container(*num_slots).await;
+                            println!("RecipeSmith: Created new storage container with UUID: {}", container.uuid);
+                            // You might want to emit a custom event here with the container data
+                        }
+                    },
                     _ => {}
                 }
             }
