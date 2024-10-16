@@ -1,4 +1,4 @@
 {
     "LineNumberDeco.enableRainbow": false,
-    "CodeGPT.apiKey": "Anthropic"
+    "CodeGPT.apiKey": "Ollama"
 }

@@ -1,3 +1,4 @@
+// Imports
 use plugin_test_api::{PluginInformation, SayHello, BaseAPI, GameEvent, CustomEvent, PluginContext, Plugin};
 use std::{net::ToSocketAddrs, sync::Arc};
 use async_trait::async_trait;
@@ -9,6 +10,13 @@ use horizon_data_types::Player;
 use ez_logging::println;
 use csv;
 
+// Struct definitions
+
+/// # Ingredient struct
+/// Represents an ingredient in a recipe
+/// - name: Name of the ingredient
+/// - quantity: Amount of the ingredient required
+/// - recipe_craftable: Whether this ingredient can be crafted using another recipe
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Ingredient {
     pub name: String,
@@ -16,11 +24,22 @@ pub struct Ingredient {
     pub recipe_craftable: bool,
 }
 
+/// # Crafter struct
+/// Represents an entity capable of crafting recipes
+/// - name: Name of the crafter
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct Crafter {
     pub name: String,
 }
 
+/// # Recipe struct
+/// Represents a crafting recipe
+/// - name: Name of the recipe
+/// - ingredients: List of ingredients required
+/// - outcome: The item produced by this recipe
+/// - crafters: List of entities capable of crafting this recipe
+/// - base_cook_time: Time required to craft this recipe
+/// - cook_count: Number of times this recipe has been crafted
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Recipe {
     pub name: String,
@@ -41,6 +60,11 @@ impl Recipe {
     }
 }
 
+/// # Item struct
+/// Represents an item in the game
+/// - name: Name of the item
+/// - model: Optional 3D model for the item
+/// - meta_tags: Additional metadata for the item
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Item {
     pub name: String,
@@ -48,6 +72,9 @@ pub struct Item {
     pub meta_tags: HashMap<String, serde_json::Value>,
 }
 
+/// # PlayerInventory struct
+/// Represents a player's inventory
+/// - slots: HashMap of slot numbers to optional items
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct PlayerInventory {
     pub slots: HashMap<u32, Option<Item>>,
@@ -79,6 +106,10 @@ impl PlayerInventory {
     }
 }
 
+/// # StorageContainer struct
+/// Represents a storage container in the game
+/// - uuid: Unique identifier for the container
+/// - inventory: The container's inventory
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct StorageContainer {
     pub uuid: Uuid,
@@ -94,10 +125,27 @@ impl StorageContainer {
     }
 }
 
+/// # RecipeBook struct
+/// Manages all recipes and crafters
+/// - recipes: HashMap of recipe names to Recipe objects
+/// - crafters: HashMap of Crafter objects to lists of recipe names they can craft
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RecipeBook {
     pub recipes: HashMap<String, Recipe>,
     pub crafters: HashMap<Crafter, Vec<String>>,
+}
+
+
+/// # RecipeSmith struct
+/// Main plugin struct that manages the crafting system
+/// - initialized: Whether the plugin has been initialized
+/// - recipe_book: Thread-safe reference to the RecipeBook
+/// - player_inventories: Thread-safe reference to all player inventories
+#[derive(Debug)]
+pub struct RecipeSmith {
+    initialized: bool,
+    recipe_book: Arc<RwLock<RecipeBook>>,
+    player_inventories: Arc<RwLock<HashMap<String, PlayerInventory>>>,
 }
 
 impl Clone for RecipeSmith {
@@ -110,6 +158,14 @@ impl Clone for RecipeSmith {
     }
 }
 
+// RecipeBook impl
+// - new: Creates a new empty RecipeBook
+// - add_recipe: Adds a new recipe to the book
+// - get_recipe: Retrieves a recipe by name
+// - get_recipes_for_crafter: Gets all recipes a specific crafter can make
+// - can_craft: Checks if a recipe can be crafted with given ingredients
+// - craft: Attempts to craft a recipe, consuming ingredients and producing the outcome
+// - import_recipes_from_file: Imports recipes from a JSON or CSV file
 impl RecipeBook {
     pub fn new() -> Self {
         Self {
@@ -195,13 +251,13 @@ impl RecipeBook {
     }
 }
 
-#[derive(Debug)]
-pub struct RecipeSmith {
-    initialized: bool,
-    recipe_book: Arc<RwLock<RecipeBook>>,
-    player_inventories: Arc<RwLock<HashMap<String, PlayerInventory>>>,
-}
-
+/// # RecipeSmith impl
+/// - new: Creates a new RecipeSmith instance
+/// - initialize_recipe_smith: Initializes the plugin, registering custom events and loading recipes
+/// - create_player_inventory: Creates a new inventory for a player
+/// - get_player_inventory: Retrieves a player's inventory
+/// - update_player_inventory: Updates a player's inventory
+/// - craft_item: Attempts to craft an item for a player
 impl RecipeSmith {
     pub fn new() -> Self {
         Self {
@@ -318,7 +374,13 @@ impl RecipeSmith {
     }
 }
 
-
+/// # BaseAPI for RecipeSmith
+/// Implements the BaseAPI trait for RecipeSmith
+/// - on_game_event: Handles various game events
+/// - on_game_tick: Handles game tick events (currently empty)
+/// - register_custom_event: Registers a custom event
+/// - emit_custom_event: Emits a custom event
+/// - as_any: Converts the RecipeSmith instance to Any type
 #[async_trait]
 impl BaseAPI for RecipeSmith {
     async fn on_game_event(&self, event: &GameEvent) {
@@ -408,6 +470,15 @@ impl BaseAPI for RecipeSmith {
     }
 }
 
+/// # Plugin for RecipeSmith
+/// Implements the Plugin trait for RecipeSmith
+/// - on_load: Called when the plugin is loaded
+/// - on_unload: Called when the plugin is unloaded
+/// - execute: Called when the plugin is executed
+/// - initialize: Initializes the plugin
+/// - shutdown: Called when the plugin is shut down
+/// - on_enable: Called when the plugin is enabled
+/// - on_disable: Called when the plugin is disabled
 impl Plugin for RecipeSmith {
     fn on_load(&self) {
         println!("RecipeSmith plugin loaded");
@@ -448,6 +519,10 @@ impl Plugin for RecipeSmith {
     }
 }
 
+/// # PluginInformation for RecipeSmith
+/// Implements the PluginInformation trait for RecipeSmith
+/// - name: Returns the name of the plugin
+/// - get_instance: Returns a boxed instance of the plugin
 impl PluginInformation for RecipeSmith {
     fn name(&self) -> String {
         "RecipeSmith".to_string()
@@ -458,12 +533,25 @@ impl PluginInformation for RecipeSmith {
     }
 }
 
+/// # SayHello for RecipeSmith
+/// Implements the SayHello trait for RecipeSmith
+/// - say_hello: Returns a greeting message from the plugin
 impl SayHello for RecipeSmith {
     fn say_hello(&self) -> String {
         "Hello from RecipeSmith! Ready to craft some amazing items?".to_string()
     }
 }
 
+/// # Additional RecipeSmith methods
+/// - get_all_recipes: Retrieves all recipes
+/// - get_recipes_by_crafter: Retrieves all recipes for a specific crafter
+/// - add_new_recipe: Adds a new recipe to the recipe book
+/// - get_player_inventory_contents: Retrieves the contents of a player's inventory
+/// - add_item_to_player_inventory: Adds an item to a player's inventory
+/// - remove_item_from_player_inventory: Removes an item from a player's inventory
+/// - create_storage_container: Creates a new storage container
+/// - access_storage_container: Simulates a player accessing a storage container
+/// - transfer_item: Transfers an item between two inventories
 pub fn create_plugin_metadata() -> RecipeSmith {
     RecipeSmith::new()
 }
