@@ -21,19 +21,14 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 // Import a few things to get us started //
 ///////////////////////////////////////////
 
-use plugin_api::Plugin;
-// use plugins::English;
-
 // Import some third party crates
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
-use std::{sync::{Arc, Mutex}, time::Duration, path::Path};
+use std::sync::{Arc, Mutex};
 use tokio::{main, task::spawn};
 use tracing::info;
 use horizon_data_types::*;
 use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
-use uuid::Uuid;
-use rand;
 use ez_logging::println;
 use colored::Colorize;
 
