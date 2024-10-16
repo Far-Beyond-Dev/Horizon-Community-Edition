@@ -155,6 +155,18 @@ pub struct PluginContext {
     pub custom_events: Arc<RwLock<HashMap<String, Vec<Arc<dyn BaseAPI>>>>>,
 }
 
+impl Default for PluginContext {
+    fn default() -> Self {
+        PluginContext {
+            server: Arc::new(GameServer::default()),
+            shared_data: Arc::new(RwLock::new(HashMap::new())),
+            config: Arc::new(RwLock::new(HashMap::new())),
+            custom_events: Arc::new(RwLock::new(HashMap::new())),
+        }
+    }
+}
+
+
 impl PluginContext {
     // Method to register a plugin for a custom event
     pub async fn register_for_custom_event(&mut self, event_type: &str, plugin: Arc<dyn BaseAPI>) {
@@ -179,6 +191,13 @@ impl PluginContext {
 pub struct GameServer {
     // Add relevant game server fields here
 }
+
+impl Default for GameServer {
+    fn default() -> Self {
+        GameServer {}
+    }
+}
+
 
 impl GameServer {
     pub async fn broadcast_message(&self, _message: &str) {
