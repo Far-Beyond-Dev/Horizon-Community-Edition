@@ -1,4 +1,4 @@
-use plugin_test_api::{PluginInformation, SayHello, BaseAPI, GameEvent, PluginContext, Plugin, PluginMetadata, PLUGIN_API_VERSION};
+use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformation, PluginMetadata, RpcPlugin, SayHello, PLUGIN_API_VERSION};
 use std::sync::Arc;
 use async_trait::async_trait;
 use crate::recipe_smith::RecipeSmith;

@@ -566,8 +566,10 @@ match event {
             _ => {}
         }
     }
+
+    // Ignore all other events
     _ => {}
-}
+    }
 }
 
 async fn on_game_tick(&self, _delta_time: f64) {
