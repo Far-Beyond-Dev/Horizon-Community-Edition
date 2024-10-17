@@ -237,7 +237,7 @@ pub struct PlayerDetails {
 }
 
 // New type alias for RPC functions
-pub type RpcFunction = Arc<dyn Fn(&(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> + Send + Sync>;
+type RpcFunction = Arc<dyn Fn(&(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> + Send + Sync>;
 
 #[async_trait]
 pub trait RpcPlugin: Send + Sync {
