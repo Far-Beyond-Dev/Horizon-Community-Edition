@@ -431,6 +431,9 @@ impl BaseAPI for RecipeSmith {
                             }
                         }
                     },
+                    "get_all_recipes" => {
+                        self.get_all_recipes();
+                    }
                     "remove_item_from_inventory" => {
                         if let Some((player_id, item_name)) = custom_event.data.downcast_ref::<(String, String)>() {
                             match self.remove_item_from_player_inventory(player_id, item_name).await {

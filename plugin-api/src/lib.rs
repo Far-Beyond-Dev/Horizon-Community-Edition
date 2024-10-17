@@ -10,6 +10,7 @@ use tokio::sync::RwLock;
 use async_trait::async_trait;
 use horizon_data_types::{ Player, PlayerManager };
 use ez_logging::println;
+use uuid::Uuid;
 
 // Basic types
 pub type PlayerId = u64;
@@ -233,4 +234,85 @@ pub struct PlayerDetails {
     pub name: String,
     pub position: Position,
     pub health: f32,
+}
+
+// New type alias for RPC functions
+pub type RpcFunction = Arc<dyn Fn(&(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> + Send + Sync>;
+
+#[async_trait]
+pub trait RpcPlugin: Send + Sync {
+    fn get_id(&self) -> Uuid;
+    fn get_name(&self) -> String;
+    fn register_rpc(&mut self, name: &str, func: RpcFunction);
+    async fn call_rpc(&self, rpc_name: &str, params: &(dyn Any + Send + Sync)) -> Option<Box<dyn Any + Send + Sync>>;
+}
+
+pub struct RpcEnabledPlugin {
+    id: Uuid,
+    name: String,
+    rpc_functions: HashMap<String, RpcFunction>,
+}
+
+impl RpcEnabledPlugin {
+    pub fn new(name: &str) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            name: name.to_string(),
+            rpc_functions: HashMap::new(),
+        }
+    }
+}
+
+#[async_trait]
+impl RpcPlugin for RpcEnabledPlugin {
+    fn get_id(&self) -> Uuid {
+        self.id
+    }
+
+    fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn register_rpc(&mut self, name: &str, func: RpcFunction) {
+        self.rpc_functions.insert(name.to_string(), func);
+    }
+
+    async fn call_rpc(&self, rpc_name: &str, params: &(dyn Any + Send + Sync)) -> Option<Box<dyn Any + Send + Sync>> {
+        self.rpc_functions.get(rpc_name).map(|func| func(params))
+    }
+}
+
+// Extension to PluginContext to support RPC plugins
+impl PluginContext {
+    pub async fn register_rpc_plugin(&mut self, plugin: Arc<RwLock<dyn RpcPlugin>>) {
+        let plugin_id = plugin.read().await.get_id();
+        let mut shared_data = self.shared_data.write().await;
+        shared_data.insert(format!("rpc_plugin_{}", plugin_id), Box::new(plugin));
+    }
+
+    pub async fn call_rpc_plugin(&self, plugin_id: Uuid, rpc_name: &str, params: &(dyn Any + Send + Sync)) -> Option<Box<dyn Any + Send + Sync>> {
+        let shared_data = self.shared_data.read().await;
+        if let Some(plugin) = shared_data.get(&format!("rpc_plugin_{}", plugin_id)) {
+            if let Some(rpc_plugin) = plugin.downcast_ref::<Arc<RwLock<dyn RpcPlugin>>>() {
+                let plugin = rpc_plugin.read().await;
+                return plugin.call_rpc(rpc_name, params).await;
+            }
+        }
+        None
+    }
+
+    pub async fn get_rpc_plugin_id_by_name(&self, name: &str) -> Option<Uuid> {
+        let shared_data = self.shared_data.read().await;
+        for (key, value) in shared_data.iter() {
+            if key.starts_with("rpc_plugin_") {
+                if let Some(rpc_plugin) = value.downcast_ref::<Arc<RwLock<dyn RpcPlugin>>>() {
+                    let plugin = rpc_plugin.read().await;
+                    if plugin.get_name() == name {
+                        return Some(plugin.get_id());
+                    }
+                }
+            }
+        }
+        None
+    }
 }
