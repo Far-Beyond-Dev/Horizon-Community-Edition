@@ -52,6 +52,7 @@ colored = "2.0.0"
 rand = "0.8.5"
 lazy_static = "1.5.0"
 ez_logging = "0.1.1"
+fmt = "0.1.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 mimalloc = "0.1.43"

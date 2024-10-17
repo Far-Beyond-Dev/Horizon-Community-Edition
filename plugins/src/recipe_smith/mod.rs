@@ -8,6 +8,7 @@ use horizon_data_types::Player;
 use std::any::Any;
 use plugin_test_api::{RpcPlugin, RpcFunction, BaseAPI, GameEvent, CustomEvent, PluginContext, Plugin, PluginInformation, SayHello};
 use csv;
+use std::fmt;
 
 // Struct definitions
 
@@ -187,7 +188,6 @@ impl RecipeBook {
     }
 }
 
-#[derive(Debug)]
 pub struct RecipeSmith {
     id: Uuid,
     name: String,
@@ -196,6 +196,20 @@ pub struct RecipeSmith {
     player_inventories: Arc<RwLock<HashMap<String, PlayerInventory>>>,
     rpc_functions: HashMap<String, RpcFunction>,
 }
+
+impl fmt::Debug for RecipeSmith {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("RecipeSmith")
+            .field("id", &self.id)
+            .field("name", &self.name)
+            .field("initialized", &self.initialized)
+            .field("recipe_book", &"<RecipeBook>")
+            .field("player_inventories", &"<PlayerInventories>")
+            .field("rpc_functions", &"<RpcFunctions>")
+            .finish()
+    }
+}
+
 
 impl RecipeSmith {
     pub fn new() -> Self {
