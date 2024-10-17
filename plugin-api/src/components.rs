@@ -7,7 +7,6 @@
 use std::any::Any;
 use std::fmt::Debug;
 use crate::{ApiVersion, PluginContext};
-use ez_logging::println;
 
 /// Trait that all plugins must implement.
 pub trait Plugin: Any + Debug + Send + Sync {

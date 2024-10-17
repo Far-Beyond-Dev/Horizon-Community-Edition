@@ -229,6 +229,13 @@ impl RecipeSmith {
         plugin.register_rpc("craft_item", Arc::new(RecipeSmith::craft_item_rpc));
         plugin.register_rpc("get_all_recipes", Arc::new(RecipeSmith::get_all_recipes_rpc));
         plugin.register_rpc("add_new_recipe", Arc::new(RecipeSmith::add_new_recipe_rpc));
+        plugin.register_rpc("get_recipes_by_crafter", Arc::new(RecipeSmith::get_recipes_by_crafter_rpc));
+        plugin.register_rpc("get_player_inventory_contents", Arc::new(RecipeSmith::get_player_inventory_contents_rpc));
+        plugin.register_rpc("add_item_to_player_inventory", Arc::new(RecipeSmith::add_item_to_player_inventory_rpc));
+        plugin.register_rpc("remove_item_from_player_inventory", Arc::new(RecipeSmith::remove_item_from_player_inventory_rpc));
+        plugin.register_rpc("create_storage_container", Arc::new(RecipeSmith::create_storage_container_rpc));
+        plugin.register_rpc("access_storage_container", Arc::new(RecipeSmith::access_storage_container_rpc));
+        plugin.register_rpc("transfer_item", Arc::new(RecipeSmith::transfer_item_rpc));
 
         plugin
     }
@@ -405,6 +412,68 @@ impl RecipeSmith {
             Err("Destination inventory is full".to_string())
         } else {
             Err("Item not found in source inventory".to_string())
+        }
+    }
+
+    fn get_recipes_by_crafter_rpc(params: &(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> {
+        if let Some(crafter_name) = params.downcast_ref::<String>() {
+            // This would typically involve accessing the recipe_book
+            Box::new(Vec::<Recipe>::new())
+        } else {
+            Box::new(Vec::<Recipe>::new())
+        }
+    }
+
+    fn get_player_inventory_contents_rpc(params: &(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> {
+        if let Some(player_id) = params.downcast_ref::<String>() {
+            // This would typically involve accessing the player_inventories
+            Box::new(Some(Vec::<Item>::new()))
+        } else {
+            Box::new(None::<Vec<Item>>)
+        }
+    }
+
+    fn add_item_to_player_inventory_rpc(params: &(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> {
+        if let Some((player_id, item)) = params.downcast_ref::<(String, Item)>() {
+            // This would typically involve updating the player_inventories
+            Box::new(Ok(()) as Result<(), String>)
+        } else {
+            Box::new(Err("Invalid parameters".to_string()) as Result<(), String>)
+        }
+    }
+
+    fn remove_item_from_player_inventory_rpc(params: &(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> {
+        if let Some((player_id, item_name)) = params.downcast_ref::<(String, String)>() {
+            // This would typically involve updating the player_inventories
+            Box::new(Ok(()) as Result<(), String>)
+        } else {
+            Box::new(Err("Invalid parameters".to_string()) as Result<(), String>)
+        }
+    }
+
+    fn create_storage_container_rpc(params: &(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> {
+        if let Some(num_slots) = params.downcast_ref::<u32>() {
+            Box::new(StorageContainer::new(*num_slots))
+        } else {
+            Box::new(StorageContainer::new(0))
+        }
+    }
+
+    fn access_storage_container_rpc(params: &(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> {
+        if let Some((container, player_id)) = params.downcast_ref::<(StorageContainer, String)>() {
+            // This would typically involve emitting a custom event
+            Box::new(())
+        } else {
+            Box::new(())
+        }
+    }
+
+    fn transfer_item_rpc(params: &(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> {
+        if let Some((from_inventory, to_inventory, item_name)) = params.downcast_ref::<(PlayerInventory, PlayerInventory, String)>() {
+            // This would typically involve the actual transfer logic
+            Box::new(Ok(()) as Result<(), String>)
+        } else {
+            Box::new(Err("Invalid parameters".to_string()) as Result<(), String>)
         }
     }
 }
