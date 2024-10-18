@@ -1,7 +1,7 @@
 use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformation, PluginMetadata, RpcPlugin, SayHello, PLUGIN_API_VERSION};
-use std::sync::Arc;
+use std::{any::Any, sync::Arc};
 use async_trait::async_trait;
-use crate::recipe_smith::RecipeSmith;
+use crate::recipe_smith::{self, RecipeSmith};
 use ez_logging::println;
 
 
@@ -38,6 +38,11 @@ impl BaseAPI for StarsBeyond {
         println!("Stars Beyond: Simulating space, delta time: {:.2}", delta_time);
         // Forward tick to RecipeSmith
         self.recipe_smith.on_game_tick(delta_time).await;
+
+        let player_id = "sdaljhn398";
+
+        let params: Box<dyn Any + Send + Sync> = Box::new((player_id.to_string(), 18u32));
+        let _ = self.recipe_smith.call_rpc("create_player_inventory", &*params);
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
