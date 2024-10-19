@@ -12,6 +12,22 @@ use std::fmt;
 
 // Struct definitions
 
+
+/// Represents an ingredient in a recipe.
+///
+/// # Fields
+/// * `name`: The name of the ingredient.
+/// * `quantity`: The required quantity of the ingredient.
+/// * `recipe_craftable`: Indicates if this ingredient can be crafted from other recipes.
+///
+/// # Example
+/// ```
+/// let flour = Ingredient {
+///     name: "Flour".to_string(),
+///     quantity: 2,
+///     recipe_craftable: false,
+/// };
+/// ```
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Ingredient {
     pub name: String,
@@ -19,11 +35,46 @@ pub struct Ingredient {
     pub recipe_craftable: bool,
 }
 
+/// Represents a crafter (e.g., a crafting station or profession).
+///
+/// # Fields
+/// * `name`: The name of the crafter.
+///
+/// # Example
+/// ```
+/// let blacksmith = Crafter {
+///     name: "Blacksmith".to_string(),
+/// };
+/// ```
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct Crafter {
     pub name: String,
 }
 
+/// Represents a recipe for crafting items.
+///
+/// # Fields
+/// * `name`: The name of the recipe.
+/// * `ingredients`: A list of required ingredients.
+/// * `outcome`: The name of the item produced by this recipe.
+/// * `crafters`: A list of crafters who can use this recipe.
+/// * `base_cook_time`: The base time required to craft this recipe.
+/// * `cook_count`: The number of times this recipe has been crafted.
+///
+/// # Example
+/// ```
+/// let sword_recipe = Recipe {
+///     name: "Iron Sword".to_string(),
+///     ingredients: vec![
+///         Ingredient { name: "Iron Ingot".to_string(), quantity: 2, recipe_craftable: true },
+///         Ingredient { name: "Wood".to_string(), quantity: 1, recipe_craftable: false },
+///     ],
+///     outcome: "Iron Sword".to_string(),
+///     crafters: vec![Crafter { name: "Blacksmith".to_string() }],
+///     base_cook_time: 30,
+///     cook_count: 0,
+/// };
+/// ```
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Recipe {
     pub name: String,
@@ -44,6 +95,26 @@ impl Recipe {
     }
 }
 
+/// Represents an item in the game.
+///
+/// # Fields
+/// * `name`: The name of the item.
+/// * `model`: An optional 3D model identifier for the item.
+/// * `meta_tags`: Additional metadata associated with the item.
+///
+/// # Example
+/// ```
+/// let sword = Item {
+///     name: "Iron Sword".to_string(),
+///     model: Some("models/iron_sword.obj".to_string()),
+///     meta_tags: {
+///         let mut tags = HashMap::new();
+///         tags.insert("damage".to_string(), json!(10));
+///         tags.insert("durability".to_string(), json!(100));
+///         tags
+///     },
+/// };
+/// ```
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Item {
     pub name: String,
@@ -51,6 +122,21 @@ pub struct Item {
     pub meta_tags: HashMap<String, serde_json::Value>,
 }
 
+/// Represents a player's inventory with a fixed number of slots.
+///
+/// # Fields
+/// * `slots`: A HashMap representing inventory slots and their contents.
+///
+/// # Example
+/// ```
+/// let mut inventory = PlayerInventory::new(20);
+/// let sword = Item {
+///     name: "Iron Sword".to_string(),
+///     model: Some("models/iron_sword.obj".to_string()),
+///     meta_tags: HashMap::new(),
+/// };
+/// inventory.add_item(0, sword);
+/// ```
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct PlayerInventory {
     pub slots: HashMap<u32, Option<Item>>,
@@ -82,6 +168,22 @@ impl PlayerInventory {
     }
 }
 
+/// Represents a storage container in the game world.
+///
+/// # Fields
+/// * `uuid`: A unique identifier for the container.
+/// * `inventory`: The inventory associated with this container.
+///
+/// # Example
+/// ```
+/// let chest = StorageContainer::new(30);
+/// let item = Item {
+///     name: "Gold Coin".to_string(),
+///     model: None,
+///     meta_tags: HashMap::new(),
+/// };
+/// chest.inventory.add_item(0, item);
+/// ```
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct StorageContainer {
     pub uuid: Uuid,
@@ -97,6 +199,28 @@ impl StorageContainer {
     }
 }
 
+/// Represents a collection of recipes and their associated crafters.
+///
+/// # Fields
+/// * `recipes`: A HashMap of recipe names to Recipe objects.
+/// * `crafters`: A HashMap of Crafter objects to lists of recipe names they can craft.
+///
+/// # Example
+/// ```
+/// let mut recipe_book = RecipeBook::new();
+/// let sword_recipe = Recipe {
+///     name: "Iron Sword".to_string(),
+///     ingredients: vec![
+///         Ingredient { name: "Iron Ingot".to_string(), quantity: 2, recipe_craftable: true },
+///         Ingredient { name: "Wood".to_string(), quantity: 1, recipe_craftable: false },
+///     ],
+///     outcome: "Iron Sword".to_string(),
+///     crafters: vec![Crafter { name: "Blacksmith".to_string() }],
+///     base_cook_time: 30,
+///     cook_count: 0,
+/// };
+/// recipe_book.add_recipe(sword_recipe);
+/// ```
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RecipeBook {
     pub recipes: HashMap<String, Recipe>,
@@ -188,6 +312,25 @@ impl RecipeBook {
     }
 }
 
+/// The main plugin struct for the RecipeSmith crafting system.
+///
+/// This struct implements the core functionality for managing recipes,
+/// player inventories, and crafting operations in the game.
+///
+/// # Fields
+/// * `id`: A unique identifier for the plugin instance.
+/// * `name`: The name of the plugin.
+/// * `initialized`: A flag indicating whether the plugin has been initialized.
+/// * `recipe_book`: The collection of all available recipes.
+/// * `player_inventories`: A collection of player inventories.
+/// * `rpc_functions`: A map of RPC function names to their implementations.
+///
+/// # Example
+/// ```
+/// let recipe_smith = RecipeSmith::new();
+/// let mut context = PluginContext::new();
+/// recipe_smith.initialize(&mut context);
+/// ```
 pub struct RecipeSmith {
     id: Uuid,
     name: String,
@@ -212,6 +355,18 @@ impl fmt::Debug for RecipeSmith {
 
 
 impl RecipeSmith {
+    /// Creates a new instance of the RecipeSmith plugin.
+    ///
+    /// This method initializes the plugin with default values and
+    /// registers all the necessary RPC functions.
+    ///
+    /// # Returns
+    /// A new RecipeSmith instance.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// ```
     pub fn new() -> Self {
         let mut plugin = Self {
             id: Uuid::new_v4(),
@@ -240,6 +395,20 @@ impl RecipeSmith {
         plugin
     }
 
+    /// Initializes the RecipeSmith plugin.
+    ///
+    /// This method sets up custom events, loads recipes from files,
+    /// and marks the plugin as initialized.
+    ///
+    /// # Arguments
+    /// * `context`: A mutable reference to the PluginContext.
+    ///
+    /// # Example
+    /// ```
+    /// let mut recipe_smith = RecipeSmith::new();
+    /// let mut context = PluginContext::new();
+    /// recipe_smith.initialize_recipe_smith(&mut context).await;
+    /// ```
     async fn initialize_recipe_smith(&mut self, context: &mut PluginContext) {
         if !self.initialized {
             println!("RecipeSmith initializing...");
@@ -480,18 +649,61 @@ impl RecipeSmith {
 
 #[async_trait]
 impl RpcPlugin for RecipeSmith {
+    /// Returns the unique identifier of the plugin.
+    ///
+    /// # Returns
+    /// The UUID of the RecipeSmith plugin instance.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let plugin_id = recipe_smith.get_id();
+    /// ```
     fn get_id(&self) -> Uuid {
         self.id
     }
 
+    /// Returns the name of the plugin.
+    ///
+    /// # Returns
+    /// The name of the RecipeSmith plugin.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let plugin_name = recipe_smith.get_name();
+    /// assert_eq!(plugin_name, "RecipeSmith");
+    /// ```
     fn get_name(&self) -> String {
         self.name.clone()
     }
 
+    /// Registers an RPC function with the plugin.
+    ///
+    /// # Arguments
+    /// * `name`: The name of the RPC function.
+    /// * `func`: The RPC function to register.
+    ///
+    /// # Example
+    /// ```
+    /// let mut recipe_smith = RecipeSmith::new();
+    /// recipe_smith.register_rpc("craft_item", Arc::new(RecipeSmith::craft_item_rpc));
+    /// ```
     fn register_rpc(&mut self, name: &str, func: RpcFunction) {
         self.rpc_functions.insert(name.to_string(), func);
     }
 
+    /// Registers an RPC function with the plugin.
+    ///
+    /// # Arguments
+    /// * `name`: The name of the RPC function.
+    /// * `func`: The RPC function to register.
+    ///
+    /// # Example
+    /// ```
+    /// let mut recipe_smith = RecipeSmith::new();
+    /// recipe_smith.register_rpc("craft_item", Arc::new(RecipeSmith::craft_item_rpc));
+    /// ```
     async fn call_rpc(&self, rpc_name: &str, params: &(dyn Any + Send + Sync)) -> Option<Box<dyn Any + Send + Sync>> {
         self.rpc_functions.get(rpc_name).map(|func| func(params))
     }
@@ -499,114 +711,205 @@ impl RpcPlugin for RecipeSmith {
 
 #[async_trait]
 impl BaseAPI for RecipeSmith {
-async fn on_game_event(&self, event: &GameEvent) {
-match event {
-    GameEvent::PlayerJoined(player) => {
-        println!("RecipeSmith: Player {} joined. Initializing crafting data...", player.id);
-        let params: Box<dyn Any + Send + Sync> = Box::new((player.id.clone(), 20u32));
-        self.call_rpc("create_player_inventory", &*params).await;
-    }
-    GameEvent::Custom(custom_event) => {
-        match custom_event.event_type.as_str() {
-            "recipe_learned" => println!("RecipeSmith: New recipe learned!"),
-            "item_crafted" => println!("RecipeSmith: Item crafted!"),
-            "inventory_changed" => println!("RecipeSmith: Inventory updated!"),
-            "recipe_mastered" => println!("RecipeSmith: Recipe mastered!"),
-            "crafting_failed" => println!("RecipeSmith: Crafting failed!"),
-            "storage_container_created" => println!("RecipeSmith: New storage container created!"),
-            "storage_container_accessed" => println!("RecipeSmith: Storage container accessed!"),
-            "craft_item" => {
-                if let Some((player_id, recipe_name)) = custom_event.data.downcast_ref::<(String, String)>() {
-                    if let Some(result) = self.call_rpc("craft_item", &(player_id.clone(), recipe_name.clone())).await {
-                        if let Some(crafted_item) = result.downcast_ref::<Option<String>>() {
-                            if let Some(item_name) = crafted_item {
-                                println!("RecipeSmith: Player {} crafted {}", player_id, item_name);
-                            } else {
-                                println!("RecipeSmith: Player {} failed to craft {}", player_id, recipe_name);
+    /// Handles game events for the RecipeSmith plugin.
+    ///
+    /// This method processes various game events, such as players joining
+    /// and custom events related to crafting and inventory management.
+    ///
+    /// # Arguments
+    /// * `event`: The GameEvent to handle.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let player = Player { id: "player1".to_string(), /* other fields */ };
+    /// let event = GameEvent::PlayerJoined(player);
+    /// recipe_smith.on_game_event(&event).await;
+    /// ```
+    async fn on_game_event(&self, event: &GameEvent) {
+        match event {
+            GameEvent::PlayerJoined(player) => {
+                println!("RecipeSmith: Player {} joined. Initializing crafting data...", player.id);
+                let params: Box<dyn Any + Send + Sync> = Box::new((player.id.clone(), 20u32));
+                self.call_rpc("create_player_inventory", &*params).await;
+            }
+            GameEvent::Custom(custom_event) => {
+                match custom_event.event_type.as_str() {
+                    "recipe_learned" => println!("RecipeSmith: New recipe learned!"),
+                    "item_crafted" => println!("RecipeSmith: Item crafted!"),
+                    "inventory_changed" => println!("RecipeSmith: Inventory updated!"),
+                    "recipe_mastered" => println!("RecipeSmith: Recipe mastered!"),
+                    "crafting_failed" => println!("RecipeSmith: Crafting failed!"),
+                    "storage_container_created" => println!("RecipeSmith: New storage container created!"),
+                    "storage_container_accessed" => println!("RecipeSmith: Storage container accessed!"),
+                    "craft_item" => {
+                        if let Some((player_id, recipe_name)) = custom_event.data.downcast_ref::<(String, String)>() {
+                            if let Some(result) = self.call_rpc("craft_item", &(player_id.clone(), recipe_name.clone())).await {
+                                if let Some(crafted_item) = result.downcast_ref::<Option<String>>() {
+                                    if let Some(item_name) = crafted_item {
+                                        println!("RecipeSmith: Player {} crafted {}", player_id, item_name);
+                                    } else {
+                                        println!("RecipeSmith: Player {} failed to craft {}", player_id, recipe_name);
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-            },
-            "add_recipe" => {
-                if let Some(recipe) = custom_event.data.downcast_ref::<Recipe>() {
-                    if let Some(result) = self.call_rpc("add_new_recipe", recipe).await {
-                        if let Some(&success) = result.downcast_ref::<bool>() {
-                            if success {
-                                println!("RecipeSmith: New recipe added: {}", recipe.name);
-                            } else {
-                                println!("RecipeSmith: Failed to add new recipe: {}", recipe.name);
+                    },
+                    "add_recipe" => {
+                        if let Some(recipe) = custom_event.data.downcast_ref::<Recipe>() {
+                            if let Some(result) = self.call_rpc("add_new_recipe", recipe).await {
+                                if let Some(&success) = result.downcast_ref::<bool>() {
+                                    if success {
+                                        println!("RecipeSmith: New recipe added: {}", recipe.name);
+                                    } else {
+                                        println!("RecipeSmith: Failed to add new recipe: {}", recipe.name);
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-            },
-            "get_player_inventory" => {
-                if let Some(player_id) = custom_event.data.downcast_ref::<String>() {
-                    if let Some(result) = self.call_rpc("get_player_inventory", player_id).await {
-                        if let Some(inventory) = result.downcast_ref::<PlayerInventory>() {
-                            println!("RecipeSmith: Retrieved inventory for player {}", player_id);
-                            // You might want to emit a custom event here with the inventory data
-                        } else {
-                            println!("RecipeSmith: Failed to retrieve inventory for player {}", player_id);
+                    },
+                    "get_player_inventory" => {
+                        if let Some(player_id) = custom_event.data.downcast_ref::<String>() {
+                            if let Some(result) = self.call_rpc("get_player_inventory", player_id).await {
+                                if let Some(inventory) = result.downcast_ref::<PlayerInventory>() {
+                                    println!("RecipeSmith: Retrieved inventory for player {}", player_id);
+                                    // You might want to emit a custom event here with the inventory data
+                                } else {
+                                    println!("RecipeSmith: Failed to retrieve inventory for player {}", player_id);
+                                }
+                            }
                         }
-                    }
+                    },
+                    "get_all_recipes" => {
+                        if let Some(result) = self.call_rpc("get_all_recipes", &()).await {
+                            if let Some(recipes) = result.downcast_ref::<Vec<Recipe>>() {
+                                println!("RecipeSmith: Retrieved all recipes, count: {}", recipes.len());
+                                // You might want to emit a custom event here with the recipes data
+                            } else {
+                                println!("RecipeSmith: Failed to retrieve recipes");
+                            }
+                        }
+                    },
+                    _ => {}
                 }
-            },
-            "get_all_recipes" => {
-                if let Some(result) = self.call_rpc("get_all_recipes", &()).await {
-                    if let Some(recipes) = result.downcast_ref::<Vec<Recipe>>() {
-                        println!("RecipeSmith: Retrieved all recipes, count: {}", recipes.len());
-                        // You might want to emit a custom event here with the recipes data
-                    } else {
-                        println!("RecipeSmith: Failed to retrieve recipes");
-                    }
-                }
-            },
-            _ => {}
+            }
+        // Ignore all other events
+        _ => {}
         }
     }
 
-    // Ignore all other events
-    _ => {}
+    /// Handles game tick events for the RecipeSmith plugin.
+    ///
+    /// This method is called on each game tick and can be used to implement
+    /// time-based logic for the crafting system.
+    ///
+    /// # Arguments
+    /// * `delta_time`: The time elapsed since the last tick.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// recipe_smith.on_game_tick(0.016).await; // 60 FPS
+    /// ```
+    async fn on_game_tick(&self, _delta_time: f64) {
+    // Implement tick logic if needed
+    }
+
+    /// Registers a custom event for the RecipeSmith plugin.
+    ///
+    /// # Arguments
+    /// * `event_type`: The type of custom event to register.
+    /// * `context`: A mutable reference to the PluginContext.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let mut context = PluginContext::new();
+    /// recipe_smith.register_custom_event("recipe_learned", &mut context).await;
+    /// ```
+    async fn register_custom_event(&self, event_type: &str, context: &mut PluginContext) {
+        context.register_for_custom_event(event_type, Arc::new(self.clone())).await;
+    }
+
+    /// Emits a custom event for the RecipeSmith plugin.
+    ///
+    /// # Arguments
+    /// * `event`: The CustomEvent to emit.
+    /// * `context`: A mutable reference to the PluginContext.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let mut context = PluginContext::new();
+    /// let event = CustomEvent {
+    ///     event_type: "recipe_learned".to_string(),
+    ///     data: Arc::new("Iron Sword".to_string()),
+    /// };
+    /// recipe_smith.emit_custom_event(event, &mut context).await;
+    /// ```
+    async fn emit_custom_event(&self, event: CustomEvent, context: &mut PluginContext) {
+        context.dispatch_custom_event(event).await;
+    }
+
+    /// Returns a reference to the RecipeSmith instance as a trait object.
+    ///
+    /// # Returns
+    /// A reference to the RecipeSmith instance as a trait object.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let as_any = recipe_smith.as_any();
+    /// ```
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }
 
-async fn on_game_tick(&self, _delta_time: f64) {
-// Implement tick logic if needed
-}
-
-/// # register_custom_event
-///  This function does custom events
-///  ```ignore
-///    self.register_custom_event("recipe_learned", context).await;
-///  ```
-async fn register_custom_event(&self, event_type: &str, context: &mut PluginContext) {
-context.register_for_custom_event(event_type, Arc::new(self.clone())).await;
-}
-
-async fn emit_custom_event(&self, event: CustomEvent, context: &mut PluginContext) {
-context.dispatch_custom_event(event).await;
-}
-
-fn as_any(&self) -> &dyn std::any::Any {
-self
-}
-}
-
 impl Plugin for RecipeSmith {
+    /// Called when the RecipeSmith plugin is loaded.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// recipe_s
     fn on_load(&self) {
         println!("RecipeSmith plugin loaded");
     }
 
+    /// Called when the RecipeSmith plugin is unloaded.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// recipe_smith.on_unload();
+    /// ```
     fn on_unload(&self) {
         println!("RecipeSmith plugin unloaded");
     }
 
+    /// Executes the RecipeSmith plugin.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// recipe_smith.execute();
+    /// ```
     fn execute(&self) {
     println!("RecipeSmith plugin executed");
     }
 
+    /// Initializes the RecipeSmith plugin.
+    ///
+    /// # Arguments
+    /// * `context`: A mutable reference to the PluginContext.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let mut context = PluginContext::new();
+    /// recipe_smith.initialize(&mut context);
+    /// ```
     fn initialize(&self, context: &mut PluginContext) {
         println!("RecipeSmith plugin initializing");
         let mut recipe_smith = self.clone();
@@ -620,36 +923,112 @@ impl Plugin for RecipeSmith {
         println!("RecipeSmith plugin initialized");
     }
 
+    /// Shuts down the RecipeSmith plugin.
+    ///
+    /// # Arguments
+    /// * `context`: A mutable reference to the PluginContext.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let mut context = PluginContext::new();
+    /// recipe_smith.shutdown(&mut context);
+    /// ```
     fn shutdown(&self, _context: &mut PluginContext) {
         println!("RecipeSmith plugin shut down");
     }
 
+    /// Called when the RecipeSmith plugin is enabled.
+    ///
+    /// # Arguments
+    /// * `context`: A mutable reference to the PluginContext.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let mut context = PluginContext::new();
+    /// recipe_smith.on_enable(&mut context);
+    /// ```
     fn on_enable(&self, _context: &mut PluginContext) {
         println!("RecipeSmith plugin enabled");
     }
 
+    /// Called when the RecipeSmith plugin is disabled.
+    ///
+    /// # Arguments
+    /// * `context`: A mutable reference to the PluginContext.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let mut context = PluginContext::new();
+    /// recipe_smith.on_disable(&mut context);
+    /// ```
     fn on_disable(&self, _context: &mut PluginContext) {
         println!("RecipeSmith plugin disabled");
     }
 }
 
 impl PluginInformation for RecipeSmith {
+    /// Returns the name of the RecipeSmith plugin.
+    ///
+    /// # Returns
+    /// The name of the plugin as a String.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// assert_eq!(recipe_smith.name(), "RecipeSmith");
+    /// ```
     fn name(&self) -> String {
-    "RecipeSmith".to_string()
+        "RecipeSmith".to_string()
     }
 
+
+    /// Returns a boxed instance of the RecipeSmith plugin that implements the SayHello trait.
+    ///
+    /// # Returns
+    /// A Box containing a trait object that implements SayHello.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let hello_instance = recipe_smith.get_instance();
+    /// println!("{}", hello_instance.say_hello());
+    /// ```
     fn get_instance(&self) -> Box<dyn SayHello> {
-    Box::new(self.clone())
+        Box::new(self.clone())
     }
-}
+}   
 
 impl SayHello for RecipeSmith {
+    /// Returns a greeting message from the RecipeSmith plugin.
+    /// This is displayed on server start.
+    ///
+    /// # Returns
+    /// A String containing the greeting message.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// println!("{}", recipe_smith.say_hello());
+    /// ```
     fn say_hello(&self) -> String {
         "Hello from RecipeSmith! Ready to craft some amazing items?".to_string()
     }
 }
 
 impl Clone for RecipeSmith {
+    /// Creates a clone of the RecipeSmith instance.
+    ///
+    /// # Returns
+    /// A new RecipeSmith instance with the same data as the original.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let cloned_recipe_smith = recipe_smith.clone();
+    /// ```
     fn clone(&self) -> Self {
         RecipeSmith {
             id: self.id,
@@ -662,6 +1041,19 @@ impl Clone for RecipeSmith {
     }
 }
 
+/// Creates and returns a new instance of the RecipeSmith plugin.
+///
+/// This function is used to create the plugin metadata and instantiate
+/// the RecipeSmith plugin for use in the game engine.
+///
+/// # Returns
+/// A new RecipeSmith instance.
+///
+/// # Example
+/// ```
+/// let recipe_smith_plugin = create_plugin_metadata();
+/// // Use recipe_smith_plugin to register with the game engine
+/// ```
 pub fn create_plugin_metadata() -> RecipeSmith {
     RecipeSmith::new()
 }
