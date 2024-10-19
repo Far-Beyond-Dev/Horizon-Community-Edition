@@ -576,6 +576,11 @@ async fn on_game_tick(&self, _delta_time: f64) {
 // Implement tick logic if needed
 }
 
+/// # register_custom_event
+///  This function does custom events
+///  ```ignore
+///    self.register_custom_event("recipe_learned", context).await;
+///  ```
 async fn register_custom_event(&self, event_type: &str, context: &mut PluginContext) {
 context.register_for_custom_event(event_type, Arc::new(self.clone())).await;
 }
