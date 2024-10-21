@@ -99,7 +99,7 @@ impl PluginInformation for StarsBeyond {
 
 impl SayHello for StarsBeyond {
     fn say_hello(&self) -> String {
-        format!("Greetings, cosmic traveler! Welcome to the vast expanse of Stars Beyond. {}",
+        format!("Calculating shortest path to universal domination... ETA: 42 millennia. Warning: Excessive galactic conquest may lead to space papercuts. Pack bandages accordingly. {}",
                 self.recipe_smith.say_hello())
     }
 }

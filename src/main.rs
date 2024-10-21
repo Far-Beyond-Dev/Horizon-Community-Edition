@@ -22,24 +22,24 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 ///////////////////////////////////////////
 
 // Import some third party crates
+use colored::Colorize;
+use ez_logging::println;
+use horizon_data_types::*;
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
 use std::sync::{Arc, Mutex};
 use tokio::{main, task::spawn};
 use tracing::info;
-use horizon_data_types::*;
-use viz::{handler::ServiceHandler, serve, Response, Result, Router, Request, Body};
-use ez_logging::println;
-use colored::Colorize;
+use viz::{handler::ServiceHandler, serve, Body, Request, Response, Result, Router};
 
 // Load the plugins API
 use plugin_test_api as plugin_api;
 use plugin_test_plugins as plugins;
 
 // Import some custom crates from the crates folder in /src
-use TerraForge;
-use PebbleVault;
 use recipesmith;
+use PebbleVault;
+use TerraForge;
 
 //////////////////////////////////////////////////////////////
 //                    !!!! WARNING !!!!                     //
@@ -87,7 +87,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 
     // Authenticate the user
     let player = Player::new(socket.clone(), id.to_string());
-    
+
     // Init the player-related event handlers
     players::init(socket.clone(), players.clone());
 
@@ -99,12 +99,12 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
 
     // Send an optional event to the player that they can hook into to run some post-authentication functions
     socket.emit("auth", true).ok();
-         
+
     ///////////////////////////////////////////////////////////
     //  Setup external event listeners for the more complex  //
     //  systems                                              //
     ///////////////////////////////////////////////////////////
-    
+
     // Initialize extra subsystems to listen to events from the client
     recipesmith::main();
 
@@ -113,7 +113,6 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     // This event confirms that the server is fully ready to handle data from the player
     let _ = socket.emit("preplay", true);
     socket.emit("beginplay", true).ok();
-
 }
 
 /// Redirects browser users to the master server dashboard.
@@ -151,17 +150,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /////////////////////////////
     // SERVER STARTUP SEQUENCE //
     /////////////////////////////
-    
-    // let recipe_smith_thread = tokio::task::spawn(async {
-    //     recipesmith::main();
-    // });
-
-
-    // Test the plugins API
 
     let all_plugins = plugins::plugins();
 
-    println!("saying hello in:");
+    println!("Your Horizon plugins greet you!");
     for (ref name, ref plugin) in all_plugins.list.iter() {
         let instance = plugin.get_instance();
         println!("\t{}: \"{}\"", name, (*instance).say_hello());
@@ -175,54 +167,39 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         //     println!("Error: Failed to load plugins from dir");
         // }
 
-        let rx = manager.monitor_directory_for_changes("./plugins").expect("Failed to monitor directory");
+        let rx = manager
+            .monitor_directory_for_changes("./plugins")
+            .expect("Failed to monitor directory");
 
         let manager_ref = Arc::new(Mutex::new(manager));
         let manager_handle = Arc::clone(&manager_ref);
-
-        // thread::spawn(move || {
-        //     let mut locked_manager = manager_handle.lock().unwrap();
-        //     unsafe {
-        //         locked_manager.handle_directory_events(rx);
-        //     }
-        // });
-
-        //loop {
-        //    // Example of execution of a plugin
-        //    let manager = manager_ref.lock().unwrap();
-        //    manager.execute_plugin("English Plugin");
-        //
-        //    std::thread::sleep(Duration::from_secs(10));
-        //}
-
     });
 
-
-    // Start the TerraForge thread
-    // let _terraforge_thread = spawn(async {
-    //     TerraForge::main();
-    // });
-    
     // Start the PebbleVault thread
     let pebble_vault_thread = tokio::spawn(async move {
         // Run the initial tests
         if let Err(e) = PebbleVault::tests::run_tests() {
             eprintln!("Error running initial PebbleVault tests: {}", e);
         }
-    
+
         // Set up parameters for the load tests
         let db_path = "load_test.db";
         let num_objects = 10_000;
         let num_regions = 5;
         let num_operations = 3;
         let interval = std::time::Duration::from_secs(300); // Run every 5 minutes
-    
+
         loop {
             // Run the regular load test
             println!("\n{}", "Running regular load test".blue());
             match PebbleVault::VaultManager::<PebbleVault::load_test::LoadTestData>::new(db_path) {
                 Ok(mut vault_manager) => {
-                    if let Err(e) = PebbleVault::load_test::run_load_test(&mut vault_manager, num_objects, num_regions, num_operations) {
+                    if let Err(e) = PebbleVault::load_test::run_load_test(
+                        &mut vault_manager,
+                        num_objects,
+                        num_regions,
+                        num_operations,
+                    ) {
                         eprintln!("Error in regular load test: {}", e);
                     } else {
                         println!("{}", "Regular load test completed successfully".green());
@@ -230,22 +207,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 Err(e) => eprintln!("Error creating VaultManager for regular load test: {}", e),
             }
-    
+
             // Run the arbitrary data load test
             println!("\n{}", "Running arbitrary data load test".blue());
-            if let Err(e) = PebbleVault::load_test::run_arbitrary_data_load_test(num_objects, num_regions) {
+            if let Err(e) =
+                PebbleVault::load_test::run_arbitrary_data_load_test(num_objects, num_regions)
+            {
                 eprintln!("Error in arbitrary data load test: {}", e);
             } else {
-                println!("{}", "Arbitrary data load test completed successfully".green());
+                println!(
+                    "{}",
+                    "Arbitrary data load test completed successfully".green()
+                );
             }
-    
+
             // Wait for the specified interval before running the next tests
             tokio::time::sleep(interval).await;
         }
     });
 
-    println!("Finished plugin threads");
-    
+    println!("Finished starting plugin threads");
+
     // Define a place to put new players
     let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
     let (svc, io) = socketioxide::SocketIo::new_svc();
@@ -256,16 +238,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("Player Connected!");
         on_connect(socket, data, players_clone.clone())
     });
-    
+
     // Create a router to handle incoming network requests
     let app = Router::new()
         .get("/", redirect_to_master_panel) // Handle accessing server from browser
         .any("/*", ServiceHandler::new(svc)); // Any other protocalls go to socket server
 
     info!("Starting server");
-    
+
     // Define a listener on port 3000
-    let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let listener: tokio::net::TcpListener =
+        tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     println!("Listening on 0.0.0.0:3000");
 
     // Start the server and handle any errors
