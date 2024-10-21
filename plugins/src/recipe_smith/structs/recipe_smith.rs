@@ -292,7 +292,7 @@ impl RecipeSmith {
 
     pub fn get_player_inventory_contents_rpc(params: &(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> {
         if let Some(player_id) = params.downcast_ref::<String>() {
-            RecipeSmith::get_player_inventory_contents(&Self, player_id);
+            // RecipeSmith::get_player_inventory_contents(&Self, player_id);
             Box::new(Some(Vec::<Item>::new()))
         } else {
             Box::new(None::<Vec<Item>>)
