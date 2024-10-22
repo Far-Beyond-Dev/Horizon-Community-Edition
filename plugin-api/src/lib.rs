@@ -15,7 +15,7 @@ use uuid::Uuid;
 // Basic types
 pub type PlayerId = u64;
 pub type ItemId = u32;
-pub type Position = (f32, f32, f32);
+pub type Position = (f64, f64, f64);
 pub mod components;
 pub use components::{Plugin, PluginCreateFn, PluginMetadata};
 

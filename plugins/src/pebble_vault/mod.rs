@@ -53,13 +53,12 @@
 /// };
 
 use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformation, PluginMetadata, RpcPlugin, SayHello, PLUGIN_API_VERSION};
-use std::{any::Any, sync::Arc};
+use std::{any::Any, sync::{Arc, Mutex}};
 use async_trait::async_trait;
 use ez_logging::println;
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
 use PebbleVault::{VaultManager, SpatialObject, VaultRegion};
-use std::sync::Mutex;
 use horizon_data_types::Player;
 
 /// Custom data structure for PebbleVault objects
@@ -82,7 +81,7 @@ pub struct PebbleVaultCustomData {
 #[derive(Debug, Clone)]
 pub struct PebbleVaultPlugin {
     /// The underlying VaultManager instance
-    vault_manager: Arc<VaultManager<PebbleVaultCustomData>>,
+    vault_manager: Arc<Mutex<VaultManager<PebbleVaultCustomData>>>,
 }
 
 impl PebbleVaultPlugin {
@@ -105,7 +104,7 @@ impl PebbleVaultPlugin {
     pub fn new() -> Result<Self, String> {
         let vault_manager = VaultManager::new("pebble_vault.db")?;
         Ok(PebbleVaultPlugin {
-            vault_manager: Arc::new(vault_manager),
+            vault_manager: Arc::new(Mutex::new(vault_manager)),
         })
     }
 
@@ -134,7 +133,7 @@ impl PebbleVaultPlugin {
     /// println!("Created region with ID: {}", region_id);
     /// ```
     pub fn create_or_load_region(&self, center: [f64; 3], radius: f64) -> Result<Uuid, String> {
-        self.vault_manager.create_or_load_region(center, radius)
+        self.vault_manager.lock().unwrap().create_or_load_region(center, radius)
     }
 
     /// Queries a region for objects within a bounding box
@@ -167,7 +166,7 @@ impl PebbleVaultPlugin {
     /// println!("Found {} objects in the region", objects.len());
     /// ```
     pub fn query_region(&self, region_id: Uuid, min_x: f64, min_y: f64, min_z: f64, max_x: f64, max_y: f64, max_z: f64) -> Result<Vec<SpatialObject<PebbleVaultCustomData>>, String> {
-        self.vault_manager.query_region(region_id, min_x, min_y, min_z, max_x, max_y, max_z)
+        self.vault_manager.lock().unwrap().query_region(region_id, min_x, min_y, min_z, max_x, max_y, max_z)
     }
 
     /// Adds a new object to a region
@@ -205,7 +204,7 @@ impl PebbleVaultPlugin {
     /// println!("Added object with ID: {}", object_id);
     /// ```
     pub fn add_object(&self, region_id: Uuid, uuid: Uuid, object_type: &str, x: f64, y: f64, z: f64, custom_data: PebbleVaultCustomData) -> Result<(), String> {
-        self.vault_manager.add_object(region_id, uuid, object_type, x, y, z, Arc::new(custom_data))
+        self.vault_manager.lock().unwrap().add_object(region_id, uuid, object_type, x, y, z, Arc::new(custom_data))
     }
 
     /// Removes an object from its region and the persistent database
@@ -234,7 +233,7 @@ impl PebbleVaultPlugin {
     /// println!("Removed object with ID: {}", object_id);
     /// ```
     pub fn remove_object(&self, object_id: Uuid) -> Result<(), String> {
-        self.vault_manager.remove_object(object_id)
+        self.vault_manager.lock().unwrap().remove_object(object_id)
     }
 
     /// Gets a reference to an object by its ID
@@ -266,7 +265,7 @@ impl PebbleVaultPlugin {
     /// }
     /// ```
     pub fn get_object(&self, object_id: Uuid) -> Result<Option<SpatialObject<PebbleVaultCustomData>>, String> {
-        self.vault_manager.get_object(object_id)
+        self.vault_manager.lock().unwrap().get_object(object_id)
     }
 
     /// Updates an existing object in the VaultManager's in-memory storage
@@ -298,7 +297,7 @@ impl PebbleVaultPlugin {
     /// }
     /// ```
     pub fn update_object(&self, object: &SpatialObject<PebbleVaultCustomData>) -> Result<(), String> {
-        self.vault_manager.update_object(object)
+        self.vault_manager.lock().unwrap().update_object(object)
     }
 
     /// Transfers a player (object) from one region to another
@@ -332,7 +331,7 @@ impl PebbleVaultPlugin {
     /// println!("Transferred player to new region");
     /// ```
     pub fn transfer_player(&self, player_uuid: Uuid, from_region_id: Uuid, to_region_id: Uuid) -> Result<(), String> {
-        self.vault_manager.transfer_player(player_uuid, from_region_id, to_region_id)
+        self.vault_manager.lock().unwrap().transfer_player(player_uuid, from_region_id, to_region_id)
     }
 
     /// Persists all in-memory databases to disk
@@ -352,7 +351,7 @@ impl PebbleVaultPlugin {
     /// println!("Data persisted to disk");
     /// ```
     pub fn persist_to_disk(&self) -> Result<(), String> {
-        self.vault_manager.persist_to_disk()
+        self.vault_manager.lock().unwrap().persist_to_disk()
     }
 
     /// Gets a reference to a region by its ID
@@ -381,7 +380,7 @@ impl PebbleVaultPlugin {
     /// }
     /// ```
     pub fn get_region(&self, region_id: Uuid) -> Option<Arc<Mutex<VaultRegion<PebbleVaultCustomData>>>> {
-        self.vault_manager.get_region(region_id)
+        self.vault_manager.lock().unwrap().get_region(region_id)
     }
 }
 
@@ -405,13 +404,13 @@ impl BaseAPI for PebbleVaultPlugin {
                     name: format!("Player_{}", player.id),
                     value: 0,
                 });
-                if let Err(e) = self.vault_manager.add_object(
+                if let Err(e) = self.vault_manager.lock().unwrap().add_object(
                     Uuid::nil(), // Assuming a default region, you might want to determine the correct region
                     player.id,
                     "player",
-                    player.transform.unwrap().location.unwrap().x,      // TODO: Fix these because of possible runtime panics caused by unwrap()
-                    player.transform.unwrap().location.unwrap().y,      // TODO: Fix these because of possible runtime panics caused by unwrap()
-                    player.transform.unwrap().location.unwrap().z,      // TODO: Fix these because of possible runtime panics caused by unwrap()
+                    player.transform.unwrap().location.unwrap().x,
+                    player.transform.unwrap().location.unwrap().y,
+                    player.transform.unwrap().location.unwrap().z,
                     custom_data,
                 ) {
                     println!("Error adding player to PebbleVault: {}", e);
@@ -419,9 +418,9 @@ impl BaseAPI for PebbleVaultPlugin {
             }
             GameEvent::PlayerMoved { player, new_position } => {
                 println!("PebbleVault: Player {} moved to {:?}", player.id, new_position);
-                if let Ok(Some(mut object)) = self.vault_manager.get_object(player.id) {
-                    object.point = [new_position.x, new_position.y, new_position.z];
-                    if let Err(e) = self.vault_manager.update_object(&object) {
+                if let Ok(Some(mut object)) = self.vault_manager.lock().unwrap().get_object(player.id) {
+                    object.point = [new_position.0, new_position.1, new_position.2];
+                    if let Err(e) = self.vault_manager.lock().unwrap().update_object(&object) {
                         println!("Error updating player position in PebbleVault: {}", e);
                     }
                 }
@@ -441,7 +440,7 @@ impl BaseAPI for PebbleVaultPlugin {
     async fn on_game_tick(&self, delta_time: f64) {
         println!("PebbleVault: Game tick, delta time: {:.2}", delta_time);
         // Perform any periodic operations, such as persisting data to disk
-        if let Err(e) = self.vault_manager.persist_to_disk() {
+        if let Err(e) = self.vault_manager.lock().unwrap().persist_to_disk() {
             println!("Error persisting PebbleVault data: {}", e);
         }
     }
