@@ -52,7 +52,7 @@
 ///     value: 50,
 /// };
 
-use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformation, PluginMetadata, RpcPlugin, SayHello, PLUGIN_API_VERSION};
+use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformation, PluginMetadata, RpcPlugin, RpcFunction, SayHello, PLUGIN_API_VERSION};
 use std::{any::Any, sync::{Arc, Mutex}};
 use async_trait::async_trait;
 use ez_logging::println;
@@ -60,6 +60,7 @@ use uuid::Uuid;
 use serde::{Serialize, Deserialize};
 use PebbleVault::{VaultManager, SpatialObject, VaultRegion};
 use horizon_data_types::Player;
+use std::collections::HashMap;
 
 /// Custom data structure for PebbleVault objects
 ///
@@ -80,8 +81,10 @@ pub struct PebbleVaultCustomData {
 /// providing methods for managing spatial data and interfacing with the game engine.
 #[derive(Debug, Clone)]
 pub struct PebbleVaultPlugin {
-    /// The underlying VaultManager instance
-    vault_manager: Arc<Mutex<VaultManager<PebbleVaultCustomData>>>,
+    vault_manager: Arc::new(Mutex::new(vault_manager)),
+    rpc_functions: HashMap::new(),
+    id: Uuid,
+    name: String,
 }
 
 impl PebbleVaultPlugin {
@@ -101,13 +104,112 @@ impl PebbleVaultPlugin {
     ///
     /// let pebble_vault = PebbleVault::new().expect("Failed to create PebbleVault");
     /// ```
-    pub fn new() -> Result<Self, String> {
+    pub fn new(&self) -> Result<Self, String> {
+        let mut plugin = Self {
+            id: Uuid::new_v4(),
+            vault_manager: VaultManager::new("/data/defualt/"),
+            name: "PebbleVault".to_string(),
+            rpc_functions: HashMap::new(),
+        };
+        
+        // Register RPC functions
+        plugin.register_rpc("create_or_load_region", Arc::new(|params: &(dyn Any + Send + Sync)| {
+            if let Some((center, radius)) = params.downcast_ref::<([f64; 3], f64)>() {
+                match self.create_or_load_region(*center, *radius) {
+                    Ok(region_id) => Ok(Box::new(region_id)),
+                    Err(e) => Err(format!("Failed to create or load region: {}", e)),
+                }
+            } else {
+                Err("Invalid parameters for create_or_load_region".to_string())
+            }
+        }));
+
+        plugin.register_rpc("query_region", Arc::new(|params: &(dyn Any + Send + Sync)| {
+            if let Some((region_id, min_x, min_y, min_z, max_x, max_y, max_z)) = 
+                params.downcast_ref::<(Uuid, f64, f64, f64, f64, f64, f64)>() {
+                    match self.query_region(*region_id, *min_x, *min_y, *min_z, *max_x, *max_y, *max_z) {
+                    Ok(objects) => Ok(Box::new(objects)),
+                    Err(e) => Err(format!("Failed to query region: {}", e)),
+                }
+            } else {
+                Err("Invalid parameters for query_region".to_string())
+            }
+        }));
+        
+        plugin.register_rpc("add_object", Arc::new(|params: &(dyn Any + Send + Sync)| {
+            if let Some((region_id, uuid, object_type, x, y, z, custom_data)) = 
+            params.downcast_ref::<(Uuid, Uuid, String, f64, f64, f64, PebbleVaultCustomData)>() {
+                match self.add_object(*region_id, *uuid, object_type, *x, *y, *z, custom_data.clone()) {
+                    Ok(()) => Ok(Box::new(())),
+                    Err(e) => Err(format!("Failed to add object: {}", e)),
+                }
+            } else {
+                Err("Invalid parameters for add_object".to_string())
+            }
+        }));
+        
+        plugin.register_rpc("remove_object", Arc::new(|params: &(dyn Any + Send + Sync)| {
+            if let Some(object_id) = params.downcast_ref::<Uuid>() {
+                match self.remove_object(*object_id) {
+                    Ok(()) => Ok(Box::new(())),
+                    Err(e) => Err(format!("Failed to remove object: {}", e)),
+                }
+            } else {
+                Err("Invalid parameters for remove_object".to_string())
+            }
+        }));
+
+        plugin.register_rpc("get_object", Arc::new(|params: &(dyn Any + Send + Sync)| {
+            if let Some(object_id) = params.downcast_ref::<Uuid>() {
+                match self.get_object(*object_id) {
+                    Ok(object) => Ok(Box::new(object)),
+                    Err(e) => Err(format!("Failed to get object: {}", e)),
+                }
+            } else {
+                Err("Invalid parameters for get_object".to_string())
+            }
+        }));
+        
+        plugin.register_rpc("update_object", Arc::new(|params: &(dyn Any + Send + Sync)| {
+            if let Some(object) = params.downcast_ref::<SpatialObject<PebbleVaultCustomData>>() {
+                match self.update_object(object) {
+                    Ok(()) => Ok(Box::new(())),
+                    Err(e) => Err(format!("Failed to update object: {}", e)),
+                }
+            } else {
+                Err("Invalid parameters for update_object".to_string())
+            }
+        }));
+        
+        plugin.register_rpc("transfer_player", Arc::new(|params: &(dyn Any + Send + Sync)| {
+            if let Some((player_uuid, from_region_id, to_region_id)) = params.downcast_ref::<(Uuid, Uuid, Uuid)>() {
+                match self.transfer_player(*player_uuid, *from_region_id, *to_region_id) {
+                    Ok(()) => Ok(Box::new(())),
+                    Err(e) => Err(format!("Failed to transfer player: {}", e)),
+                }
+            } else {
+                Err("Invalid parameters for transfer_player".to_string())
+            }
+        }));
+        
+        plugin.register_rpc("persist_to_disk", Arc::new(|_params: &(dyn Any + Send + Sync)| {
+            match self.persist_to_disk() {
+                Ok(()) => Ok(Box::new(())),
+                Err(e) => Err(format!("Failed to persist to disk: {}", e)),
+            }
+        }));
+
         let vault_manager = VaultManager::new("pebble_vault.db")?;
         Ok(PebbleVaultPlugin {
+            id: Uuid::new_v4(),
+            name: "PebbleVault".to_string(),
             vault_manager: Arc::new(Mutex::new(vault_manager)),
+            rpc_functions: HashMap::new(),
         })
-    }
 
+        Ok(plugin)
+    }
+    
     /// Creates a new region or loads an existing one
     ///
     /// This method creates a new spatial region in the PebbleVault system or
@@ -408,9 +510,9 @@ impl BaseAPI for PebbleVaultPlugin {
                     Uuid::nil(), // Assuming a default region, you might want to determine the correct region
                     player.id,
                     "player",
-                    player.transform.unwrap().location.unwrap().x,
-                    player.transform.unwrap().location.unwrap().y,
-                    player.transform.unwrap().location.unwrap().z,
+                    player.clone().transform.unwrap().location.unwrap().x,
+                    player.clone().transform.unwrap().location.unwrap().y,
+                    player.clone().transform.unwrap().location.unwrap().z,
                     custom_data,
                 ) {
                     println!("Error adding player to PebbleVault: {}", e);
@@ -456,107 +558,63 @@ impl BaseAPI for PebbleVaultPlugin {
 /// This trait implementation allows PebbleVault to be called via RPC (Remote Procedure Call).
 #[async_trait]
 impl RpcPlugin for PebbleVaultPlugin {
-    /// Handles RPC calls to PebbleVault methods
-    ///
-    /// This method dispatches RPC calls to the appropriate PebbleVault functions.
-    ///
-    /// # Arguments
-    ///
-    /// * `method` - The name of the method to call
-    /// * `params` - The parameters for the method call
+    /// Returns the unique identifier of the plugin.
     ///
     /// # Returns
+    /// The UUID of the RecipeSmith plugin instance.
     ///
-    /// A Result containing the return value of the called method, or an error string
-    async fn call_rpc(&self, method: &str, params: &(dyn Any + Send + Sync)) -> Result<Box<dyn Any + Send + Sync>, String> {
-        match method {
-            "create_or_load_region" => {
-                if let Some((center, radius)) = params.downcast_ref::<([f64; 3], f64)>() {
-                    match self.create_or_load_region(*center, *radius) {
-                        Ok(region_id) => Ok(Box::new(region_id)),
-                        Err(e) => Err(format!("Failed to create or load region: {}", e)),
-                    }
-                } else {
-                    Err("Invalid parameters for create_or_load_region".to_string())
-                }
-            }
-            "query_region" => {
-                if let Some((region_id, min_x, min_y, min_z, max_x, max_y, max_z)) = params.downcast_ref::<(Uuid, f64, f64, f64, f64, f64, f64)>() {
-                    match self.query_region(*region_id, *min_x, *min_y, *min_z, *max_x, *max_y, *max_z) {
-                        Ok(objects) => Ok(Box::new(objects)),
-                        Err(e) => Err(format!("Failed to query region: {}", e)),
-                    }
-                } else {
-                    Err("Invalid parameters for query_region".to_string())
-                }
-            }
-            "add_object" => {
-                if let Some((region_id, uuid, object_type, x, y, z, custom_data)) = params.downcast_ref::<(Uuid, Uuid, String, f64, f64, f64, PebbleVaultCustomData)>() {
-                    match self.add_object(*region_id, *uuid, object_type, *x, *y, *z, custom_data.clone()) {
-                        Ok(()) => Ok(Box::new(())),
-                        Err(e) => Err(format!("Failed to add object: {}", e)),
-                    }
-                } else {
-                    Err("Invalid parameters for add_object".to_string())
-                }
-            }
-            "remove_object" => {
-                if let Some(object_id) = params.downcast_ref::<Uuid>() {
-                    match self.remove_object(*object_id) {
-                        Ok(()) => Ok(Box::new(())),
-                        Err(e) => Err(format!("Failed to remove object: {}", e)),
-                    }
-                } else {
-                    Err("Invalid parameters for remove_object".to_string())
-                }
-            }
-            "get_object" => {
-                if let Some(object_id) = params.downcast_ref::<Uuid>() {
-                    match self.get_object(*object_id) {
-                        Ok(object) => Ok(Box::new(object)),
-                        Err(e) => Err(format!("Failed to get object: {}", e)),
-                    }
-                } else {
-                    Err("Invalid parameters for get_object".to_string())
-                }
-            }
-            "update_object" => {
-                if let Some(object) = params.downcast_ref::<SpatialObject<PebbleVaultCustomData>>() {
-                    match self.update_object(object) {
-                        Ok(()) => Ok(Box::new(())),
-                        Err(e) => Err(format!("Failed to update object: {}", e)),
-                    }
-                } else {
-                    Err("Invalid parameters for update_object".to_string())
-                }
-            }
-            "transfer_player" => {
-                if let Some((player_uuid, from_region_id, to_region_id)) = params.downcast_ref::<(Uuid, Uuid, Uuid)>() {
-                    match self.transfer_player(*player_uuid, *from_region_id, *to_region_id) {
-                        Ok(()) => Ok(Box::new(())),
-                        Err(e) => Err(format!("Failed to transfer player: {}", e)),
-                    }
-                } else {
-                    Err("Invalid parameters for transfer_player".to_string())
-                }
-            }
-            "persist_to_disk" => {
-                match self.persist_to_disk() {
-                    Ok(()) => Ok(Box::new(())),
-                    Err(e) => Err(format!("Failed to persist to disk: {}", e)),
-                }
-            }
-            _ => Err(format!("Unknown RPC method: {}", method)),
-        }
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let plugin_id = recipe_smith.get_id();
+    /// ```
+    fn get_id(&self) -> Uuid {
+        self.id
     }
-    async fn get_name() {
-        // TODO
+
+    /// Returns the name of the plugin.
+    ///
+    /// # Returns
+    /// The name of the RecipeSmith plugin.
+    ///
+    /// # Example
+    /// ```
+    /// let recipe_smith = RecipeSmith::new();
+    /// let plugin_name = recipe_smith.get_name();
+    /// assert_eq!(plugin_name, "RecipeSmith");
+    /// ```
+    fn get_name(&self) -> String {
+        self.name.clone()
     }
-    async fn get_id() {
-        // TODO
+
+    /// Registers an RPC function with the plugin.
+    ///
+    /// # Arguments
+    /// * `name`: The name of the RPC function.
+    /// * `func`: The RPC function to register.
+    ///
+    /// # Example
+    /// ```
+    /// let mut recipe_smith = RecipeSmith::new();
+    /// recipe_smith.register_rpc("craft_item", Arc::new(RecipeSmith::craft_item_rpc));
+    /// ```
+    fn register_rpc(&mut self, name: &str, func: RpcFunction) {
+        self.rpc_functions.insert(name.to_string(), func);
     }
-    async fn register_rpc() {
-        // TODO
+
+    /// Registers an RPC function with the plugin.
+    ///
+    /// # Arguments
+    /// * `name`: The name of the RPC function.
+    /// * `func`: The RPC function to register.
+    ///
+    /// # Example
+    /// ```
+    /// let mut recipe_smith = RecipeSmith::new();
+    /// recipe_smith.register_rpc("craft_item", Arc::new(RecipeSmith::craft_item_rpc));
+    /// ```
+    async fn call_rpc(&self, rpc_name: &str, params: &(dyn Any + Send + Sync)) -> Option<Box<dyn Any + Send + Sync>> {
+        self.rpc_functions.get(rpc_name).map(|func| func(params))
     }
 }
 

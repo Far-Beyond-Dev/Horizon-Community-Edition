@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use async_trait::async_trait;
-use horizon_data_types::{ Player, PlayerManager };
+use horizon_data_types::{ Player };
 use ez_logging::println;
 use uuid::Uuid;
 

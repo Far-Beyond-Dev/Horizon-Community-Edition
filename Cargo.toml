@@ -17,7 +17,6 @@ tracing-subscriber = "0.3.18"
 viz = "0.8.4"
 bincode = "1.3.3"
 ansi_term = "0.12.1"
-TerraForge = { git = "https://github.com/Far-Beyond-Dev/TerraForge.git" }
 monoio = { version = "0.2", features = ["sync"] }
 tokio-console = "0.1.11"
 console-subscriber = "0.3.0"
@@ -31,9 +30,6 @@ http-body-util = "0.1.2"
 plugin-test-api = { version = "^0.1", path = "./plugin-api" }
 plugin-test-plugins = { version = "^0.1", path = "./plugins" }
 
-recipesmith = { git = "https://github.com/Far-Beyond-Dev/RecipeSmith.git" }
-
-
 nalgebra = "0.33.0"
 v = "0.1.0"
 rayon = "1.10.0"
@@ -46,7 +42,7 @@ chrono = "0.4.38"
 libloading = "0.8.5"
 notify = "6.1.1"
 notify-debouncer-full = "0.3.1"
-horizon_data_types = "0.1.4"
+horizon_data_types = "0.3.0"
 colored = "2.0.0"
 
 rand = "0.8.5"
