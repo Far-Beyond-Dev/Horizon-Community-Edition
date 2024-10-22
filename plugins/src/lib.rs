@@ -5,6 +5,7 @@ mod french;
 mod greek;
 mod core;
 mod stars_beyond;
+mod pebble_vault;
 mod recipe_smith;
 // mod unit_test;
 
@@ -24,6 +25,7 @@ pub fn plugins() -> Plugins {
     h.insert("core".to_string(), Box::new(core::PLUGIN_METADATA));
     h.insert("stars_beyond".to_string(), Box::new(stars_beyond::get_plugin()));
     h.insert("recipe_smith".to_string(), Box::new(recipe_smith::create_plugin_metadata()));
+    h.insert("pebble_vault".to_string(), Box::new(pebble_vault::get_plugin_metadata()));
     //h.insert("unit_test".to_string(), Box::new(unit_test::get_plugin(100)));
 
     Plugins { list: h }

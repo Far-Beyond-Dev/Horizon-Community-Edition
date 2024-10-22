@@ -2790,6 +2790,7 @@ dependencies = [
 name = "plugin-test-plugins"
 version = "0.1.2"
 dependencies = [
+ "PebbleVault",
  "async-trait",
  "csv",
  "ez_logging",
