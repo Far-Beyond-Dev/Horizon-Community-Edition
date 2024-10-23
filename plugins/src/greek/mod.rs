@@ -1,4 +1,5 @@
 use plugin_test_api::{PluginInformation, SayHello};
+use ez_logging::println;
 
 pub struct PluginMetadataType;
 
