@@ -144,7 +144,6 @@ Servers are organized into a grid-based region map, where each region correspond
 
 </br>
 
----
 <h1 align="center" id='installation'> 🔧 Installation </h1>
 
 
@@ -202,7 +201,6 @@ For more detailed instructions and troubleshooting tips, refer to the [Installat
 
 </br>
 
----
 <h1 align="center" id='configuration'> ⚙️ Configuration </h1>
 
 
@@ -218,7 +216,6 @@ To customize Horizon for your specific needs, modify these files according to yo
 
 </br>
 
----
 <h1 align="center" id='usage'> 📈 Usage </h1>
 
 
@@ -244,7 +241,6 @@ For more usage instructions and advanced features, see the [Usage Guide](usage.m
 
 </br>
 
----
 <h1 align="center" id='development'> 💻 Development </h1>
 
 
@@ -276,7 +272,6 @@ For detailed development instructions and guidelines, refer to the [Development 
 
 </br>
 
----
 <h1 align="center" id='additional-resources'> 📚 Additional Resources </h1>
 
 
@@ -295,7 +290,6 @@ For more resources and helpful links, visit the [Additional Resources section](r
 
 </br>
 
----
 <h1 align="center" id='troubleshooting'> 🐞 Troubleshooting </h1>
 
 
@@ -310,9 +304,7 @@ For troubleshooting tips and solutions to common problems, consult the [Troubles
 
 </br>
 
----
 <h1 align="center" id='stargazers'> 🌟 Stargazers </h1>
-
 
 <a href="https://github.com/Stars-Beyond/Horizon-Community-Edition/stargazers/">
   <picture>
