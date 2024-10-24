@@ -13,7 +13,7 @@
 [![License](https://img.shields.io/badge/License-Apache--2.0-green.svg)](https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/blob/main/LICENSE)
 ![Visits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FFar-Beyond-Dev%2FHorizon-Community-Edition&count_bg=%2379C83D&title_bg=%23555555&icon_color=%23E7E7E7&title=Visits)
 ![Repo Size](https://img.shields.io/github/repo-size/Stars-Beyond/Horizon-Community-Edition)
-![GitHub Sponsors](https://img.shields.io/github/sponsors/Far-Beyond-Dev) <!-- no sponsors yet -->
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/Far-Beyond-Dev)](https://github.com/sponsors/Far-Beyond-Dev)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fstars-beyond.com%2F)](https://horizon.farbeyond.dev) <!-- can i make them flat? -->
 
 An easily scalable game server implemented in Rust, and compatible with many popular game engines
@@ -53,7 +53,7 @@ An easily scalable game server implemented in Rust, and compatible with many pop
 
 <h1 align="center" id='introduction'> 🚀 Introduction </h1>
 
-Horizon is a custom game server software designed to facilitate seamless interaction between Unreal Engine 5 (UE5) and client applications through socket.io. It provides a scalable and customizable solution for hosting multiplayer games and managing real-time communication between players and a limitless number of game servers or "Hosts".
+Horizon is a custom game server software designed to facilitate seamless interaction between Unreal Engine 5 (UE5) and client applications through [socket.io](https://socket.io). It provides a scalable and customizable solution for hosting multiplayer games and managing real-time communication between players and a limitless number of game servers or "Hosts".
 
 ## Synchronized Game Server Architecture
 
@@ -77,8 +77,6 @@ In the Community Edition, Horizon utilizes a peer-to-peer model for synchronizin
 - Lower operational complexity, ideal for smaller deployments or community-driven projects.
 - Efficient resource utilization across all participating servers.
 
----
-
 ### 2. Parent-Child-Master Architecture (Enterprise Edition)
 
 For larger-scale deployments and enterprise use cases, Horizon offers an advanced Parent-Child-Master architecture. This model provides enhanced control, scalability, and management capabilities.
@@ -91,8 +89,8 @@ For larger-scale deployments and enterprise use cases, Horizon offers an advance
 
 This hierarchical structure allows for more sophisticated load balancing, fault tolerance, and centralized management as well as limitless scalability.
 
-![Diagram](https://github.com/user-attachments/assets/96bdd2a1-e17a-44a2-b07b-04eacbdec4eb)
-(Server PNG By FreePik)
+![diagram](/diagrams/96bdd2a1-e17a-44a2-b07b-04eacbdec4eb.png) <!-- gimme a better name! --> <!-- make the images local -->
+<p align="center">Server image was created by Freepik</p>
 
 #### Benefits
 
@@ -100,7 +98,9 @@ This hierarchical structure allows for more sophisticated load balancing, fault 
 - Advanced load balancing and resource allocation capabilities.
 - Centralized monitoring and management through the Master node.
 - Enhanced fault tolerance and redundancy options.
+
 ---
+
 ### Choosing the Right Architecture
 
 - The Peer-to-Peer model (Community Edition) is ideal for smaller projects, community servers, or deployments that prioritize simplicity and decentralization.
@@ -161,7 +161,7 @@ Before installing Horizon, ensure that you have the following prerequisites:
 1. Clone the Horizon repository from GitHub:
 
     ```bash
-    git clone https://github.com/AstroVerse-Studios/Horizon.git
+    git clone https://github.com/Far-Beyond-Dev/Horizon-Community-Edition.git
     ```
     ![image](https://github.com/user-attachments/assets/e48ce2eb-28f6-44aa-800c-7c0b7c79eb94)
 
@@ -169,36 +169,25 @@ Before installing Horizon, ensure that you have the following prerequisites:
 2. Navigate to the project directory:
 
     ```bash
-    cd Horizon
+    cd Horizon-Community-Edition/
     ```
     ![image](https://github.com/user-attachments/assets/4a186d60-3da6-44b1-8e4c-c21c23360dd7)
 
 
-3. enter WSL or open the project in a [VSCode Devcontainer](https://code.visualstudio.com/docs/devcontainers/containers#_open-an-existing-workspace-in-a-container)
+3. Enter WSL or open the project in a [VSCode Devcontainer](https://code.visualstudio.com/docs/devcontainers/containers#_open-an-existing-workspace-in-a-container)
 
     ```bash
     wsl
     ```
 
-4. Run the following to install deps
+4. Run the following command to install the dependencies, this script only works with Ubuntu, Arch & Alpine Linux
 
-    Debian (Or the DevContainer)
     ```bash
-    ./installers-deb.sh
+    ./installer-linux.sh
     ```
     ![image](https://github.com/user-attachments/assets/74a91770-25f8-43fc-97f3-202136b46250)
 
-    Alpine
-    ```bash
-    ./installers-alpine.sh
-    ```
-
-    Arch Linux
-    ```bash
-    ./installers-arch.sh
-    ```
-
-5. Use cargo to compile and run Horizon
+6. Use cargo to compile and run Horizon
 
     ```bash
     cargo run
@@ -206,7 +195,7 @@ Before installing Horizon, ensure that you have the following prerequisites:
     ![image](https://github.com/user-attachments/assets/aacdec93-88ff-4d51-a206-96b9d6a316eb)
 
 
-6. Follow the prompts to configure any necessary settings in the `server-config.json` file.
+7. Follow the prompts to configure any necessary settings in the `server-config.json` file.
 
 For more detailed instructions and troubleshooting tips, refer to the [Installation Guide](installation.md).
 
