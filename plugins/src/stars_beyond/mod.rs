@@ -2,7 +2,6 @@ use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformati
 use std::{any::Any, sync::Arc};
 use async_trait::async_trait;
 use crate::recipe_smith::{self, RecipeSmith};
-use ez_logging::println;
 
 
 #[derive(Debug, Clone)]

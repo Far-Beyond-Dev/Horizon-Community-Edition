@@ -23,7 +23,6 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 // Import some third party crates
 use colored::Colorize;
-use ez_logging::println;
 use horizon_data_types::*;
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
@@ -31,15 +30,13 @@ use std::sync::{Arc, Mutex};
 use tokio::{main, task::spawn};
 use tracing::info;
 use viz::{handler::ServiceHandler, serve, Body, Request, Response, Result, Router};
+use uuid::Uuid;
 
 // Load the plugins API
 use plugin_test_api as plugin_api;
 use plugin_test_plugins as plugins;
 
-// Import some custom crates from the crates folder in /src
-use recipesmith;
 use PebbleVault;
-use TerraForge;
 
 //////////////////////////////////////////////////////////////
 //                    !!!! WARNING !!!!                     //
@@ -77,7 +74,7 @@ mod plugin_manager;
 /// Avoid putting memory-hungry code in this function as it runs for every new connection.
 fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
     // Send an optional event to the player that they can hook into to run some post-connection functions
-    socket.emit("connected", true).ok();
+    // socket.emit("connected", true).ok(); TODO: Fix this data param
 
     // Fetch ID from socket data
     let id = socket.id.as_str();
@@ -86,7 +83,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     println!("Welcome player {} to the game!", id);
 
     // Authenticate the user
-    let player = Player::new(socket.clone(), id.to_string());
+    let player = Player::new(socket.clone(),Uuid::new_v4());
 
     // Init the player-related event handlers
     players::init(socket.clone(), players.clone());
@@ -98,21 +95,19 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec
     println!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
 
     // Send an optional event to the player that they can hook into to run some post-authentication functions
-    socket.emit("auth", true).ok();
+    //  socket.emit("auth", true).ok();  TODO: Fix this
 
     ///////////////////////////////////////////////////////////
     //  Setup external event listeners for the more complex  //
     //  systems                                              //
     ///////////////////////////////////////////////////////////
 
-    // Initialize extra subsystems to listen to events from the client
-    recipesmith::main();
-
     // DO NOT INIT SUBSYSTEMS BEYOND THIS POINT
     // Send an optional event to the player that they can hook into to start the game client side
     // This event confirms that the server is fully ready to handle data from the player
-    let _ = socket.emit("preplay", true);
-    socket.emit("beginplay", true).ok();
+
+    // let _ = socket.emit("preplay", true);   TODO: Fix this
+    // socket.emit("beginplay", true).ok();    TODO: Fix this
 }
 
 /// Redirects browser users to the master server dashboard.

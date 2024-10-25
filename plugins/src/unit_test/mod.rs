@@ -6,7 +6,6 @@ use horizon_data_types::Player;
 use socketioxide::extract::SocketRef;
 use std::sync::atomic::{AtomicU64, Ordering};
 use tokio::sync::Mutex;
-use ez_logging::println;
 use rand::Rng;
 
 #[derive(Debug, Clone)]

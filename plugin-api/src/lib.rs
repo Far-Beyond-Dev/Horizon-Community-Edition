@@ -9,7 +9,6 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use async_trait::async_trait;
 use horizon_data_types::{ Player };
-use ez_logging::println;
 use uuid::Uuid;
 
 // Basic types

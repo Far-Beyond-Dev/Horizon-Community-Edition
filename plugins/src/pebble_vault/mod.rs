@@ -55,7 +55,6 @@
 use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformation, PluginMetadata, RpcPlugin, RpcFunction, SayHello, PLUGIN_API_VERSION};
 use std::{any::Any, sync::{Arc, Mutex}};
 use async_trait::async_trait;
-use ez_logging::println;
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
 use PebbleVault::{VaultManager, SpatialObject, VaultRegion};
@@ -81,7 +80,7 @@ pub struct PebbleVaultCustomData {
 /// providing methods for managing spatial data and interfacing with the game engine.
 #[derive(Debug, Clone)]
 pub struct PebbleVaultPlugin {
-    vault_manager: Arc::new(Mutex::new(vault_manager)),
+    vault_manager: Arc<VaultManager<T>>,
     rpc_functions: HashMap::new(),
     id: Uuid,
     name: String,
@@ -205,7 +204,7 @@ impl PebbleVaultPlugin {
             name: "PebbleVault".to_string(),
             vault_manager: Arc::new(Mutex::new(vault_manager)),
             rpc_functions: HashMap::new(),
-        })
+        });
 
         Ok(plugin)
     }
