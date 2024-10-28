@@ -23,6 +23,12 @@ impl PluginInformation for PluginMetadataType {
     fn get_instance(&self) -> Box<dyn SayHello + 'static> {
         Box::new(Horizon_Core)
     }
+    
+    fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {}
+    
+    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>  {
+        Box::new(PluginMetadataType)
+    }
 }
 
 #[async_trait]

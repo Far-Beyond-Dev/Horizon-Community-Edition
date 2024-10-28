@@ -16,6 +16,12 @@ impl PluginInformation for PluginMetadataType {
     fn get_instance(&self) -> Box<dyn SayHello> {
         Box::new(French)
     }
+
+    fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {}
+    
+    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>  {
+        todo!()
+    }
 }
 
 #[async_trait]

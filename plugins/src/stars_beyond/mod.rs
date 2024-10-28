@@ -95,6 +95,12 @@ impl PluginInformation for StarsBeyond {
     fn get_instance(&self) -> Box<dyn SayHello> {
         Box::new(self.clone())
     }
+
+    fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {}
+    
+    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>  {
+        todo!()
+    }
 }
 
 impl SayHello for StarsBeyond {
