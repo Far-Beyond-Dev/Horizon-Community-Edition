@@ -9,6 +9,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use async_trait::async_trait;
 use horizon_data_types::{ Player };
+use socketioxide::extract::SocketRef;
 use uuid::Uuid;
 
 // Basic types
@@ -73,6 +74,19 @@ impl fmt::Debug for GameEvent {
     }
 }
 
+async fn broadcast_game_event(context: &mut PluginContext, event: GameEvent) {
+    // Access the shared data where plugins are stored
+    let shared_data = context.shared_data.read().await;
+    
+    // Iterate through all registered plugins and notify them of the event
+    for (_key, value) in shared_data.iter() {
+        if let Some(plugin) = value.downcast_ref::<Arc<dyn BaseAPI>>() {
+            plugin.on_game_event(&event).await;
+        }
+    }
+}
+
+
 pub struct CustomEvent {
     pub event_type: String,
     pub data: Arc<dyn Any + Send + Sync>,
@@ -91,7 +105,8 @@ pub trait SayHello {
     fn say_hello(&self) -> String;
 }
 
-pub trait PluginInformation {
+#[async_trait]
+pub trait PluginInformation: Send + Sync {
     fn name(&self) -> String;
     fn get_instance(&self) -> Box<dyn SayHello>;
 }

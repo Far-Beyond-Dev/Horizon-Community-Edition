@@ -2483,6 +2483,7 @@ dependencies = [
  "async-trait",
  "ez_logging",
  "horizon_data_types",
+ "socketioxide",
  "tokio",
  "uuid",
 ]

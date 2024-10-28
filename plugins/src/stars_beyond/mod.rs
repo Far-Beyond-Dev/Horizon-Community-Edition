@@ -23,6 +23,7 @@ impl BaseAPI for StarsBeyond {
         match event {
             GameEvent::PlayerJoined(player) => {
                 println!("Stars Beyond: Welcome, explorer {}! The universe awaits.", player.id);
+                player.socket.on("sb_test", move || println!("Test Event For Stars Beyond"));
             }
             GameEvent::PlayerMoved { player, new_position } => {
                 println!("Stars Beyond: Explorer {} moved to {:?}", player.id, new_position);

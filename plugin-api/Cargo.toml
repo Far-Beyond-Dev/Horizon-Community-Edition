@@ -12,3 +12,4 @@ ez_logging = "0.1.1"
 horizon_data_types = "0.3.0"
 tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }
 uuid = "1.11.0"
+socketioxide = "0.15.0"
