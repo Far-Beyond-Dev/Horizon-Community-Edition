@@ -72,23 +72,28 @@ mod plugin_manager;
 /// # Warning
 ///
 /// Avoid putting memory-hungry code in this function as it runs for every new connection.
-async fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>, plugins: plugins::Plugins, manager_handle: Arc<Mutex<PluginManager>>) {
+async fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
     // Send an optional event to the player that they can hook into to run some post-connection functions
     // socket.emit("connected", true).ok(); TODO: Fix this data param
 
     // Fetch ID from socket data
     let id = socket.id.as_str();
 
-    manager_handle.trigger_player_joined(player).await;
-
+    let all_plugins = plugins::plugins();
+    
     // Display join message in log
     println!("Welcome player {} to the game!", id);
-
+    
     // Authenticate the user
     let player = Player::new(socket.clone(),Uuid::new_v4());
-
+    
     // Init the player-related event handlers
     players::init(socket.clone(), players.clone());
+    
+    
+    for (ref name, ref plugin) in all_plugins.list.iter() {
+        plugin.broadcast_game_event(&&plugin.get_pluginmetadatatype(), plugin_api::GameEvent::PlayerJoined((player.clone())));
+    }
 
     players.lock().unwrap().push(player);
 
@@ -233,7 +238,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Handle new player connections
     io.ns("/", move |socket: SocketRef, data: Data<Value>| {
         println!("Player Connected!");
-        on_connect(socket, data, players_clone.clone(), all_plugins, manager_handle)
+        on_connect(socket, data, players_clone.clone())
     });
 
     // Create a router to handle incoming network requests

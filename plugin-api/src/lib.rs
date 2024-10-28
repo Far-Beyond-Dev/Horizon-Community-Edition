@@ -74,16 +74,8 @@ impl fmt::Debug for GameEvent {
     }
 }
 
-async fn broadcast_game_event(context: &mut PluginContext, event: GameEvent) {
-    // Access the shared data where plugins are stored
-    let shared_data = context.shared_data.read().await;
-    
-    // Iterate through all registered plugins and notify them of the event
-    for (_key, value) in shared_data.iter() {
-        if let Some(plugin) = value.downcast_ref::<Arc<dyn BaseAPI>>() {
-            plugin.on_game_event(&event).await;
-        }
-    }
+async fn broadcast_game_event(plugin: &&Box<dyn BaseAPI>, event: GameEvent) {
+    plugin.on_game_event(&event);
 }
 
 
@@ -109,6 +101,8 @@ pub trait SayHello {
 pub trait PluginInformation: Send + Sync {
     fn name(&self) -> String;
     fn get_instance(&self) -> Box<dyn SayHello>;
+    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>;
+    fn broadcast_game_event(&self, plugin: &&Box<dyn BaseAPI>, event: GameEvent);
 }
 
 // Configuration trait for plugins
