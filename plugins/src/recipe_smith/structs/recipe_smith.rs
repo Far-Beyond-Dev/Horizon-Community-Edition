@@ -722,8 +722,8 @@ impl PluginInformation for RecipeSmith {
 
     fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {}
     
-    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>  {
-        todo!()
+    fn get_plugin(&self) -> Box<dyn BaseAPI>  {
+        Box::new(RecipeSmith::new())
     }
 }   
 

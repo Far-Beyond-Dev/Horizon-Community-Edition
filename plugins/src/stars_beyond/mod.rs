@@ -1,7 +1,7 @@
 use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformation, PluginMetadata, RpcPlugin, SayHello, PLUGIN_API_VERSION};
 use std::{any::Any, sync::Arc};
 use async_trait::async_trait;
-use crate::recipe_smith::{self, RecipeSmith};
+use crate::{core::PLUGIN_METADATA, recipe_smith::{self, RecipeSmith}};
 
 
 #[derive(Debug, Clone)]
@@ -98,8 +98,8 @@ impl PluginInformation for StarsBeyond {
 
     fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {}
     
-    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>  {
-        todo!()
+    fn get_plugin(&self) -> Box<dyn BaseAPI>  {
+        Box::new(StarsBeyond::new())
     }
 }
 

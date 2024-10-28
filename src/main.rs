@@ -92,7 +92,7 @@ async fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mut
     
     
     for (ref name, ref plugin) in all_plugins.list.iter() {
-        plugin.broadcast_game_event(&&plugin.get_pluginmetadatatype(), plugin_api::GameEvent::PlayerJoined((player.clone())));
+        plugin.broadcast_game_event(&&plugin.get_plugin(), plugin_api::GameEvent::PlayerJoined((player.clone())));
     }
 
     players.lock().unwrap().push(player);
@@ -178,55 +178,55 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     // Start the PebbleVault thread
-    let pebble_vault_thread = tokio::spawn(async move {
-        // Run the initial tests
-        if let Err(e) = PebbleVault::tests::run_tests() {
-            eprintln!("Error running initial PebbleVault tests: {}", e);
-        }
-
-        // Set up parameters for the load tests
-        let db_path = "load_test.db";
-        let num_objects = 10_000;
-        let num_regions = 5;
-        let num_operations = 3;
-        let interval = std::time::Duration::from_secs(300); // Run every 5 minutes
-
-        loop {
-            // Run the regular load test
-            println!("\n{}", "Running regular load test".blue());
-            match PebbleVault::VaultManager::<PebbleVault::load_test::LoadTestData>::new(db_path) {
-                Ok(mut vault_manager) => {
-                    if let Err(e) = PebbleVault::load_test::run_load_test(
-                        &mut vault_manager,
-                        num_objects,
-                        num_regions,
-                        num_operations,
-                    ) {
-                        eprintln!("Error in regular load test: {}", e);
-                    } else {
-                        println!("{}", "Regular load test completed successfully".green());
-                    }
-                }
-                Err(e) => eprintln!("Error creating VaultManager for regular load test: {}", e),
-            }
-
-            // Run the arbitrary data load test
-            println!("\n{}", "Running arbitrary data load test".blue());
-            if let Err(e) =
-                PebbleVault::load_test::run_arbitrary_data_load_test(num_objects, num_regions)
-            {
-                eprintln!("Error in arbitrary data load test: {}", e);
-            } else {
-                println!(
-                    "{}",
-                    "Arbitrary data load test completed successfully".green()
-                );
-            }
-
-            // Wait for the specified interval before running the next tests
-            tokio::time::sleep(interval).await;
-        }
-    });
+    //   let pebble_vault_thread = tokio::spawn(async move {
+    //       // Run the initial tests
+    //       if let Err(e) = PebbleVault::tests::run_tests() {
+    //           eprintln!("Error running initial PebbleVault tests: {}", e);
+    //       }
+    //   
+    //       // Set up parameters for the load tests
+    //       let db_path = "load_test.db";
+    //       let num_objects = 10_000;
+    //       let num_regions = 5;
+    //       let num_operations = 3;
+    //       let interval = std::time::Duration::from_secs(300); // Run every 5 minutes
+    //   
+    //       loop {
+    //           // Run the regular load test
+    //           println!("\n{}", "Running regular load test".blue());
+    //           match PebbleVault::VaultManager::<PebbleVault::load_test::LoadTestData>::new(db_path) {
+    //               Ok(mut vault_manager) => {
+    //                   if let Err(e) = PebbleVault::load_test::run_load_test(
+    //                       &mut vault_manager,
+    //                       num_objects,
+    //                       num_regions,
+    //                       num_operations,
+    //                   ) {
+    //                       eprintln!("Error in regular load test: {}", e);
+    //                   } else {
+    //                       println!("{}", "Regular load test completed successfully".green());
+    //                   }
+    //               }
+    //               Err(e) => eprintln!("Error creating VaultManager for regular load test: {}", e),
+    //           }
+    //   
+    //           // Run the arbitrary data load test
+    //           println!("\n{}", "Running arbitrary data load test".blue());
+    //           if let Err(e) =
+    //               PebbleVault::load_test::run_arbitrary_data_load_test(num_objects, num_regions)
+    //           {
+    //               eprintln!("Error in arbitrary data load test: {}", e);
+    //           } else {
+    //               println!(
+    //                   "{}",
+    //                   "Arbitrary data load test completed successfully".green()
+    //               );
+    //           }
+    //   
+    //           // Wait for the specified interval before running the next tests
+    //           tokio::time::sleep(interval).await;
+    //       }
+    //   });
 
     println!("Finished starting plugin threads");
 

@@ -101,7 +101,7 @@ pub trait SayHello {
 pub trait PluginInformation: Send + Sync {
     fn name(&self) -> String;
     fn get_instance(&self) -> Box<dyn SayHello>;
-    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>;
+    fn get_plugin(&self) -> Box<dyn BaseAPI>;
     fn broadcast_game_event(&self, plugin: &&Box<dyn BaseAPI>, event: GameEvent);
 }
 

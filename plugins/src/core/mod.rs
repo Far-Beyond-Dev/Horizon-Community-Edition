@@ -26,7 +26,7 @@ impl PluginInformation for PluginMetadataType {
     
     fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {}
     
-    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>  {
+    fn get_plugin(&self) -> Box<dyn BaseAPI>  {
         Box::new(PluginMetadataType)
     }
 }

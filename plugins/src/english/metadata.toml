@@ -1,5 +1,0 @@
-name = "english"
-
-[dependencies]
-nom = "^3"
-
