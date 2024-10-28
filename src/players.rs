@@ -211,7 +211,7 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc
     }
 
     // Send a reply containing the correct data
-    socket.emit("messageBack", json!({
+    socket.emit("messageBack", &json!({
         "status": "success",
         "message": "Player location updated successfully"
     })).ok();
@@ -254,7 +254,7 @@ pub fn get_online_players(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     )
     .unwrap();
     debug!("Player Array as JSON: {}", online_players_json);
-    socket.emit("onlinePlayers", online_players_json).ok();
+    socket.emit("onlinePlayers", &online_players_json).ok();
 }
 
 /// Retrieves and sends player locations and related information to a connected client.
@@ -342,14 +342,14 @@ pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players:
     println!("JSON string being sent: {}", serde_json::to_string(&response_json).unwrap());
     
     // Send the data
-    socket.emit("playersWithLocations", response_json).ok();
+    socket.emit("playersWithLocations", &response_json).ok();
 }
 
 /// Forward the message content to all clients
 pub fn broadcast_message(data: Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
     let players = players.lock().unwrap();
     for player in &*players {
-        player.socket.emit("broadcastMessage", data.0.clone()).ok();
+        player.socket.emit("broadcastMessage", &data.0.clone()).ok();
     }
 }
 
@@ -359,7 +359,7 @@ fn player_jump(socket: SocketRef, data: Data<Value>) {
     // You might want to update the player's state or notify other players
 
     // Emit the playerJumped event
-    socket.emit("playerJumped", true).expect("Failed to emit playerJumped event");
+    socket.emit("playerJumped", &true).expect("Failed to emit playerJumped event");
 }
 
 fn player_walk_toggle(socket: SocketRef, data: Data<Value>) {
@@ -367,7 +367,7 @@ fn player_walk_toggle(socket: SocketRef, data: Data<Value>) {
     // You might want to update the player's state or notify other players
 
     // Emit the playerJumped event
-    socket.emit("playerWalkToggled", true).expect("Failed to emit playerWalkToggled event");
+    socket.emit("playerWalkToggled", &true).expect("Failed to emit playerWalkToggled event");
 }
 
 pub async fn cleanup_inactive_players(players: Arc<Mutex<Vec<Player>>>) {
