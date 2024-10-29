@@ -74,11 +74,6 @@ impl fmt::Debug for GameEvent {
     }
 }
 
-async fn broadcast_game_event(plugin: &&Box<dyn BaseAPI>, event: GameEvent) {
-    plugin.on_game_event(&event);
-}
-
-
 pub struct CustomEvent {
     pub event_type: String,
     pub data: Arc<dyn Any + Send + Sync>,

@@ -720,7 +720,9 @@ impl PluginInformation for RecipeSmith {
         Box::new(self.clone())
     }
 
-    fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {}
+    fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {
+        plugin.on_game_event(&event);
+    }
     
     fn get_plugin(&self) -> Box<dyn BaseAPI>  {
         Box::new(RecipeSmith::new())

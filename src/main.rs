@@ -92,13 +92,14 @@ async fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mut
     
     
     for (ref name, ref plugin) in all_plugins.list.iter() {
-        plugin.broadcast_game_event(&&plugin.get_plugin(), plugin_api::GameEvent::PlayerJoined((player.clone())));
+        println!("{}", format!("Sent PlayerJoined to plugin: {} for player id: {}", plugin.name(), player.id.to_string()));
+        plugin.broadcast_game_event(&&plugin.get_plugin(), plugin_api::GameEvent::PlayerJoined(player.clone()));
     }
 
-    players.lock().unwrap().push(player);
+    players.lock().unwrap().push(player.clone());
 
     // Display player join debug messages
-    println!("Player {} added to players list", id);
+    println!("Player {} added to players list for socket id: {}", player.clone().id.to_string(), id);
     println!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
 
     // Send an optional event to the player that they can hook into to run some post-authentication functions
