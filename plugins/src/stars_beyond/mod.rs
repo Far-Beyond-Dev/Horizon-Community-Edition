@@ -2,6 +2,7 @@ use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformati
 use std::{any::Any, sync::Arc};
 use async_trait::async_trait;
 use crate::{core::PLUGIN_METADATA, recipe_smith::{self, RecipeSmith}};
+use horizon_data_types::Player;
 
 
 #[derive(Debug, Clone)]
@@ -15,6 +16,15 @@ impl StarsBeyond {
             recipe_smith: Arc::new(RecipeSmith::new()),
         }
     }
+
+    fn on_playerjoined(player: Player) {
+        player.socket.on("sb_test", move || println!("Test Event For Stars Beyond"));
+        player.socket.on("sb/getinventory", move ||
+            println!("Sent client their inventory")
+            // TODO we need to fix RPC system so we can see the types required on the frontend in the code editor
+            // self::recipe_smith::RecipeSmith::get_player_inventory_rpc(player.id)
+        )
+    }
 }
 
 #[async_trait]
@@ -23,7 +33,7 @@ impl BaseAPI for StarsBeyond {
         match event {
             GameEvent::PlayerJoined(player) => {
                 println!("Stars Beyond: Welcome, explorer {}! The universe awaits.", player.id);
-                player.socket.on("sb_test", move || println!("Test Event For Stars Beyond"));
+                StarsBeyond::on_playerjoined(player.clone());
             }
             GameEvent::PlayerMoved { player, new_position } => {
                 println!("Stars Beyond: Explorer {} moved to {:?}", player.id, new_position);
