@@ -20,9 +20,14 @@ impl StarsBeyond {
 
     fn on_playerjoined(player: Player) {
         player.socket.on("sb_test", move || println!("Test Event For Stars Beyond"));
+
         player.socket.on("sb_echo", move |s: SocketRef, d: Data<Value>|
-            println!("Sent client their data: {}", d.to_string())
-        )
+            println!("Received data:\n{}", 
+                serde_json::to_string_pretty(&d.0).unwrap_or_else(|_| "Invalid JSON".to_string())
+            )
+        );
+
+        player.socket.on("event", move || println!(""));
     }
 }
 
