@@ -23,10 +23,13 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 // Import some third party crates
 use colored::Colorize;
+use console_log::init;
 use horizon_data_types::*;
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
+use tracing_subscriber::fmt::time;
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 use tokio::{main, task::spawn};
 use tracing::info;
 use viz::{handler::ServiceHandler, serve, Body, Request, Response, Result, Router};
@@ -154,6 +157,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // SERVER STARTUP SEQUENCE //
     /////////////////////////////
 
+    let init_time = Instant::now();
+
     let all_plugins = plugins::plugins();
 
     println!("Your Horizon plugins greet you!");
@@ -254,9 +259,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     println!("Listening on 0.0.0.0:3000");
 
+    // Startup Stats
+    println!("Server startup took: {:?}", (init_time.elapsed()));
+    
     // Start the server and handle any errors
     if let Err(e) = serve(listener, app).await {
         println!("{}", e);
     }
+
     Ok(())
 }
