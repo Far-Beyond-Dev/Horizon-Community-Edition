@@ -10,7 +10,7 @@ use std::any::Any;
 use std::error::Error as StdError;
 
 // Type alias for our event handler function
-type EventHandler = dyn Fn(Value) -> Result<(), Box<dyn StdError>> + Send + Sync + 'static;
+type EventHandler = dyn Fn(Value) -> Result<(), Box<dyn StdError>> + Send + Sync;
 type HandlerFn = Arc<EventHandler>;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -52,7 +52,7 @@ impl MetadataStore {
 }
 
 // Type alias for RPC parameters to ensure consistency
-type RpcParams = (String, Box<EventHandler>);
+type RpcParams = (String, Arc<EventHandler>);
 
 #[derive(Clone)]
 pub struct HorizonLinkPlugin {
@@ -74,11 +74,11 @@ impl HorizonLinkPlugin {
         };
 
         let plugin_clone = plugin.clone();
+        // Inside the rpc_fn
         let rpc_fn: RpcFunction = Arc::new(move |params| {
-            if let Some((event_name, handler)) = params.downcast_ref::<RpcParams>() {
-                let event_name = event_name.clone();
-                // Create a new Arc wrapping the boxed handler
-                let handler = Arc::new(move |v: Value| handler(v)) as HandlerFn;
+            if let Some(params_tuple) = params.downcast_ref::<RpcParams>() {
+                let event_name = params_tuple.0.clone();
+                let handler = Arc::clone(&params_tuple.1);
                 plugin_clone.rpc_listen(event_name, handler);
             }
             Box::new(())
