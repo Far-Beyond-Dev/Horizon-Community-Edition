@@ -123,7 +123,7 @@ pub enum LogLevel {
 #[async_trait]
 pub trait BaseAPI: Send + Sync {
     // Define Async methods
-    async fn on_game_event(&self, event: &GameEvent);
+    fn on_game_event(&self, event: &GameEvent);
 
     async fn on_game_tick(&self, delta_time: f64);
 
@@ -185,7 +185,7 @@ impl PluginContext {
         let custom_events = self.custom_events.read().await;
         if let Some(handlers) = custom_events.get(&event.event_type) {
             for handler in handlers {
-                handler.on_game_event(&GameEvent::Custom(event.clone())).await;
+                handler.on_game_event(&GameEvent::Custom(event.clone()));
             }
         }
     }

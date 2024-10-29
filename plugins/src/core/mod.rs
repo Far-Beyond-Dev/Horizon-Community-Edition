@@ -35,7 +35,7 @@ impl PluginInformation for PluginMetadataType {
 
 #[async_trait]
 impl BaseAPI for PluginMetadataType {
-    async fn on_game_event(&self, event: &GameEvent) {
+    fn on_game_event(&self, event: &GameEvent) {
         match event {   
             // Set up listeners in all modules
             GameEvent::PlayerJoined(player) => {

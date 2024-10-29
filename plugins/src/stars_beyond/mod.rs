@@ -19,7 +19,7 @@ impl StarsBeyond {
 
 #[async_trait]
 impl BaseAPI for StarsBeyond {
-    async fn on_game_event(&self, event: &GameEvent) {
+    fn on_game_event(&self, event: &GameEvent) {
         match event {
             GameEvent::PlayerJoined(player) => {
                 println!("Stars Beyond: Welcome, explorer {}! The universe awaits.", player.id);
@@ -30,8 +30,6 @@ impl BaseAPI for StarsBeyond {
             }
             _ => {}
         }
-        // Forward events to RecipeSmith
-        self.recipe_smith.on_game_event(event).await;
     }
 
     async fn on_game_tick(&self, delta_time: f64) {
