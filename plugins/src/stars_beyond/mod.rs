@@ -3,7 +3,8 @@ use std::{any::Any, sync::Arc};
 use async_trait::async_trait;
 use crate::{core::PLUGIN_METADATA, recipe_smith::{self, RecipeSmith}};
 use horizon_data_types::Player;
-
+use socketioxide::extract::{Data, SocketRef};
+use serde_json::{json, Value};
 
 #[derive(Debug, Clone)]
 pub struct StarsBeyond {
@@ -19,10 +20,8 @@ impl StarsBeyond {
 
     fn on_playerjoined(player: Player) {
         player.socket.on("sb_test", move || println!("Test Event For Stars Beyond"));
-        player.socket.on("sb/getinventory", move ||
-            println!("Sent client their inventory")
-            // TODO we need to fix RPC system so we can see the types required on the frontend in the code editor
-            // self::recipe_smith::RecipeSmith::get_player_inventory_rpc(player.id)
+        player.socket.on("sb_echo", move |s: SocketRef, d: Data<Value>|
+            println!("Sent client their data: {}", d.to_string())
         )
     }
 }
