@@ -45,9 +45,11 @@ impl MetadataStore {
 
     fn store_metadata(&self, metadata: EventMetadata) {
         let mut events = self.events.write().unwrap();
-        events.entry(metadata.name.clone())
-            .or_default()
-            .push(metadata);
+        println!("Intercepted Event Meta!");
+        println!("  Event Name:   {}", metadata.name);
+        println!("  Event Origin: X:{} y:{} z:{}", metadata.origin.get(0).unwrap().to_string(), metadata.origin.get(1).unwrap().to_string(), metadata.origin.get(2).unwrap().to_string());
+        println!("  Event Distance: {}", metadata.propagation.to_string());
+        println!("-------------------------- End Event Data -------------------------");
     }
 }
 
@@ -188,7 +190,6 @@ impl PluginInformation for HorizonLinkPlugin {
     }
     
     fn broadcast_game_event(&self, _plugin: &&Box<dyn BaseAPI>, _event: GameEvent) {
-        // Implementation would go here if needed
     }
 }
 
