@@ -74,11 +74,6 @@ impl fmt::Debug for GameEvent {
     }
 }
 
-async fn broadcast_game_event(plugin: &&Box<dyn BaseAPI>, event: GameEvent) {
-    plugin.on_game_event(&event);
-}
-
-
 pub struct CustomEvent {
     pub event_type: String,
     pub data: Arc<dyn Any + Send + Sync>,
@@ -101,7 +96,7 @@ pub trait SayHello {
 pub trait PluginInformation: Send + Sync {
     fn name(&self) -> String;
     fn get_instance(&self) -> Box<dyn SayHello>;
-    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>;
+    fn get_plugin(&self) -> Box<dyn BaseAPI>;
     fn broadcast_game_event(&self, plugin: &&Box<dyn BaseAPI>, event: GameEvent);
 }
 
@@ -128,7 +123,7 @@ pub enum LogLevel {
 #[async_trait]
 pub trait BaseAPI: Send + Sync {
     // Define Async methods
-    async fn on_game_event(&self, event: &GameEvent);
+    fn on_game_event(&self, event: &GameEvent);
 
     async fn on_game_tick(&self, delta_time: f64);
 
@@ -190,7 +185,7 @@ impl PluginContext {
         let custom_events = self.custom_events.read().await;
         if let Some(handlers) = custom_events.get(&event.event_type) {
             for handler in handlers {
-                handler.on_game_event(&GameEvent::Custom(event.clone())).await;
+                handler.on_game_event(&GameEvent::Custom(event.clone()));
             }
         }
     }

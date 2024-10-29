@@ -24,16 +24,18 @@ impl PluginInformation for PluginMetadataType {
         Box::new(Horizon_Core)
     }
     
-    fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {}
+    fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {
+        plugin.on_game_event(&event);
+    }
     
-    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>  {
+    fn get_plugin(&self) -> Box<dyn BaseAPI>  {
         Box::new(PluginMetadataType)
     }
 }
 
 #[async_trait]
 impl BaseAPI for PluginMetadataType {
-    async fn on_game_event(&self, event: &GameEvent) {
+    fn on_game_event(&self, event: &GameEvent) {
         match event {   
             // Set up listeners in all modules
             GameEvent::PlayerJoined(player) => {

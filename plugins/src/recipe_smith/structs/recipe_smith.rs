@@ -446,12 +446,13 @@ impl BaseAPI for RecipeSmith {
     /// let event = GameEvent::PlayerJoined(player);
     /// recipe_smith.on_game_event(&event).await;
     /// ```
-    async fn on_game_event(&self, event: &GameEvent) {
+    fn on_game_event(&self, event: &GameEvent) {
         match event {
             GameEvent::PlayerJoined(player) => {
                 println!("RecipeSmith: Player {} joined. Initializing crafting data...", player.id);
                 let params: Box<dyn Any + Send + Sync> = Box::new((player.id.clone(), 20u32));
-                self.call_rpc("create_player_inventory", &*params).await;
+            //  TODO: Fix this async to block perhaps
+            //     self.call_rpc("create_player_inventory", &*params).await;
             }
             GameEvent::Custom(custom_event) => {
                 match custom_event.event_type.as_str() {
@@ -462,54 +463,59 @@ impl BaseAPI for RecipeSmith {
                     "crafting_failed" => println!("RecipeSmith: Crafting failed!"),
                     "storage_container_created" => println!("RecipeSmith: New storage container created!"),
                     "storage_container_accessed" => println!("RecipeSmith: Storage container accessed!"),
-                    "craft_item" => {
-                        if let Some((player_id, recipe_name)) = custom_event.data.downcast_ref::<(String, String)>() {
-                            if let Some(result) = self.call_rpc("craft_item", &(player_id.clone(), recipe_name.clone())).await {
-                                if let Some(crafted_item) = result.downcast_ref::<Option<String>>() {
-                                    if let Some(item_name) = crafted_item {
-                                        println!("RecipeSmith: Player {} crafted {}", player_id, item_name);
-                                    } else {
-                                        println!("RecipeSmith: Player {} failed to craft {}", player_id, recipe_name);
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "add_recipe" => {
-                        if let Some(recipe) = custom_event.data.downcast_ref::<Recipe>() {
-                            if let Some(result) = self.call_rpc("add_new_recipe", recipe).await {
-                                if let Some(&success) = result.downcast_ref::<bool>() {
-                                    if success {
-                                        println!("RecipeSmith: New recipe added: {}", recipe.name);
-                                    } else {
-                                        println!("RecipeSmith: Failed to add new recipe: {}", recipe.name);
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "get_player_inventory" => {
-                        if let Some(player_id) = custom_event.data.downcast_ref::<String>() {
-                            if let Some(result) = self.call_rpc("get_player_inventory", player_id).await {
-                                if let Some(inventory) = result.downcast_ref::<PlayerInventory>() {
-                                    println!("RecipeSmith: Retrieved inventory for player {}", player_id);
-                                    // You might want to emit a custom event here with the inventory data
-                                } else {
-                                    println!("RecipeSmith: Failed to retrieve inventory for player {}", player_id);
-                                }
-                            }
-                        }
-                    },
-                    "get_all_recipes" => {
-                        if let Some(result) = self.call_rpc("get_all_recipes", &()).await {
-                            if let Some(recipes) = result.downcast_ref::<Vec<Recipe>>() {
-                                println!("RecipeSmith: Retrieved all recipes, count: {}", recipes.len());
-                                // You might want to emit a custom event here with the recipes data
-                            } else {
-                                println!("RecipeSmith: Failed to retrieve recipes");
-                            }
-                        }
-                    },
+                    //  TODO: Fix this async
+                    //  "craft_item" => {
+                    //      if let Some((player_id, recipe_name)) = custom_event.data.downcast_ref::<(String, String)>() {
+                    //          if let Some(result) = self.call_rpc("craft_item", &(player_id.clone(), recipe_name.clone())).await {
+                    //              if let Some(crafted_item) = result.downcast_ref::<Option<String>>() {
+                    //                  if let Some(item_name) = crafted_item {
+                    //                      println!("RecipeSmith: Player {} crafted {}", player_id, item_name);
+                    //                  } else {
+                    //                      println!("RecipeSmith: Player {} failed to craft {}", player_id, recipe_name);
+                    //                  }
+                    //              }
+                    //          }
+                    //      }
+                    //  },
+
+                    // TODO: Fix this async
+                    //  "add_recipe" => {
+                    //      if let Some(recipe) = custom_event.data.downcast_ref::<Recipe>() {
+                    //          if let Some(result) = self.call_rpc("add_new_recipe", recipe).await {
+                    //              if let Some(&success) = result.downcast_ref::<bool>() {
+                    //                  if success {
+                    //                      println!("RecipeSmith: New recipe added: {}", recipe.name);
+                    //                  } else {
+                    //                      println!("RecipeSmith: Failed to add new recipe: {}", recipe.name);
+                    //                  }
+                    //              }
+                    //          }
+                    //      }
+                    //  },
+                    
+                    // TODO: Fix these asyncs
+                    //  "get_player_inventory" => {
+                    //      if let Some(player_id) = custom_event.data.downcast_ref::<String>() {
+                    //          if let Some(result) = self.call_rpc("get_player_inventory", player_id).await {
+                    //              if let Some(inventory) = result.downcast_ref::<PlayerInventory>() {
+                    //                  println!("RecipeSmith: Retrieved inventory for player {}", player_id);
+                    //                  // You might want to emit a custom event here with the inventory data
+                    //              } else {
+                    //                  println!("RecipeSmith: Failed to retrieve inventory for player {}", player_id);
+                    //              }
+                    //          }
+                    //      }
+                    //  },
+                    //  "get_all_recipes" => {
+                    //      if let Some(result) = self.call_rpc("get_all_recipes", &()).await {
+                    //          if let Some(recipes) = result.downcast_ref::<Vec<Recipe>>() {
+                    //              println!("RecipeSmith: Retrieved all recipes, count: {}", recipes.len());
+                    //              // You might want to emit a custom event here with the recipes data
+                    //          } else {
+                    //              println!("RecipeSmith: Failed to retrieve recipes");
+                    //          }
+                    //      }
+                    //  },
                     _ => {}
                 }
             }
@@ -720,10 +726,12 @@ impl PluginInformation for RecipeSmith {
         Box::new(self.clone())
     }
 
-    fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {}
+    fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {
+        plugin.on_game_event(&event);
+    }
     
-    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>  {
-        todo!()
+    fn get_plugin(&self) -> Box<dyn BaseAPI>  {
+        Box::new(RecipeSmith::new())
     }
 }   
 

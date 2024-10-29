@@ -1,7 +1,7 @@
 use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformation, PluginMetadata, RpcPlugin, SayHello, PLUGIN_API_VERSION};
 use std::{any::Any, sync::Arc};
 use async_trait::async_trait;
-use crate::recipe_smith::{self, RecipeSmith};
+use crate::{core::PLUGIN_METADATA, recipe_smith::{self, RecipeSmith}};
 
 
 #[derive(Debug, Clone)]
@@ -19,7 +19,7 @@ impl StarsBeyond {
 
 #[async_trait]
 impl BaseAPI for StarsBeyond {
-    async fn on_game_event(&self, event: &GameEvent) {
+    fn on_game_event(&self, event: &GameEvent) {
         match event {
             GameEvent::PlayerJoined(player) => {
                 println!("Stars Beyond: Welcome, explorer {}! The universe awaits.", player.id);
@@ -30,8 +30,6 @@ impl BaseAPI for StarsBeyond {
             }
             _ => {}
         }
-        // Forward events to RecipeSmith
-        self.recipe_smith.on_game_event(event).await;
     }
 
     async fn on_game_tick(&self, delta_time: f64) {
@@ -96,10 +94,12 @@ impl PluginInformation for StarsBeyond {
         Box::new(self.clone())
     }
 
-    fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {}
+    fn broadcast_game_event(&self, plugin: & &Box<dyn BaseAPI> ,event:GameEvent) {
+        plugin.on_game_event(&event);
+    }
     
-    fn get_pluginmetadatatype(&self) -> Box<dyn BaseAPI>  {
-        todo!()
+    fn get_plugin(&self) -> Box<dyn BaseAPI>  {
+        Box::new(StarsBeyond::new())
     }
 }
 
