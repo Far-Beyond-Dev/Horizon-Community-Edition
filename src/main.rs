@@ -23,10 +23,13 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 // Import some third party crates
 use colored::Colorize;
+use console_log::init;
 use horizon_data_types::*;
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
+use tracing_subscriber::fmt::time;
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 use tokio::{main, task::spawn};
 use tracing::info;
 use viz::{handler::ServiceHandler, serve, Body, Request, Response, Result, Router};
@@ -74,7 +77,8 @@ mod plugin_manager;
 /// Avoid putting memory-hungry code in this function as it runs for every new connection.
 async fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
     // Send an optional event to the player that they can hook into to run some post-connection functions
-    // socket.emit("connected", true).ok(); TODO: Fix this data param
+    socket.emit("connected", &true).ok();
+    println!("Sent player connected to client!");
 
     // Fetch ID from socket data
     let id = socket.id.as_str();
@@ -153,6 +157,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /////////////////////////////
     // SERVER STARTUP SEQUENCE //
     /////////////////////////////
+
+    let init_time = Instant::now();
 
     let all_plugins = plugins::plugins();
 
@@ -254,9 +260,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     println!("Listening on 0.0.0.0:3000");
 
+    // Startup Stats
+    println!("Server startup took: {:?}", (init_time.elapsed()));
+    
     // Start the server and handle any errors
     if let Err(e) = serve(listener, app).await {
         println!("{}", e);
     }
+
     Ok(())
 }

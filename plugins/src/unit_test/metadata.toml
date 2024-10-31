@@ -1,3 +1,0 @@
-name = "Horizon Unit Test Plugin"
-
-crate = { name = "unit_test_plugin", version = "^0.1"}
