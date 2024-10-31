@@ -12,6 +12,118 @@ use horizon_data_types::{ Player };
 use socketioxide::extract::SocketRef;
 use uuid::Uuid;
 
+
+// Macro to declare RPC methods for a plugin
+#[macro_export]
+macro_rules! declare_rpc_methods {
+    (
+        $(
+            $(#[$attr:meta])*
+            $vis:vis fn $name:ident($($param:ident: $param_ty:ty),* $(,)?) $(-> $ret_ty:ty)?;
+        )*
+    ) => {
+        // Generate the RPC method enum
+        #[derive(Debug, Clone, Serialize, Deserialize)]
+        pub enum RpcMethod {
+            $(
+                $name {
+                    $(
+                        $param: $param_ty,
+                    )*
+                },
+            )*
+        }
+
+        // Implementation block for handling RPC calls
+        impl RpcHandler for Self {
+            async fn handle_rpc(&self, method: RpcMethod) -> Result<Box<dyn Any + Send + Sync>, String> {
+                match method {
+                    $(
+                        RpcMethod::$name { $($param,)* } => {
+                            let result = self.$name($($param,)*).await;
+                            Ok(Box::new(result))
+                        },
+                    )*
+                }
+            }
+        }
+
+        // Generate individual RPC method implementations
+        $(
+            impl Self {
+                $(#[$attr])*
+                $vis async fn $name(&self, $($param: $param_ty),*) $(-> $ret_ty)? {
+                    // Method implementation goes here
+                    unimplemented!()
+                }
+            }
+        )*
+    };
+}
+
+// Macro to implement RPC client methods
+#[macro_export]
+macro_rules! impl_rpc_client {
+    ($plugin:ty) => {
+        #[async_trait]
+        impl RpcClient for $plugin {
+            async fn call_remote<T: Send + Sync + 'static>(
+                &self,
+                target_plugin: &str,
+                method: RpcMethod,
+                context: &PluginContext
+            ) -> Result<T, String> {
+                let result = context.call_plugin_rpc(target_plugin, method).await?;
+                result
+                    .downcast::<T>()
+                    .map(|b| *b)
+                    .map_err(|_| "Failed to downcast RPC result".to_string())
+            }
+        }
+    };
+}
+
+// Macro to register RPC handlers
+#[macro_export]
+macro_rules! register_rpc_handlers {
+    ($plugin:ty, $($method:ident => $handler:expr),* $(,)?) => {
+        impl $plugin {
+            pub fn register_rpc_handlers(&mut self) {
+                $(
+                    self.rpc_handlers.insert(
+                        stringify!($method).to_string(),
+                        Arc::new($handler),
+                    );
+                )*
+            }
+        }
+    };
+}
+
+// Macro to generate RPC client methods
+#[macro_export]
+macro_rules! rpc_client_methods {
+    ($plugin:ty, $target:expr, {
+        $(
+            $(#[$attr:meta])*
+            $vis:vis fn $name:ident($($param:ident: $param_ty:ty),*) -> $ret_ty:ty;
+        )*
+    }) => {
+        impl $plugin {
+            $(
+                $(#[$attr])*
+                $vis async fn $name(&self, $($param: $param_ty),*) -> Result<$ret_ty, String> {
+                    let method = RpcMethod::$name {
+                        $($param: $param.clone(),)*
+                    };
+                    self.call_remote($target, method, &self.context).await
+                }
+            )*
+        }
+    };
+}
+
+
 // Basic types
 pub type PlayerId = u64;
 pub type ItemId = u32;
