@@ -2,7 +2,9 @@ use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformati
 use std::{any::Any, sync::Arc};
 use async_trait::async_trait;
 use crate::{core::PLUGIN_METADATA, recipe_smith::{self, RecipeSmith}};
-
+use horizon_data_types::Player;
+use socketioxide::extract::{Data, SocketRef};
+use serde_json::{json, Value};
 
 #[derive(Debug, Clone)]
 pub struct StarsBeyond {
@@ -15,6 +17,18 @@ impl StarsBeyond {
             recipe_smith: Arc::new(RecipeSmith::new()),
         }
     }
+
+    fn on_playerjoined(player: Player) {
+        player.socket.on("sb_test", move || println!("Test Event For Stars Beyond"));
+
+        player.socket.on("sb_echo", move |s: SocketRef, d: Data<Value>|
+            println!("Received data:\n{}", 
+                serde_json::to_string_pretty(&d.0).unwrap_or_else(|_| "Invalid JSON".to_string())
+            )
+        );
+
+        player.socket.on("event", move || println!(""));
+    }
 }
 
 #[async_trait]
@@ -23,7 +37,7 @@ impl BaseAPI for StarsBeyond {
         match event {
             GameEvent::PlayerJoined(player) => {
                 println!("Stars Beyond: Welcome, explorer {}! The universe awaits.", player.id);
-                player.socket.on("sb_test", move || println!("Test Event For Stars Beyond"));
+                StarsBeyond::on_playerjoined(player.clone());
             }
             GameEvent::PlayerMoved { player, new_position } => {
                 println!("Stars Beyond: Explorer {} moved to {:?}", player.id, new_position);

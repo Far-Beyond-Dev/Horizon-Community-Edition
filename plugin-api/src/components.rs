@@ -9,7 +9,7 @@ use std::fmt::Debug;
 use crate::{ApiVersion, PluginContext};
 
 /// Trait that all plugins must implement.
-pub trait Plugin: Any + Debug + Send + Sync {
+pub trait Plugin: Any + Send + Sync {
     /// Called when the plugin is loaded. Perform initialization here.
     fn on_load(&self);
 
