@@ -77,7 +77,8 @@ mod plugin_manager;
 /// Avoid putting memory-hungry code in this function as it runs for every new connection.
 async fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
     // Send an optional event to the player that they can hook into to run some post-connection functions
-    // socket.emit("connected", true).ok(); TODO: Fix this data param
+    socket.emit("connected", &true).ok();
+    println!("Sent player connected to client!");
 
     // Fetch ID from socket data
     let id = socket.id.as_str();
