@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="GiDzvoWhJBFCQ1LhIcii" name="Page-2">
-        <mxGraphModel dx="1105" dy="895" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="947" dy="907" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -183,28 +183,28 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-5" value="Some Plugin" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="210" y="760" width="160" height="40" as="geometry"/>
+                    <mxGeometry x="200" y="760" width="160" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-7" value="Plugins API Utils" style="rounded=1;whiteSpace=wrap;html=1;fontColor=#C792EA;" parent="1" vertex="1">
-                    <mxGeometry x="35" y="760" width="160" height="40" as="geometry"/>
+                    <mxGeometry y="760" width="160" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="NWRTODuixIaobKQn-kBS-10" target="NWRTODuixIaobKQn-kBS-11" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-10" value="Some Plugin" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="210" y="820" width="160" height="40" as="geometry"/>
+                    <mxGeometry x="200" y="820" width="160" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-11" value="Plugins API Utils" style="rounded=1;whiteSpace=wrap;html=1;fontColor=#C792EA;" parent="1" vertex="1">
-                    <mxGeometry x="35" y="820" width="160" height="40" as="geometry"/>
+                    <mxGeometry y="820" width="160" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="NWRTODuixIaobKQn-kBS-14" target="NWRTODuixIaobKQn-kBS-15" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-14" value="Some Plugin" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="210" y="880" width="160" height="40" as="geometry"/>
+                    <mxGeometry x="200" y="880" width="160" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-15" value="Plugins API Utils" style="rounded=1;whiteSpace=wrap;html=1;fontColor=#C792EA;" parent="1" vertex="1">
-                    <mxGeometry x="35" y="880" width="160" height="40" as="geometry"/>
+                    <mxGeometry y="880" width="160" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="NWRTODuixIaobKQn-kBS-17" target="NWRTODuixIaobKQn-kBS-18" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -213,10 +213,10 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-17" value="Some Plugin" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="210" y="940" width="160" height="40" as="geometry"/>
+                    <mxGeometry x="200" y="940" width="160" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-18" value="Plugins API Utils" style="rounded=1;whiteSpace=wrap;html=1;fontColor=#C792EA;" parent="1" vertex="1">
-                    <mxGeometry x="35" y="940" width="160" height="40" as="geometry"/>
+                    <mxGeometry y="940" width="160" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-22" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Plugins API Utils&lt;/h1&gt;&lt;p&gt;Contains all things that the plugins need to impl as well as some handy macros for defining events etc&lt;/p&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;fontColor=#C792EA;" parent="1" vertex="1">
                     <mxGeometry x="25" y="610" width="220" height="120" as="geometry"/>
@@ -225,10 +225,10 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-24" value="Horizon Link Plugin" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="210" y="1000" width="160" height="40" as="geometry"/>
+                    <mxGeometry x="200" y="1000" width="160" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-25" value="Plugins API Utils" style="rounded=1;whiteSpace=wrap;html=1;fontColor=#C792EA;" parent="1" vertex="1">
-                    <mxGeometry x="35" y="1000" width="160" height="40" as="geometry"/>
+                    <mxGeometry y="1000" width="160" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="NWRTODuixIaobKQn-kBS-27" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Deps&lt;/h1&gt;&lt;p&gt;Plugins themselves can have dependencies on other plugins in the stack allowing shared code like defining socket events to be defined in a more compatible and efficient way&lt;/p&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;fontColor=#2d7600;" parent="1" vertex="1">
                     <mxGeometry x="415" y="970" width="205" height="120" as="geometry"/>
