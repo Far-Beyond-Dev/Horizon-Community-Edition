@@ -131,7 +131,7 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc
     println!("Received event: UpdatePlayerLocation with data: {:?}", data.0);
 
     let player_data = &data.0;
-    let mut players = players.write().unwrap(); // Changed from read() to write() since we're modifying
+    let mut players = players.write().unwrap();
     if let Some(player) = players.iter_mut().find(|p| p.socket.id == socket.id) {
         // Update control rotation
         if let Some(control_rotation) = player_data.get("controlRotation") {
@@ -250,7 +250,7 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc
 /// that occur when emitting the event to the socket.
 pub fn get_online_players(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
     info!("Responding with online players list");
-    let mut players = players.write().unwrap(); // Changed from read() to write() since we're modifying
+    let mut players = players.write().unwrap();
     let online_players_json = serde_json::to_value(
         players
             .par_iter()
@@ -304,7 +304,7 @@ struct PlayersResponse {
 
 pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players: Arc<RwLock<Vec<Player>>>) {
     println!("Responding with players and locations list");
-    let mut players = players.write().unwrap(); // Changed from read() to write() since we're modifying
+    let mut players = players.write().unwrap();
    
     println!("Received event with data: {:?}", data.0);
     
@@ -381,7 +381,7 @@ pub async fn cleanup_inactive_players(players: Arc<RwLock<Vec<Player>>>) {
     loop {
         tokio::time::sleep(Duration::from_secs(30)).await; // Run every 30 seconds
 
-        let mut players = players.write().unwrap(); // Changed from read() to write() since we're modifying
+        let mut players = players.write().unwrap();
         let now = Instant::now();
 
         players.retain(|player| {
