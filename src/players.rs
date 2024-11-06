@@ -1,18 +1,23 @@
 use serde_json::{json, Value};
 use serde::Serialize;
 use socketioxide::extract::{Data, SocketRef};
+use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 use tracing::{debug, info};
 use std::time::{Duration, Instant};
 use horizon_data_types::*;
-
+use rayon::*; //We need all the Rayon!!!!
+use iter::IntoParallelIterator;
+use iter::ParallelIterator;
+use iter::IntoParallelRefIterator;
+use iter::*;
 // impl Default for MoveActionValue {
 //     fn default() -> Self {
 //         MoveActionValue { x: 0.0, y: 0.0 }
 //     }
 // }
 
-pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
+pub fn init(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
     /////////////////////////////////////////////////////////////
     //  Register some additional custom events with our        // 
     //  socket server. Your custom events will be              //
@@ -50,14 +55,14 @@ pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     socket.on("getPlayersWithLocations", move |s, d: Data<Value>|
         get_players_with_locations(s, d, players_clone.clone()),
     );
-
+    
     let players_clone = Arc::clone(&players);
     socket.on("broadcastMessage", move |d|
         broadcast_message(d, players_clone.clone()),
     );
 
     // Register events using the socketioxide API directly
-    let players_clone: Arc<Mutex<Vec<Player>>> = Arc::clone(&players);
+    let players_clone: Arc<RwLock<Vec<Player>>> = Arc::clone(&players);
     socket.on("updatePlayerLocation", move |s: SocketRef, d: Data<Value>| {
         update_player_location(s, d, players_clone.clone())
     });
@@ -78,8 +83,8 @@ pub fn init(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
     });
 }
 
-pub fn on_disconnect(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
-    let mut players = players.lock().unwrap();
+pub fn on_disconnect(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
+    let mut players = players.write().unwrap();
     if let Some(index) = players.iter().position(|p| p.socket.id == socket.id) {
         players.remove(index);
         println!("Player {} disconnected and removed from players list", socket.id);
@@ -122,11 +127,11 @@ pub fn on_disconnect(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
 ///
 /// This function assumes specific data structures for the incoming data and may fail silently
 /// if the expected fields are missing or in an unexpected format.
-pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
+pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc<RwLock<Vec<Player>>>) {
     println!("Received event: UpdatePlayerLocation with data: {:?}", data.0);
 
     let player_data = &data.0;
-    let mut players = players.lock().unwrap();
+    let mut players = players.write().unwrap(); // Changed from read() to write() since we're modifying
     if let Some(player) = players.iter_mut().find(|p| p.socket.id == socket.id) {
         // Update control rotation
         if let Some(control_rotation) = player_data.get("controlRotation") {
@@ -169,7 +174,7 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc
 
         // Update key bone data
         if let Some(key_bone_data) = player_data.get("keyBoneData").and_then(|v| v.as_array()) {
-            let key_joints: Vec<Vec3D> = key_bone_data.iter()
+            let key_joints: Vec<Vec3D> = key_bone_data.into_par_iter()
                 .filter_map(|bone| {
                     Some(Vec3D {
                         x: bone["x"].as_f64()?,
@@ -183,7 +188,7 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc
 
         // Process trajectory path
         if let Some(trajectory) = player_data.get("trajectoryPath").and_then(|v| v.as_array()) {
-            let path: Vec<TrajectoryPoint> = trajectory.iter()
+            let path: Vec<TrajectoryPoint> = trajectory.into_par_iter()
                 .filter_map(|point| {
                     Some(TrajectoryPoint {
                         accumulated_seconds: point["accumulatedSeconds"].as_f64()?,
@@ -243,17 +248,17 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc
 ///
 /// While the function itself doesn't return a Result, it silently ignores any errors
 /// that occur when emitting the event to the socket.
-pub fn get_online_players(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
+pub fn get_online_players(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
     info!("Responding with online players list");
-    let players = players.lock().unwrap();
+    let mut players = players.write().unwrap(); // Changed from read() to write() since we're modifying
     let online_players_json = serde_json::to_value(
         players
-            .iter()
+            .par_iter()
             .map(|player| json!({ "id": player.socket.id }))
             .collect::<Vec<_>>(),
     )
-    .unwrap();
-    debug!("Player Array as JSON: {}", online_players_json);
+    .map_err(|e|{eprintln!("Failed to get json for online players: {}",e)});
+    debug!("Player Array as JSON: {:#?}", online_players_json);
     socket.emit("onlinePlayers", &online_players_json).ok();
 }
 
@@ -297,36 +302,36 @@ struct PlayersResponse {
     players: Vec<serde_json::Value>
 }
 
-pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
+pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players: Arc<RwLock<Vec<Player>>>) {
     println!("Responding with players and locations list");
-    let players = players.lock().unwrap();
+    let mut players = players.write().unwrap(); // Changed from read() to write() since we're modifying
    
     println!("Received event with data: {:?}", data.0);
-
+    
     let players_with_locations_json: Vec<serde_json::Value> = players
-        .iter()
-        .map(|player| {
-            json!({
-                "Id": player.id,
-                "Root Position": player.transform.as_ref().and_then(|t| t.location.as_ref()),
-                "Root Rotation": player.transform.as_ref().and_then(|t| t.rotation.as_ref()),                
-                "Root Velocity": player.root_velocity,
-                "Control Rotation": player.controlRotation,
-//              "Move Action Value": player.moveActionValue,
-                "Trajectory Path": player.trajectory_path.as_ref().map(|path| 
-                    path.iter().take(10).map(|point| json!({
-                        "accumulatedSeconds": point.accumulated_seconds,
-                        "facing": point.facing,
-                        "position": point.position,
-                    })).collect::<Vec<_>>()
-                ),
-                "KeyJoints": player.key_joints,
-                "AnimationState": player.animation_state,
-                "IsActive": player.is_active,
-                "LastUpdateTime": player.last_update.elapsed().as_secs_f64(),
-            })
+    .par_iter() // Convert to parallel iterator faster searching
+    .map(|player| {
+        json!({
+            "Id": player.id,
+            "Root Position": player.transform.as_ref().and_then(|t| t.location.as_ref()),
+            "Root Rotation": player.transform.as_ref().and_then(|t| t.rotation.as_ref()),                
+            "Root Velocity": player.root_velocity,
+            "Control Rotation": player.controlRotation,
+//          "Move Action Value": player.moveActionValue,
+            "Trajectory Path": player.trajectory_path.as_ref().map(|path|
+                path.iter().take(10).map(|point| json!({
+                    "accumulatedSeconds": point.accumulated_seconds,
+                    "facing": point.facing,
+                    "position": point.position,
+                })).collect::<Vec<_>>()
+            ),
+            "KeyJoints": player.key_joints,
+            "AnimationState": player.animation_state,
+            "IsActive": player.is_active,
+            "LastUpdateTime": player.last_update.elapsed().as_secs_f64(),
         })
-        .collect();
+    })
+    .collect();
 
     println!("Number of players: {}", players_with_locations_json.len());
     
@@ -345,14 +350,14 @@ pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players:
     socket.emit("playersWithLocations", &response_json).ok();
 }
 
-/// Forward the message content to all clients
-pub fn broadcast_message(data: Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
-    let players = players.lock().unwrap();
-    for player in &*players {
-        player.socket.emit("broadcastMessage", &data.0.clone()).ok();
+pub fn broadcast_message(data: Data<Value>, players: Arc<RwLock<Vec<Player>>>) {
+    if let Ok(players_guard) = players.read() {
+        // Access the Vec's elements through .iter()
+        for player in players_guard.iter() {
+            player.socket.emit("broadcastMessage", &data.0).ok();
+        }
     }
 }
-
 
 fn player_jump(socket: SocketRef, data: Data<Value>) {
     // Process the jump event
@@ -370,13 +375,13 @@ fn player_walk_toggle(socket: SocketRef, data: Data<Value>) {
     socket.emit("playerWalkToggled", &true).expect("Failed to emit playerWalkToggled event");
 }
 
-pub async fn cleanup_inactive_players(players: Arc<Mutex<Vec<Player>>>) {
+pub async fn cleanup_inactive_players(players: Arc<RwLock<Vec<Player>>>) {
     let inactive_threshold = Duration::from_secs(60); // 1 minute
 
     loop {
         tokio::time::sleep(Duration::from_secs(30)).await; // Run every 30 seconds
 
-        let mut players = players.lock().unwrap();
+        let mut players = players.write().unwrap(); // Changed from read() to write() since we're modifying
         let now = Instant::now();
 
         players.retain(|player| {

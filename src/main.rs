@@ -1,272 +1,205 @@
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                       Horizon Game Server                                       //
-//                                                                                                 //
-//  This server software is part of a distributed system designed to facilitate communication      //
-//  and data transfer between multiple child servers and a master server. Each child server        //
-//  operates within a "Region map" managed by the master server, which keeps track of their        //
-//  coordinates in a relative cubic light-year space. The coordinates are stored in 64-bit floats  //
-//  to avoid coordinate overflow and to ensure high precision.                                     //
-//                                                                                                 //
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////
-// Use the mimalloc allocator, which boasts excellent performance //
-// across a variety of tasks, while being small (8k LOC)          //
-////////////////////////////////////////////////////////////////////
-#[cfg(target_os = "linux")]
-#[global_allocator]
-static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
-
-///////////////////////////////////////////
-// Import a few things to get us started //
-///////////////////////////////////////////
-
-// Import some third party crates
-use colored::Colorize;
-use console_log::init;
+// Import required dependencies
 use horizon_data_types::*;
 use serde_json::Value;
 use socketioxide::extract::{Data, SocketRef};
-use tracing_subscriber::fmt::time;
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
-use tokio::{main, task::spawn};
+use std::sync::{Arc, RwLock};
+use std::thread;
+use std::time::Instant;
+use tokio::runtime::Runtime;
+use tokio::sync::mpsc;
 use tracing::info;
-use viz::{handler::ServiceHandler, serve, Body, Request, Response, Result, Router};
 use uuid::Uuid;
+use viz::{handler::ServiceHandler, serve, Body, Request, Response, Result, Router};
+use std::backtrace::Backtrace;
 
-// Load the plugins API
-use plugin_test_api as plugin_api;
-use plugin_test_plugins as plugins;
-
-use PebbleVault;
-
-//////////////////////////////////////////////////////////////
-//                    !!!! WARNING !!!!                     //
-// Import all structs (when we have a ton of structs this   //
-// will be very bad but should be fine for now)             //
-//////////////////////////////////////////////////////////////
-
-/////////////////////////////////////
-// Import the modules we will need //
-/////////////////////////////////////
-
-mod macros;
 mod players;
-mod plugin_manager;
 
-///////////////////////////////////////////////////////////////
-//                    !!!! WARNING !!!!                      //
-// on_connect runs every time a new player connects to the   //
-// server avoid putting memory hungry code here if possible! //
-///////////////////////////////////////////////////////////////
+// Server configuration constants
+// These values can be adjusted based on expected server load and available resources
+const PLAYERS_PER_POOL: usize = 1000;  // Maximum number of players per thread pool
+const NUM_THREAD_POOLS: usize = 4;     // Number of thread pools to create
 
-/// Handles new player connections to the server.
-///
-/// This function is called every time a new player connects to the server. It initializes
-/// player data, sets up event listeners, and starts necessary subsystems.
-///
-/// # Arguments
-///
-/// * `socket` - A reference to the socket connection for the new player.
-/// * `data` - Data received with the connection event.
-/// * `players` - A thread-safe reference to the collection of all connected players.
-///
-/// # Warning
-///
-/// Avoid putting memory-hungry code in this function as it runs for every new connection.
-async fn on_connect(socket: SocketRef, Data(data): Data<Value>, players: Arc<Mutex<Vec<Player>>>) {
-    // Send an optional event to the player that they can hook into to run some post-connection functions
-    socket.emit("connected", &true).ok();
-    println!("Sent player connected to client!");
+/// Represents a thread pool that handles a specific range of players.
+/// This structure enables horizontal scaling by distributing player load across multiple threads.
+#[derive(Clone)]
+struct PlayerThreadPool {
+    start_index: usize,         // Starting index of player range for this pool
+    end_index: usize,          // Ending index of player range for this pool
+    players: Arc<RwLock<Vec<Player>>>,  // Thread-safe vector of players managed by this pool
+    sender: mpsc::Sender<PlayerMessage>,  // Channel for sending messages to this pool's worker thread
+}
 
-    // Fetch ID from socket data
-    let id = socket.id.as_str();
+/// Defines the types of messages that can be sent between threads.
+/// This enum facilitates type-safe communication between the main server and worker threads.
+enum PlayerMessage {
+    NewPlayer(SocketRef, Value),  // Message for adding a new player with their socket and data
+    RemovePlayer(Uuid),          // Message for removing a player by their UUID
+}
 
-    let all_plugins = plugins::plugins();
-    
-    // Display join message in log
-    println!("Welcome player {} to the game!", id);
-    
-    // Authenticate the user
-    let player = Player::new(socket.clone(),Uuid::new_v4());
-    
-    // Init the player-related event handlers
-    players::init(socket.clone(), players.clone());
-    
-    
-    for (ref name, ref plugin) in all_plugins.list.iter() {
-        println!("{}", format!("Sent PlayerJoined to plugin: {} for player id: {}", plugin.name(), player.id.to_string()));
-        plugin.broadcast_game_event(&&plugin.get_plugin(), plugin_api::GameEvent::PlayerJoined(player.clone()));
+/// Main server structure that manages all player connections and game state.
+/// Uses Arc (Atomic Reference Counting) to safely share the server state across threads.
+#[derive(Clone)]
+struct HorizonServer {
+    thread_pools: Arc<Vec<Arc<PlayerThreadPool>>>,  // Vector of thread pools for handling players
+    runtime: Arc<Runtime>,                          // Tokio runtime for async operations
+}
+
+impl HorizonServer {
+    /// Creates a new instance of the game server with initialized thread pools.
+    /// This function sets up the entire server infrastructure before any players connect.
+    fn new() -> Self {
+        let runtime = Arc::new(Runtime::new().unwrap());
+        let mut thread_pools = Vec::new();
+
+        // Initialize multiple thread pools for handling player connections
+        // This improves performance by distributing player load across multiple threads
+        for i in 0..NUM_THREAD_POOLS {
+            let start_index = i * PLAYERS_PER_POOL;
+            let end_index = start_index + PLAYERS_PER_POOL;
+            
+            // Create a channel for sending messages to this pool's worker thread
+            let (sender, mut receiver) = mpsc::channel(100);
+            let players = Arc::new(RwLock::new(Vec::new()));
+            
+            let pool = Arc::new(PlayerThreadPool {
+                start_index,
+                end_index,
+                players: players.clone(),
+                sender,
+            });
+
+            // Spawn a dedicated worker thread for this pool
+            // Each worker thread processes messages for its assigned players
+            let pool_clone = pool.clone();
+            thread::spawn(move || {
+                let rt = Runtime::new().unwrap();
+                rt.block_on(async move {
+                    while let Some(msg) = receiver.recv().await {
+                        Self::handle_message(msg, &pool_clone).await;
+                    }
+                });
+            });
+
+            thread_pools.push(pool);
+        }
+
+        HorizonServer {
+            thread_pools: Arc::new(thread_pools),
+            runtime: runtime,
+        }
     }
 
-    players.lock().unwrap().push(player.clone());
+    /// Handles incoming messages for player management within each thread pool.
+    /// This function processes both new player connections and player removals.
+    async fn handle_message(msg: PlayerMessage, pool: &PlayerThreadPool) {
+        match msg {
+            PlayerMessage::NewPlayer(socket, data) => {
+                // Notify client that connection was successful
+                socket.emit("connected", &true).ok();
+                println!("Sent player connected to client!");
 
-    // Display player join debug messages
-    println!("Player {} added to players list for socket id: {}", player.clone().id.to_string(), id);
-    println!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
+                let id = socket.id.as_str();
+                println!("Welcome player {} to the game!", id);
+                
+                // Create and initialize new player
+                let player = Player::new(socket.clone(), Uuid::new_v4());
+                players::init(socket.clone(), pool.players.clone());
+                pool.players.write().unwrap().push(player.clone());
 
-    // Send an optional event to the player that they can hook into to run some post-authentication functions
-    //  socket.emit("auth", true).ok();  TODO: Fix this
+                // Log debug information for troubleshooting
+                // This includes a backtrace to help diagnose any connection issues
+                let msg = Backtrace::force_capture();
+                println!("-----BACKTRACE-----");
+                println!("{}", msg);
+                println!("---END BACKTRACE---");
 
-    ///////////////////////////////////////////////////////////
-    //  Setup external event listeners for the more complex  //
-    //  systems                                              //
-    ///////////////////////////////////////////////////////////
+                println!("Player {} added to players list for socket id: {}", 
+                    player.id.to_string(), id);
+                println!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
 
-    // DO NOT INIT SUBSYSTEMS BEYOND THIS POINT
-    // Send an optional event to the player that they can hook into to start the game client side
-    // This event confirms that the server is fully ready to handle data from the player
+                // Send initialization events to client
+                // These events trigger the client to start game setup
+                let _ = socket.emit("preplay", &true);
+                socket.emit("beginplay", &true).ok();
+            },
+            PlayerMessage::RemovePlayer(player_id) => {
+                // Remove player from the pool when they disconnect
+                let mut players = pool.players.write().unwrap();
+                if let Some(pos) = players.iter().position(|p| p.id == player_id) {
+                    players.remove(pos);
+                }
+            }
+        }
+    }
 
-    // let _ = socket.emit("preplay", true);   TODO: Fix this
-    // socket.emit("beginplay", true).ok();    TODO: Fix this
+    /// Handles new player connections by assigning them to an appropriate thread pool.
+    /// This function implements basic load balancing across thread pools.
+    async fn handle_new_connection(&self, socket: SocketRef, data: Data<Value>) {
+        // Find the first thread pool that isn't at capacity
+        let selected_pool = self.thread_pools
+            .iter()
+            .find(|pool| {
+                let players = pool.players.read().unwrap();
+                players.len() < PLAYERS_PER_POOL
+            })
+            .expect("All thread pools are full");
+
+        // Send the new player message to the selected pool
+        selected_pool.sender.send(PlayerMessage::NewPlayer(socket, data.0)).await.ok();
+    }
+
+    /// Starts the game server and begins listening for connections.
+    /// This function initializes the Socket.IO service and HTTP router.
+    async fn start(self) {
+        // Initialize Socket.IO service
+        let (svc, io) = socketioxide::SocketIo::new_svc();
+        
+        // Set up connection handler
+        let server = self.clone();
+        io.ns("/", move |socket: SocketRef, data: Data<Value>| {
+            let server = server.clone();
+            async move {
+                server.handle_new_connection(socket, data).await;
+            }
+        });
+
+        // Set up HTTP router with redirect for browser access
+        let app = Router::new()
+            .get("/", redirect_to_master_panel)
+            .any("/*", ServiceHandler::new(svc));
+
+        // Start server on port 3000
+        let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+        println!("Multithreaded server listening on 0.0.0.0:3000");
+        
+        if let Err(e) = serve(listener, app).await {
+            println!("Server error: {}", e);
+        }
+    }
 }
 
 /// Redirects browser users to the master server dashboard.
-///
-/// This function handles HTTP GET requests to the root path and redirects
-/// the user to the master server's dashboard.
-///
-/// # Arguments
-///
-/// * `_req` - The incoming HTTP request (unused in this function).
-///
-/// # Returns
-///
-/// A `Result` containing the HTTP response with a 302 redirect status.
+/// This provides a friendly redirect instead of showing a blank page or error.
 async fn redirect_to_master_panel(_req: Request) -> Result<Response> {
     let response = Response::builder()
         .status(302)
         .header("Location", "https://youtu.be/dQw4w9WgXcQ")
         .body(Body::empty())
         .unwrap();
-    println!("Someone tried to access this server via a browser, redirecting them to the master dashboard");
+    println!("Browser access redirected to master dashboard");
     Ok(response)
 }
 
-/// The main entry point for the Horizon Game Server.
-///
-/// This function initializes the server, sets up necessary components,
-/// and starts listening for incoming connections.
-///
-/// # Returns
-///
-/// A `Result` indicating whether the server started successfully or encountered an error.
-#[main]
+/// Main entry point for the game server.
+/// Initializes and starts the server, measuring startup time for monitoring purposes.
+#[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /////////////////////////////
-    // SERVER STARTUP SEQUENCE //
-    /////////////////////////////
-
     let init_time = Instant::now();
 
-    let all_plugins = plugins::plugins();
-
-    println!("Your Horizon plugins greet you!");
-    for (ref name, ref plugin) in all_plugins.list.iter() {
-        let instance = plugin.get_instance();
-        println!("\t{}: \"{}\"", name, (*instance).say_hello());
-    }
-
-    // Start the plugin Manager thread
-    let mut _plugin_manager = spawn(async {
-        let mut manager = plugin_manager::PluginManager::new();
-
-        // manager.load_plugins_from_directory("./plugins/").is_err() {
-        //     println!("Error: Failed to load plugins from dir");
-        // }
-
-        let rx = manager
-            .monitor_directory_for_changes("./plugins")
-            .expect("Failed to monitor directory");
-
-        let manager_ref = Arc::new(Mutex::new(manager));
-        let manager_handle = Arc::clone(&manager_ref);
-    });
-
-    // Start the PebbleVault thread
-    //   let pebble_vault_thread = tokio::spawn(async move {
-    //       // Run the initial tests
-    //       if let Err(e) = PebbleVault::tests::run_tests() {
-    //           eprintln!("Error running initial PebbleVault tests: {}", e);
-    //       }
-    //   
-    //       // Set up parameters for the load tests
-    //       let db_path = "load_test.db";
-    //       let num_objects = 10_000;
-    //       let num_regions = 5;
-    //       let num_operations = 3;
-    //       let interval = std::time::Duration::from_secs(300); // Run every 5 minutes
-    //   
-    //       loop {
-    //           // Run the regular load test
-    //           println!("\n{}", "Running regular load test".blue());
-    //           match PebbleVault::VaultManager::<PebbleVault::load_test::LoadTestData>::new(db_path) {
-    //               Ok(mut vault_manager) => {
-    //                   if let Err(e) = PebbleVault::load_test::run_load_test(
-    //                       &mut vault_manager,
-    //                       num_objects,
-    //                       num_regions,
-    //                       num_operations,
-    //                   ) {
-    //                       eprintln!("Error in regular load test: {}", e);
-    //                   } else {
-    //                       println!("{}", "Regular load test completed successfully".green());
-    //                   }
-    //               }
-    //               Err(e) => eprintln!("Error creating VaultManager for regular load test: {}", e),
-    //           }
-    //   
-    //           // Run the arbitrary data load test
-    //           println!("\n{}", "Running arbitrary data load test".blue());
-    //           if let Err(e) =
-    //               PebbleVault::load_test::run_arbitrary_data_load_test(num_objects, num_regions)
-    //           {
-    //               eprintln!("Error in arbitrary data load test: {}", e);
-    //           } else {
-    //               println!(
-    //                   "{}",
-    //                   "Arbitrary data load test completed successfully".green()
-    //               );
-    //           }
-    //   
-    //           // Wait for the specified interval before running the next tests
-    //           tokio::time::sleep(interval).await;
-    //       }
-    //   });
-
-    println!("Finished starting plugin threads");
-
-    // Define a place to put new players
-    let players: Arc<Mutex<Vec<Player>>> = Arc::new(Mutex::new(Vec::new()));
-    let (svc, io) = socketioxide::SocketIo::new_svc();
-    let players_clone: Arc<Mutex<Vec<Player>>> = players.clone();
-
-    // Handle new player connections
-    io.ns("/", move |socket: SocketRef, data: Data<Value>| {
-        println!("Player Connected!");
-        on_connect(socket, data, players_clone.clone())
-    });
-
-    // Create a router to handle incoming network requests
-    let app = Router::new()
-        .get("/", redirect_to_master_panel) // Handle accessing server from browser
-        .any("/*", ServiceHandler::new(svc)); // Any other protocalls go to socket server
-
-    info!("Starting server");
-
-    // Define a listener on port 3000
-    let listener: tokio::net::TcpListener =
-        tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    println!("Listening on 0.0.0.0:3000");
-
-    // Startup Stats
-    println!("Server startup took: {:?}", (init_time.elapsed()));
+    // Create and start the server
+    let server = HorizonServer::new();
+    println!("Server startup took: {:?}", init_time.elapsed());
+    server.start().await;
     
-    // Start the server and handle any errors
-    if let Err(e) = serve(listener, app).await {
-        println!("{}", e);
-    }
-
     Ok(())
 }
