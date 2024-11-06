@@ -16,7 +16,7 @@ mod players;
 
 // Server configuration constants
 // These values can be adjusted based on expected server load and available resources
-const PLAYERS_PER_POOL: usize = 1000;  // Maximum number of players per thread pool
+const PLAYERS_PER_POOL: usize = 10;  // Maximum number of players per thread pool
 const NUM_THREAD_POOLS: usize = 4;     // Number of thread pools to create
 
 /// Represents a thread pool that handles a specific range of players.
@@ -108,10 +108,10 @@ impl HorizonServer {
 
                 // Log debug information for troubleshooting
                 // This includes a backtrace to help diagnose any connection issues
-                let msg = Backtrace::force_capture();
-                println!("-----BACKTRACE-----");
-                println!("{}", msg);
-                println!("---END BACKTRACE---");
+                //    let msg = Backtrace::force_capture();
+                //    println!("-----BACKTRACE-----");
+                //    println!("{}", msg);
+                //    println!("---END BACKTRACE---");
 
                 println!("Player {} added to players list for socket id: {}", 
                     player.id.to_string(), id);
@@ -145,7 +145,8 @@ impl HorizonServer {
             .expect("All thread pools are full");
 
         // Send the new player message to the selected pool
-        selected_pool.sender.send(PlayerMessage::NewPlayer(socket, data.0)).await.ok();
+        println!("Assigning connection: {} to thread pool: {}", socket.id.to_string(), (selected_pool.start_index / PLAYERS_PER_POOL).to_string());
+        selected_pool.sender.send(PlayerMessage::NewPlayer(socket, data.0)).await.ok(); 
     }
 
     /// Starts the game server and begins listening for connections.
