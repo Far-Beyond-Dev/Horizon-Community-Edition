@@ -1,5 +1,6 @@
 use serde_json::{json, Value};
 use serde::Serialize;
+use horizon_logger::{HorizonLogger, log_info, log_debug, log_warn, log_error, log_critical};
 use socketioxide::extract::{Data, SocketRef};
 use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
@@ -24,10 +25,12 @@ pub fn init(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
     //  registered here as well as in the ./events/mod.rs      //
     //  file                                                   //
     /////////////////////////////////////////////////////////////
-    
+
     let players_disconnect = players.clone();
+    let logger = Arc::new(HorizonLogger::new());
+
     socket.on_disconnect(move |s| {
-        on_disconnect(s, players_disconnect.clone())
+        on_disconnect(s, players_disconnect.clone(), logger)
     });
 
     // Register events for player interactions
@@ -83,13 +86,13 @@ pub fn init(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
     });
 }
 
-pub fn on_disconnect(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
+pub fn on_disconnect(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>, logger: Arc<HorizonLogger>) {
     let mut players = players.write().unwrap();
     if let Some(index) = players.iter().position(|p| p.socket.id == socket.id) {
         players.remove(index);
-        println!("Player {} disconnected and removed from players list", socket.id);
+        log_info!(logger, "CONNECTION", "Player {} disconnected, and cleaned up successfully", socket.id)
     } else {
-        println!("Player {} disconnected, but was not found in players list", socket.id);
+        log_info!(logger, "CONNECTION", "Player {} successfully, but cleanup failed due to a corrupted player state. (This could be caused by plugins registering fake players improperly)", socket.id)
     }
 }
 
