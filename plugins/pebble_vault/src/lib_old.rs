@@ -19,7 +19,6 @@
 //! the game engine using the provided trait implementations for `Plugin`, `BaseAPI`,
 //! `RpcPlugin`, and `PluginInformation`.
 
-use plugin_test_api::{BaseAPI, GameEvent, Plugin, PluginContext, PluginInformation, PluginMetadata, RpcPlugin, RpcFunction, SayHello, PLUGIN_API_VERSION};
 use std::{any::Any, sync::{Arc, Mutex}};
 use async_trait::async_trait;
 use uuid::Uuid;

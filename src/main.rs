@@ -103,7 +103,13 @@ impl HorizonServer {
                 let player = Player::new(socket.clone(), Uuid::new_v4());
                 
                 players::init(socket.clone(), pool.players.clone());
-                plugin_test_api::load_all(socket.clone(), pool.players.clone());
+
+                // Load all plugins in a new manager for this player
+                // (TODO: Change this to a per-thread instance of manager and
+                // per player socket event listeners)
+                let my_manager = plugin_test_api::PluginManager::new();
+                my_manager.load_all(socket.clone(), pool.players.clone());
+
                 pool.players.write().unwrap().push(player.clone());
 
                 log_debug!(pool.logger, "PLAYER", "Player {} (UUID: {}) added to pool", 
