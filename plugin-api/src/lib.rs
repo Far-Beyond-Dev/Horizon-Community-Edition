@@ -65,6 +65,12 @@ impl PluginManager {
     }
 }
 
+struct Plugin {
+    name: String,
+    version: Version,
+    api_versin: Version
+}
+
 pub fn load_all(socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>) {
     let plugins = plugin_imports::load_plugins(socket, players);
 
