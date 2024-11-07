@@ -16,7 +16,7 @@ horizon_data_types = "0.3.0"
 tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }
 uuid = "1.11.0"
 socketioxide = "0.15.0"
-horizon-plugin-api = "0.1.5"
+horizon-plugin-api = "0.1.6"
 
 ###### BEGIN AUTO-GENERATED PLUGIN DEPENDENCIES - DO NOT EDIT THIS SECTION ######
 pebblevault_plugin = { path = "../plugins/pebble_vault", version = "0.1.0" }

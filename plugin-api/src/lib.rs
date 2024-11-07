@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use horizon_plugin_api::{Plugin, Pluginstate};
+use horizon_plugin_api::{Plugin, Pluginstate, Version, get_plugin};
 use socketioxide::extract::SocketRef;
 use std::sync::RwLock;
 use std::sync::Arc;
@@ -7,27 +7,12 @@ use std::sync::Arc;
 pub mod plugin_imports;
 mod proposal;
 
-macro_rules! get_plugin {
-    ($name:ident, $plugins:expr) => {
-        $plugins
-            .get(stringify!($name))
-            .map(|p| &p.instance as &dyn $name::Plugin_API)
-            .expect(&format!("Plugin {} not found", stringify!($name)))
-    };
-}
-
 // Define the current plugin version
 const PLUGIN_API_VERSION: Version = Version {
     major: 0,
     minor: 1,
     hotfix: 0
 };
-
-struct Version {
-    major: u16,
-    minor: u16,
-    hotfix: u16,
-}
 
 pub struct PluginManager {
     plugins: HashMap<String,(Pluginstate,Plugin)>

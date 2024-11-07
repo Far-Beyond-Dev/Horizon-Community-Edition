@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 PebbleVault = "0.6.1"
 async-trait = "0.1.83"
-horizon-plugin-api = "0.1.5"
+horizon-plugin-api = "0.1.6"
 horizon_data_types = "0.3.0"
 serde = "1.0.214"
 socketioxide = "0.15.1"
