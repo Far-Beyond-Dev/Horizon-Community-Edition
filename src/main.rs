@@ -10,12 +10,13 @@ use tokio::sync::mpsc;
 use uuid::Uuid;
 use viz::{handler::ServiceHandler, serve, Body, Request, Response, Result, Router};
 use once_cell::sync::Lazy;
+use plugin_test_api;
 
 mod players;
 
 // Server configuration constants
-const PLAYERS_PER_POOL: usize = 10;
-const NUM_THREAD_POOLS: usize = 4;
+const PLAYERS_PER_POOL: usize = 1000;
+const NUM_THREAD_POOLS: usize = 32;
 
 // Initialize global logger
 static LOGGER: Lazy<HorizonLogger> = Lazy::new(|| {
@@ -207,6 +208,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create and start server
     let server = HorizonServer::new();
+    plugin_test_api::load_all();
     log_info!(LOGGER, "STARTUP", "Server startup completed in {:?}", init_time.elapsed());
     
     server.start().await;

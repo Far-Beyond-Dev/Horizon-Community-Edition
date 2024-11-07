@@ -1,10 +1,14 @@
 [package]
 name = "plugin-test-api"
-version = "0.1.2"
-authors = ["Geoffroy Couprie <geo.couprie@gmail.com>"]
-description = "plugin base API for the plugin-test experiment"
+version = "0.3.0"
+authors = ["Tristan Poland <redstonecrafter126@gmail.com>"]
+description = "Horizon Plugins API"
 license = "MIT"
 edition = "2021"
+
+[build-dependencies]
+toml_edit = "0.22.22"
+pathdiff = "0.2.2"
 
 [dependencies]
 async-trait = "0.1.83"
@@ -12,3 +16,8 @@ horizon_data_types = "0.3.0"
 tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }
 uuid = "1.11.0"
 socketioxide = "0.15.0"
+horizon-plugin-api = "0.1.2"
+
+###### BEGIN AUTO-GENERATED PLUGIN DEPENDENCIES - DO NOT EDIT THIS SECTION ######
+test_plugin = { path = "../plugins/test_plugin", version = "0.1.0" }
+###### END AUTO-GENERATED PLUGIN DEPENDENCIES ######

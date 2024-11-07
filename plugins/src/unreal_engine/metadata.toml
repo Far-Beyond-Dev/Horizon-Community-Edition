@@ -1,3 +1,0 @@
-name = "Unreal Engine For Horizon"
-
-crate = { name = "unreal_engine", version = "^0.1"}

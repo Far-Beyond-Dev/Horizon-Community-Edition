@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use std::sync::RwLock;
 
+use test_plugin::Plugin_API;
+
+mod plugin_imports;
 mod proposal;
 
 // Define the current plugin version
@@ -56,3 +59,15 @@ struct Plugin {
     api_versin: Version
 }
 
+impl Plugin {
+    pub fn t() {}
+}
+
+pub fn load_all() {
+    let plugins = plugin_imports::load_plugins();
+
+    let first_plugin = &plugins.get(0).unwrap().instance;
+
+    //    println!("{}", first_plugin)
+    //let _ = 
+}
