@@ -1544,6 +1544,8 @@ name = "test_plugin"
 version = "0.1.0"
 dependencies = [
  "horizon-plugin-api",
+ "horizon_data_types",
+ "socketioxide",
 ]
 
 [[package]]

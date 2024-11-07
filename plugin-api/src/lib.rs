@@ -67,10 +67,6 @@ struct Plugin {
     api_versin: Version
 }
 
-impl Plugin {
-    pub fn t() {}
-}
-
 pub fn load_all() {
     let plugins = plugin_imports::load_plugins();
 
