@@ -2,21 +2,24 @@
 // Do not edit manually!
 
 use horizon_plugin_api::Plugin;
+use std::collections::HashMap;
 
 use test_plugin;
-use test_plugin::Plugin_API;
-
+use test_plugin::Plugin_Construct;
 
 pub struct LoadedPlugin {
-    pub name: &'static str,
     pub instance: Plugin,
 }
 
-pub fn load_plugins() -> Vec<LoadedPlugin> {
-    vec![
+pub fn load_plugins() -> HashMap<&'static str, LoadedPlugin> {
+    let mut plugins = HashMap::new();
+
+    plugins.insert(
+        "test_plugin",
         LoadedPlugin {
-            name: "test_plugin",
             instance: test_plugin::Plugin::new(),
-        },
-    ]
+        }
+    );
+
+    plugins
 }

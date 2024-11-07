@@ -1,10 +1,18 @@
 use std::collections::HashMap;
-use std::sync::RwLock;
 
-use test_plugin::Plugin_API;
+pub use test_plugin;
 
 mod plugin_imports;
 mod proposal;
+
+macro_rules! get_plugin {
+    ($name:ident, $plugins:expr) => {
+        $plugins
+            .get(stringify!($name))
+            .map(|p| &p.instance as &dyn $name::Plugin_API)
+            .expect(&format!("Plugin {} not found", stringify!($name)))
+    };
+}
 
 // Define the current plugin version
 const PLUGIN_API_VERSION: Version = Version {
@@ -66,8 +74,7 @@ impl Plugin {
 pub fn load_all() {
     let plugins = plugin_imports::load_plugins();
 
-    let first_plugin = &plugins.get(0).unwrap().instance;
-
-    //    println!("{}", first_plugin)
-    //let _ = 
+    let my_test_plugin = get_plugin!(test_plugin, plugins);
+    let result = my_test_plugin.thing();
+    println!("{}", result);
 }
