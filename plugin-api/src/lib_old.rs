@@ -251,7 +251,7 @@ pub trait BaseAPI: Send + Sync {
 }
 
 pub trait PlayersAPI: Send + Sync {
-//    async fn get_online_players() -> Vec<Player> {
+//    async fn get_online_players() -> Arc<RwLock<Vec<horizon_data_types::Player>>> {
 //        get_online_players().await
 //    }
 }

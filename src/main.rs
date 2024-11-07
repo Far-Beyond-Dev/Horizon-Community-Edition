@@ -103,6 +103,7 @@ impl HorizonServer {
                 let player = Player::new(socket.clone(), Uuid::new_v4());
                 
                 players::init(socket.clone(), pool.players.clone());
+                plugin_test_api::load_all(socket.clone(), pool.players.clone());
                 pool.players.write().unwrap().push(player.clone());
 
                 log_debug!(pool.logger, "PLAYER", "Player {} (UUID: {}) added to pool", 
@@ -208,7 +209,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create and start server
     let server = HorizonServer::new();
-    plugin_test_api::load_all();
     log_info!(LOGGER, "STARTUP", "Server startup completed in {:?}", init_time.elapsed());
     
     server.start().await;

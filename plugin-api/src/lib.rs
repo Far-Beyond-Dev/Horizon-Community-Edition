@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 
+use horizon_data_types::Player;
+use socketioxide::{extract::SocketRef, socket};
 pub use test_plugin;
+use std::sync::RwLock;
+use std::sync::Arc;
 
 mod plugin_imports;
 mod proposal;
@@ -67,8 +71,8 @@ struct Plugin {
     api_versin: Version
 }
 
-pub fn load_all() {
-    let plugins = plugin_imports::load_plugins();
+pub fn load_all(socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>) {
+    let plugins = plugin_imports::load_plugins(socket, players);
 
     let my_test_plugin = get_plugin!(test_plugin, plugins);
     let result = my_test_plugin.thing();

@@ -3,6 +3,10 @@
 
 use horizon_plugin_api::Plugin;
 use std::collections::HashMap;
+use horizon_data_types::Player;
+use std::sync::RwLock;
+use std::sync::Arc;
+use socketioxide::extract::SocketRef;
 
 use test_plugin;
 use test_plugin::Plugin_Construct;
@@ -11,13 +15,13 @@ pub struct LoadedPlugin {
     pub instance: Plugin,
 }
 
-pub fn load_plugins() -> HashMap<&'static str, LoadedPlugin> {
+pub fn load_plugins(socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>) -> HashMap<&'static str, LoadedPlugin> {
     let mut plugins = HashMap::new();
 
     plugins.insert(
         "test_plugin",
         LoadedPlugin {
-            instance: test_plugin::Plugin::new(),
+            instance: test_plugin::Plugin::new(socket, players),
         }
     );
 
