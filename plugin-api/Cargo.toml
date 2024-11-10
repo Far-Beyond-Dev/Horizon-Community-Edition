@@ -1,5 +1,5 @@
 [package]
-name = "plugin-test-api"
+name = "plugin-api"
 version = "0.3.0"
 authors = ["Tristan Poland <redstonecrafter126@gmail.com>"]
 description = "Horizon Plugins API"
@@ -17,8 +17,6 @@ tokio = { version = "1.37.0", features = ["rt", "net", "rt-multi-thread"] }
 uuid = "1.11.0"
 socketioxide = "0.15.0"
 horizon-plugin-api = "0.1.6"
-
-
 ###### BEGIN AUTO-GENERATED PLUGIN DEPENDENCIES - DO NOT EDIT THIS SECTION ######
 pebblevault_plugin = { path = "../plugins/pebble_vault", version = "0.1.0" }
 test_plugin = { path = "../plugins/test_plugin", version = "0.1.0" }

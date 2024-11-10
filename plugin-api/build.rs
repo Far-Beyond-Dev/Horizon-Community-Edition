@@ -97,40 +97,37 @@ fn discover_plugins(plugins_dir: &Path) -> Vec<(String, String, String)> {
     valid_plugins
 }
 
-const AUTO_GENERATED_START: &str = "###### BEGIN AUTO-GENERATED PLUGIN DEPENDENCIES - DO NOT EDIT THIS SECTION ######\n";
-const AUTO_GENERATED_END: &str = "###### END AUTO-GENERATED PLUGIN DEPENDENCIES ######\n";
+const AUTO_GENERATED_START: &str = "###### BEGIN AUTO-GENERATED PLUGIN DEPENDENCIES - DO NOT EDIT THIS SECTION ######";
+const AUTO_GENERATED_END: &str = "###### END AUTO-GENERATED PLUGIN DEPENDENCIES ######";
 
 fn update_cargo_toml(plugin_paths: &[(String, String, String)]) -> std::io::Result<()> {
     let cargo_path = "Cargo.toml";
     let mut contents = String::new();
     File::open(cargo_path)?.read_to_string(&mut contents)?;
 
+    // Normalize line endings to \n for consistent processing
+    contents = contents.replace("\r\n", "\n");
+
     // Find the boundaries of the auto-generated section
     let start_idx = contents.find(AUTO_GENERATED_START);
     let end_idx = contents.find(AUTO_GENERATED_END);
 
-    let (before_section, _, after_section) = match (start_idx, end_idx) {
+    let base_contents = match (start_idx, end_idx) {
         (Some(start), Some(end)) => {
-            // If both markers exist, split into three parts
-            (
-                &contents[..start],
-                &contents[start..end + AUTO_GENERATED_END.len()],
-                &contents[end + AUTO_GENERATED_END.len()..]
-            )
+            // If an existing section is found, take everything before it
+            contents[..start].trim_end().to_string()
         }
         _ => {
-            // If markers don't exist, treat everything as before section
-            // and add a newline for separation
-            if !contents.ends_with('\n') {
-                contents.push('\n');
-            }
-            (contents.as_str(), "", "")
+            // If no section exists, use all current contents
+            contents.trim_end().to_string()
         }
     };
 
     // Generate the new dependencies section
     let mut new_section = String::new();
+    new_section.push('\n');  // Add a newline before the section
     new_section.push_str(AUTO_GENERATED_START);
+    new_section.push('\n');  // Add newline after start marker
     
     // Sort plugins by name for consistent output
     let mut sorted_plugins = plugin_paths.to_vec();
@@ -145,19 +142,11 @@ fn update_cargo_toml(plugin_paths: &[(String, String, String)]) -> std::io::Resu
     
     new_section.push_str(AUTO_GENERATED_END);
 
-    // Combine all parts
-    let mut final_contents = String::new();
-    final_contents.push_str(before_section);
-    if !before_section.ends_with("\n\n") && !before_section.is_empty() {
-        final_contents.push('\n');
-    }
+    // Combine the base contents with the new section
+    let mut final_contents = base_contents;
     final_contents.push_str(&new_section);
-    if !after_section.starts_with('\n') && !after_section.is_empty() {
-        final_contents.push('\n');
-    }
-    final_contents.push_str(after_section);
 
-    // Ensure file ends with newline
+    // Ensure file ends with a single newline
     if !final_contents.ends_with('\n') {
         final_contents.push('\n');
     }
