@@ -1,3 +1,0 @@
-name = "Pebble Vault"
-
-crate = { name = "pebble_vault", version = "^0.1"}
