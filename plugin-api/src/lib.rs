@@ -59,7 +59,7 @@ impl PluginManager {
         self.plugins
     }
 
-    pub fn load_all(self, socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>) {
+    pub fn load_all(&self) {
         let plugins = plugin_imports::load_plugins();
     
         let my_test_plugin = get_plugin!(test_plugin, plugins);
