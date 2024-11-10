@@ -4,6 +4,7 @@ use socketioxide::extract::SocketRef;
 use std::sync::RwLock;
 use std::sync::Arc;
 
+pub mod plugin_macro;
 pub mod plugin_imports;
 mod proposal;
 
@@ -16,6 +17,24 @@ const PLUGIN_API_VERSION: Version = Version {
 
 pub struct PluginManager {
     plugins: HashMap<String,(Pluginstate,Plugin)>
+}
+
+#[macro_export]
+macro_rules! load_plugins {
+    ($($plugin:ident),* $(,)?) => {
+        {
+            let mut plugins = HashMap::new();
+            $(
+                plugins.insert(
+                    stringify!($plugin),
+                    LoadedPlugin {
+                        instance: <$plugin::Plugin as $plugin::Plugin_Construct>::new(plugins.clone()),
+                    }
+                );
+            )*
+            plugins
+        }
+    };
 }
 
 impl PluginManager {
@@ -41,10 +60,14 @@ impl PluginManager {
     }
 
     pub fn load_all(self, socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>) {
-        let plugins = plugin_imports::load_plugins(socket, players);
+        let plugins = plugin_imports::load_plugins();
     
         let my_test_plugin = get_plugin!(test_plugin, plugins);
         let result = my_test_plugin.thing();
         println!("{}", result);
+
+
+        let my_vault = get_plugin!(pebblevault_plugin, plugins);
+        my_vault.thing();
     }
 }

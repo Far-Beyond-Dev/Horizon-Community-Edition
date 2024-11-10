@@ -13,14 +13,14 @@ pub trait Plugin_API {
 
 pub trait Plugin_Construct {
     // If you want default implementations, mark them with 'default'
-    fn new(plugins: HashMap<&'static str, LoadedPlugin>, socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>) -> Plugin;
+    fn new(plugins: HashMap<&'static str, LoadedPlugin>) -> Plugin;
 }
 
 // Implement constructor separately
 impl Plugin_Construct for Plugin {
-    fn new(plugins: HashMap<&'static str, LoadedPlugin>, socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>) -> Plugin {
+    fn new(plugins: HashMap<&'static str, LoadedPlugin>) -> Plugin {
         println!("Hello from the PebbleVault plugin!!!!!");
-        setup_listeners(socket, players);
+//        setup_listeners(socket, players);
 
         Plugin {}
     }
