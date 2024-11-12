@@ -33,20 +33,14 @@ use tokio::sync::mpsc;
 use uuid::Uuid;
 use viz::{handler::ServiceHandler, serve, Body, Request, Response, Result, Router};
 use once_cell::sync::Lazy;
-use plugin_test_api;
+use plugin_api;
+use serde::Deserialize;
+use std::fs;
 
+mod config;
 mod players;
 
-//------------------------------------------------------------------------------
-// Configuration Constants
-//------------------------------------------------------------------------------
-
-/// Maximum number of players that can be managed by a single thread pool
-const PLAYERS_PER_POOL: usize = 1000;
-
-/// Number of thread pools to create for managing player connections
-/// This allows for a total capacity of PLAYERS_PER_POOL * NUM_THREAD_POOLS players
-const NUM_THREAD_POOLS: usize = 32;
+use config::Config;
 
 //------------------------------------------------------------------------------
 // Global Logger Configuration
@@ -54,9 +48,13 @@ const NUM_THREAD_POOLS: usize = 32;
 
 /// Global logger instance using lazy initialization
 /// This ensures the logger is only created when first accessed
+static CONFIG: Lazy<config::Config> = Lazy::new(|| {
+    config::Config::from_file("config.yml")
+});
+
 static LOGGER: Lazy<HorizonLogger> = Lazy::new(|| {
     let logger = HorizonLogger::new();
-    log_info!(logger, "INIT", "Horizon logger initialized");
+    log_info!(logger, "INIT", "Horizon logger initialized with level: {}", CONFIG.log_level);
     logger
 });
 
@@ -96,6 +94,10 @@ enum PlayerMessage {
 /// Handles incoming connections and distributes them across available pools
 #[derive(Clone)]
 struct HorizonServer {
+    // Config Values
+    players_per_pool: usize, // Number of players per pool
+    num_thread_pools: usize, // Number of thread pools
+
     /// Vector of thread pools, wrapped in Arc for thread-safe sharing
     thread_pools: Arc<Vec<Arc<PlayerThreadPool>>>,
     /// Tokio runtime for handling async operations
@@ -107,7 +109,7 @@ struct HorizonServer {
 impl HorizonServer {
     /// Creates a new instance of the Horizon Server
     /// Initializes the thread pools and sets up message handling for each
-    fn new() -> Self {
+    fn new(players_per_pool: usize, num_thread_pools: usize) -> Self {
         let runtime = Arc::new(Runtime::new().unwrap());
         let mut thread_pools = Vec::new();
         let logger = Arc::new(HorizonLogger::new());
@@ -115,9 +117,9 @@ impl HorizonServer {
         log_info!(logger, "SERVER", "Initializing Horizon Server");
         
         // Initialize thread pools
-        for i in 0..NUM_THREAD_POOLS {
-            let start_index = i * PLAYERS_PER_POOL;
-            let end_index = start_index + PLAYERS_PER_POOL;
+        for i in 0..num_thread_pools {
+            let start_index = i * players_per_pool;
+            let end_index = start_index + players_per_pool;
             
             // Create message channel for this pool
             let (sender, mut receiver) = mpsc::channel(100);
@@ -132,7 +134,7 @@ impl HorizonServer {
             });
 
             // Initialize plugin system for this pool
-            let my_manager = plugin_test_api::PluginManager::new();
+            let my_manager = plugin_api::PluginManager::new();
             my_manager.load_all();
 
             // Spawn dedicated thread for handling this pool's messages
@@ -153,6 +155,8 @@ impl HorizonServer {
         }
 
         HorizonServer {
+            players_per_pool,
+            num_thread_pools,
             thread_pools: Arc::new(thread_pools),
             runtime,
             logger,
@@ -167,6 +171,7 @@ impl HorizonServer {
             PlayerMessage::NewPlayer(socket, data) => {
                 // Confirm connection to client
                 socket.emit("connected", &true).ok();
+
                 log_info!(pool.logger, "CONNECTION", "Player {} connected successfully", 
                     socket.id.as_str());
 
@@ -212,13 +217,13 @@ impl HorizonServer {
     async fn handle_new_connection(&self, socket: SocketRef, data: Data<Value>) {
         match self.thread_pools.iter().find(|pool| {
             let players = pool.players.read().unwrap();
-            players.len() < PLAYERS_PER_POOL
+            players.len() < self.players_per_pool
         }) {
             Some(selected_pool) => {
                 log_info!(self.logger, "CONNECTION", 
                     "Assigning connection {} to thread pool {}", 
                     socket.id.to_string(), 
-                    selected_pool.start_index / PLAYERS_PER_POOL);
+                    selected_pool.start_index / self.players_per_pool);
 
                 if let Err(e) = selected_pool.sender
                     .send(PlayerMessage::NewPlayer(socket, data.0)).await {
@@ -287,13 +292,15 @@ async fn redirect_to_master_panel(_req: Request) -> Result<Response> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let init_time = Instant::now();
+    let players_per_pool = CONFIG.players_per_pool;
+    let num_thread_pools = CONFIG.num_thread_pools;
 
     // Initialize logging system
     horizon_logger::init();
     log_info!(LOGGER, "STARTUP", "Horizon Server starting...");
 
-    // Create and start server instance
-    let server = HorizonServer::new();
+    // Create and start server instance with configuration values
+    let server = HorizonServer::new(players_per_pool, num_thread_pools);
     log_info!(LOGGER, "STARTUP", "Server startup completed in {:?}", init_time.elapsed());
     
     server.start().await;

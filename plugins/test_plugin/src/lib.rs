@@ -28,7 +28,7 @@ impl Plugin_Construct for Plugin {
 }
 
 // Implement the trait for Plugin
-impl Plugin_API for Plugin {    
+impl Plugin_API for Plugin {
     // Add the thing() method implementation
     fn thing(&self) -> String {
         "Hello from specific plugin implementation!".to_string()

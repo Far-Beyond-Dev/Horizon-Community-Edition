@@ -6,7 +6,6 @@ use std::sync::Arc;
 
 pub mod plugin_macro;
 pub mod plugin_imports;
-mod proposal;
 
 // Define the current plugin version
 const PLUGIN_API_VERSION: Version = Version {
