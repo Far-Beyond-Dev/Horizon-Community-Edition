@@ -29,8 +29,8 @@ RUN apk add --no-cache clang lld musl-dev git
 # output directory before the cache mounted /app/target is unmounted.
 RUN --mount=type=bind,source=src,target=src \
     --mount=type=bind,source=plugin-api,target=plugin-api \
-    --mount=type=bind,source=aplugins,target=plugins \
-    --mount=type=bind,source=config.yml,target=config.yml \
+    --mount=type=bind,source=plugins,target=plugins \
+    --mount=type=bind,source=config.yml,target=config.yml    \
     --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
     --mount=type=cache,target=/app/target/ \
