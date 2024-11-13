@@ -39,6 +39,7 @@ use std::fs;
 
 mod config;
 mod players;
+mod splash;
 
 use config::Config;
 
@@ -297,6 +298,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialize logging system
     horizon_logger::init();
+    splash::splash();
     log_info!(LOGGER, "STARTUP", "Horizon Server starting...");
 
     // Create and start server instance with configuration values
