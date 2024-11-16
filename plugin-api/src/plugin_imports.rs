@@ -7,8 +7,8 @@ use std::collections::HashMap;
 // Invoke the macro with all discovered plugins
 pub fn load_plugins() -> HashMap<&'static str, LoadedPlugin> {
     let plugins = crate::load_plugins!(
-        pebblevault_plugin,
-        test_plugin
+        test_plugin,
+        pebblevault_plugin
     );
     plugins
 }
