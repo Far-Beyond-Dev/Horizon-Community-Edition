@@ -1,5 +1,6 @@
 {
     "LineNumberDeco.enableRainbow": false,
     "CodeGPT.apiKey": "Ollama",
-    "LineNumberDeco.enableRelativeLine": false
+    "LineNumberDeco.enableRelativeLine": false,
+    "rust-analyzer.checkOnSave": false
 }

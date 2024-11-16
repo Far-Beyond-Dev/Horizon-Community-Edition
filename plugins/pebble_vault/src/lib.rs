@@ -1,11 +1,8 @@
 use std::collections::HashMap;
-use socketioxide::extract::SocketRef;
 pub use horizon_plugin_api::{Plugin, Pluginstate, LoadedPlugin};
 use serde::{Serialize, Deserialize};
 use PebbleVault::{VaultManager, SpatialObject, VaultRegion};
-use horizon_data_types::Player;
-use std::{any::Any, sync::{Arc, Mutex}};
-use async_trait::async_trait;
+use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 use once_cell::sync::Lazy;
 

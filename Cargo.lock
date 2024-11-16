@@ -1389,7 +1389,6 @@ dependencies = [
  "horizon_logger",
  "once_cell",
  "serde",
- "socketioxide",
  "uuid",
 ]
 
@@ -1427,6 +1426,7 @@ dependencies = [
  "pathdiff",
  "pebblevault_plugin",
  "socketioxide",
+ "stars_beyond_plugin",
  "test_plugin",
  "tokio",
  "toml_edit",
@@ -1878,6 +1878,15 @@ name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
+
+[[package]]
+name = "stars_beyond_plugin"
+version = "0.1.0"
+dependencies = [
+ "horizon-plugin-api",
+ "horizon_data_types",
+ "socketioxide",
+]
 
 [[package]]
 name = "subtle"
