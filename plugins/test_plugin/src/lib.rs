@@ -6,19 +6,19 @@ use std::sync::Arc;
 use std::collections::HashMap;
 
 // Define the trait properly
-pub trait Plugin_API {    
+pub trait PluginAPI {    
     fn thing(&self) -> String;
     fn player_joined(&self, socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>);   
 }
 
-pub trait Plugin_Construct {
+pub trait PluginConstruct {
     // If you want default implementations, mark them with 'default'
     fn new(plugins: HashMap<&'static str, LoadedPlugin>) -> Plugin;
     
 }
 
 // Implement constructor separately
-impl Plugin_Construct for Plugin {
+impl PluginConstruct for Plugin {
     fn new(plugins: HashMap<&'static str, LoadedPlugin>) -> Plugin {
         println!("Hello from the test plugin!!!!!");
         
@@ -28,7 +28,7 @@ impl Plugin_Construct for Plugin {
 }
 
 // Implement the trait for Plugin
-impl Plugin_API for Plugin {
+impl PluginAPI for Plugin {
     // Add the thing() method implementation
     fn thing(&self) -> String {
         "Hello from specific plugin implementation!".to_string()

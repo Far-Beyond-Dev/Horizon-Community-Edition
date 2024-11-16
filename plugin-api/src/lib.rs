@@ -27,7 +27,7 @@ macro_rules! load_plugins {
                 plugins.insert(
                     stringify!($plugin),
                     LoadedPlugin {
-                        instance: <$plugin::Plugin as $plugin::Plugin_Construct>::new(plugins.clone()),
+                        instance: <$plugin::Plugin as $plugin::PluginConstruct>::new(plugins.clone()),
                     }
                 );
             )*

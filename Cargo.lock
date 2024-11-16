@@ -794,9 +794,9 @@ dependencies = [
 
 [[package]]
 name = "horizon-plugin-api"
-version = "0.1.6"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9192ea91c164b91079917f0367092a8ef13bae371ab4c4ac67deeb13b1fe64f"
+checksum = "be8a5ded0da09b87361bfc215a7512a63cdf6091b23d1612d575f7305778e981"
 dependencies = [
  "socketioxide",
 ]
