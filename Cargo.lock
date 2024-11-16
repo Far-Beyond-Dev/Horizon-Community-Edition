@@ -1386,6 +1386,8 @@ dependencies = [
  "async-trait",
  "horizon-plugin-api",
  "horizon_data_types",
+ "horizon_logger",
+ "once_cell",
  "serde",
  "socketioxide",
  "uuid",
