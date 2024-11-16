@@ -35,9 +35,9 @@ impl PluginAPI for Plugin {
     }
 
     fn player_joined(&self, socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>) {        
-        setup_listeners(socket, players);
+        setup_listeners(socket.clone(), players);
 
-        println!("Welcome Player {} to Stars Beyond!", socket.id);
+        println!("Welcome Player {} to Stars Beyond!", socket.clone().id);
 
     }
 }
