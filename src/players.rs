@@ -1,9 +1,10 @@
 use serde_json::{json, Value};
 use serde::Serialize;
-use horizon_logger::{HorizonLogger, log_info, log_debug, log_warn, log_error, log_critical};
+use horizon_logger::{HorizonLogger, log_info, log_debug, log_warn, log_error, log_critical, LogLevel};
 use socketioxide::extract::{Data, SocketRef};
+use std::fmt::Debug;
 use std::sync::RwLock;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tracing::{debug, info};
 use std::time::{Duration, Instant};
 use horizon_data_types::*;
@@ -11,7 +12,6 @@ use rayon::*; //We need all the Rayon!!!!
 use iter::IntoParallelIterator;
 use iter::ParallelIterator;
 use iter::IntoParallelRefIterator;
-use iter::*;
 
 // impl Default for MoveActionValue {
 //     fn default() -> Self {
@@ -21,23 +21,26 @@ use iter::*;
 
 pub fn init(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
     /////////////////////////////////////////////////////////////
-    //  Register some additional custom events with our        // 
+    //  Register some additional custom events with our        //
     //  socket server. Your custom events will be              //
     //  registered here as well as in the ./events/mod.rs      //
     //  file                                                   //
     /////////////////////////////////////////////////////////////
 
     let players_disconnect = players.clone();
-    let logger = Arc::new(HorizonLogger::new());
+    let logger: Arc<HorizonLogger> = Arc::new(HorizonLogger::new());
 
+    let temp_logger: Arc<HorizonLogger> = logger.clone();
     socket.on_disconnect(move |s| {
-        on_disconnect(s, players_disconnect.clone(), logger)
+        on_disconnect(s, players_disconnect.clone(), temp_logger)
     });
 
     // Register events for player interactions
     let players_clone = Arc::clone(&players);
+    let temp_logger: Arc<HorizonLogger> = logger.clone();
+
     socket.on("updatePlayerLocation", move |s, d|
-        update_player_location(s, d, players_clone.clone()),
+        update_player_location(s, d, players_clone.clone(), temp_logger),
     );
 
     let players_clone = Arc::clone(&players);
@@ -51,15 +54,18 @@ pub fn init(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
     });
 
     let players_clone = Arc::clone(&players);
+    let temp_logger: Arc<HorizonLogger> = logger.clone();
     socket.on("getOnlinePlayers", move |s|
-        get_online_players(s, players_clone.clone()),
+        get_online_players(s, players_clone.clone(), temp_logger),
     );
 
     let players_clone = Arc::clone(&players);
+    let temp_logger: Arc<HorizonLogger> = logger.clone();
+
     socket.on("getPlayersWithLocations", move |s, d: Data<Value>|
-        get_players_with_locations(s, d, players_clone.clone()),
+        get_players_with_locations(s, d, players_clone.clone(), temp_logger),
     );
-    
+
     let players_clone = Arc::clone(&players);
     socket.on("broadcastMessage", move |d|
         broadcast_message(d, players_clone.clone()),
@@ -67,18 +73,21 @@ pub fn init(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
 
     // Register events using the socketioxide API directly
     let players_clone: Arc<RwLock<Vec<Player>>> = Arc::clone(&players);
+    let temp_logger: Arc<HorizonLogger> = logger.clone();
+
     socket.on("updatePlayerLocation", move |s: SocketRef, d: Data<Value>| {
-        update_player_location(s, d, players_clone.clone())
+        update_player_location(s, d, players_clone.clone(), temp_logger)
     });
 
     let players_clone = Arc::clone(&players);
+    let temp_logger: Arc<HorizonLogger> = logger.clone();
     socket.on("getOnlinePlayers", move |s: SocketRef| {
-        get_online_players(s, players_clone.clone())
+        get_online_players(s, players_clone.clone(), temp_logger)
     });
 
     let players_clone = Arc::clone(&players);
     socket.on("getPlayersWithLocations", move |s: SocketRef, d: Data<Value>| {
-        get_players_with_locations(s, d, players_clone.clone())
+        get_players_with_locations(s, d, players_clone.clone(), logger.clone())
     });
 
     let players_clone = Arc::clone(&players);
@@ -88,12 +97,13 @@ pub fn init(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
 }
 
 pub fn on_disconnect(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>, logger: Arc<HorizonLogger>) {
-    let mut players = players.write().unwrap();
-    if let Some(index) = players.iter().position(|p| p.socket.id == socket.id) {
-        players.remove(index);
-        log_info!(logger, "CONNECTION", "Player {} disconnected, and cleaned up successfully", socket.id)
-    } else {
-        log_info!(logger, "CONNECTION", "Player {} successfully, but cleanup failed due to a corrupted player state. (This could be caused by plugins registering fake players improperly)", socket.id)
+    if let Some(mut players) = players.write().log(&logger, LogLevel::WARN, "I/O Error", "Acquiring ReadWriteLock failed") {
+        if let Some(index) = players.iter().position(|p| p.socket.id == socket.id) {
+            players.remove(index);
+            log_info!(logger, "CONNECTION", "Player {} disconnected, and cleaned up successfully", socket.id)
+        } else {
+            log_info!(logger, "CONNECTION", "Player {} successfully, but cleanup failed due to a corrupted player state. (This could be caused by plugins registering fake players improperly)", socket.id)
+        }
     }
 }
 
@@ -131,99 +141,107 @@ pub fn on_disconnect(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>, logge
 ///
 /// This function assumes specific data structures for the incoming data and may fail silently
 /// if the expected fields are missing or in an unexpected format.
-pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc<RwLock<Vec<Player>>>) {
+pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc<RwLock<Vec<Player>>>, logger: Arc<HorizonLogger>) {
     println!("Received event: UpdatePlayerLocation with data: {:?}", data.0);
 
-    let player_data = &data.0;
-    let mut players = players.write().unwrap();
-    if let Some(player) = players.iter_mut().find(|p| p.socket.id == socket.id) {
-        // Update control rotation
-        if let Some(control_rotation) = player_data.get("controlRotation") {
-            player.controlRotation = Some(Vec3D {
-                x: control_rotation["x"].as_f64().unwrap_or(0.0),
-                y: control_rotation["y"].as_f64().unwrap_or(0.0),
-                z: control_rotation["z"].as_f64().unwrap_or(0.0),
-            });
-        }
+    let player_data = &data.0; // This is going to by the Json data
+    if let Some(mut players) = players.write().log(&logger, LogLevel::WARN, "I/O Error", "Acquiring ReadWriteLock failed") {
+        if let Some(player) = players.iter_mut().find(|p| p.socket.id == socket.id) {
+            // Update control rotation
+            if let Some(control_rotation) = player_data.get("controlRotation") {
+                player.controlRotation = Some(Vec3D {
+                    x: control_rotation["x"].as_f64().unwrap_or(0.0),
+                    y: control_rotation["y"].as_f64().unwrap_or(0.0),
+                    z: control_rotation["z"].as_f64().unwrap_or(0.0),
+                });
+            }
 
-        // Update root position
-        if let Some(root_position) = player_data.get("rootPosition") {
-            let new_position = Translation {
-                x: root_position["x"].as_f64().unwrap_or(0.0),
-                y: root_position["y"].as_f64().unwrap_or(0.0),
-                z: root_position["z"].as_f64().unwrap_or(0.0),
-            };
-            player.transform.get_or_insert(Transform::default()).location = Some(new_position);
-        }
+            // Update root position
+            if let Some(root_position) = player_data.get("rootPosition") {
+                let new_position = Translation {
+                    x: root_position["x"].as_f64().unwrap_or(0.0),
+                    y: root_position["y"].as_f64().unwrap_or(0.0),
+                    z: root_position["z"].as_f64().unwrap_or(0.0),
+                };
+                player.transform.get_or_insert(Transform::default()).location = Some(new_position);
+            }
 
-        // Update root rotation
-        if let Some(root_rotation) = player_data.get("rootRotation") {
-            let new_rotation = Rotation {
-                x: root_rotation["x"].as_f64().unwrap_or(0.0),
-                y: root_rotation["y"].as_f64().unwrap_or(0.0),
-                z: root_rotation["z"].as_f64().unwrap_or(0.0),
-                w: 1.0, // Assuming w is not provided in the data
-            };
-            player.transform.get_or_insert(Transform::default()).rotation = Some(new_rotation);
-        }
+            // Update root rotation
+            if let Some(root_rotation) = player_data.get("rootRotation") {
+                let new_rotation = Rotation {
+                    x: root_rotation["x"].as_f64().unwrap_or(0.0),
+                    y: root_rotation["y"].as_f64().unwrap_or(0.0),
+                    z: root_rotation["z"].as_f64().unwrap_or(0.0),
+                    w: 1.0, // Assuming w is not provided in the data
+                };
+                player.transform.get_or_insert(Transform::default()).rotation = Some(new_rotation);
+            }
 
-        // Update root velocity
-        if let Some(root_velocity) = player_data.get("rootVelocity") {
-            player.root_velocity = Some(Vec3D {
-                x: root_velocity["x"].as_f64().unwrap_or(0.0),
-                y: root_velocity["y"].as_f64().unwrap_or(0.0),
-                z: root_velocity["z"].as_f64().unwrap_or(0.0),
-            });
-        }
+            // Update root velocity
+            if let Some(root_velocity) = player_data.get("rootVelocity") {
+                player.root_velocity = Some(Vec3D {
+                    x: root_velocity["x"].as_f64().unwrap_or(0.0),
+                    y: root_velocity["y"].as_f64().unwrap_or(0.0),
+                    z: root_velocity["z"].as_f64().unwrap_or(0.0),
+                });
+            }
 
-        // Update key bone data
-        if let Some(key_bone_data) = player_data.get("keyBoneData").and_then(|v| v.as_array()) {
-            let key_joints: Vec<Vec3D> = key_bone_data.into_par_iter()
-                .filter_map(|bone| {
-                    Some(Vec3D {
-                        x: bone["x"].as_f64()?,
-                        y: bone["y"].as_f64()?,
-                        z: bone["z"].as_f64()?,
+            // Update key bone data
+            if let Some(key_bone_data) = player_data.get("keyBoneData").and_then(|v| v.as_array()) {
+                let key_joints: Vec<Vec3D> = key_bone_data.into_par_iter()
+                    .filter_map(|bone| {
+                        Some(Vec3D {
+                            x: bone["x"].as_f64()?,
+                            y: bone["y"].as_f64()?,
+                            z: bone["z"].as_f64()?,
+                        })
                     })
-                })
-                .collect();
-            // You might want to store this key_joints data in your Player struct
-        }
+                    .collect();
+                // You might want to store this key_joints data in your Player struct
+            }
 
-        // Process trajectory path
-        if let Some(trajectory) = player_data.get("trajectoryPath").and_then(|v| v.as_array()) {
-            let path: Vec<TrajectoryPoint> = trajectory.into_par_iter()
-                .filter_map(|point| {
-                    Some(TrajectoryPoint {
-                        accumulated_seconds: point["accumulatedSeconds"].as_f64()?,
-                        facing: Rotation {
-                            w: point["facing"]["w"].as_f64()?,
-                            x: point["facing"]["x"].as_f64()?,
-                            y: point["facing"]["y"].as_f64()?,
-                            z: point["facing"]["z"].as_f64()?,
-                        },
-                        position: Translation {
-                            x: point["position"]["x"].as_f64()?,
-                            y: point["position"]["y"].as_f64()?,
-                            z: point["position"]["z"].as_f64()?,
-                        },
+            // Process trajectory path
+            if let Some(trajectory) = player_data.get("trajectoryPath").and_then(|v| v.as_array()) {
+                let path: Vec<TrajectoryPoint> = trajectory.into_par_iter()
+                    .filter_map(|point| {
+                        Some(TrajectoryPoint {
+                            accumulated_seconds: point["accumulatedSeconds"].as_f64()?,
+                            facing: Rotation {
+                                w: point["facing"]["w"].as_f64()?,
+                                x: point["facing"]["x"].as_f64()?,
+                                y: point["facing"]["y"].as_f64()?,
+                                z: point["facing"]["z"].as_f64()?,
+                            },
+                            position: Translation {
+                                x: point["position"]["x"].as_f64()?,
+                                y: point["position"]["y"].as_f64()?,
+                                z: point["position"]["z"].as_f64()?,
+                            },
+                        })
                     })
-                })
-                .collect();
-            // Store this path in your Player struct for prediction and smoothing
-            player.trajectory_path = Some(path);
+                    .collect();
+                // Store this path in your Player struct for prediction and smoothing
+                player.trajectory_path = Some(path);
+            }
+
+            println!("Updated player state: {:?}", player);
+        } else {
+            println!("Player not found: {}", socket.id);
         }
 
-        println!("Updated player state: {:?}", player);
+
+        // Send a reply containing the correct data. This will only happen if and only if the player data is writeable
+        socket.emit("messageBack", &json!({
+            "status": "success",
+            "message": "Player location updated successfully"
+        })).ok();
     } else {
-        println!("Player not found: {}", socket.id);
+        // Send a reply containing the correct data. This will happen if the player data isn't writeable
+        socket.emit("messageBack", &json!({
+            "status": "failure",
+            "message": "Player location update failed"
+        })).ok();
     }
-
-    // Send a reply containing the correct data
-    socket.emit("messageBack", &json!({
-        "status": "success",
-        "message": "Player location updated successfully"
-    })).ok();
 }
 
 /// Retrieves and sends a list of online players to a connected client.
@@ -252,18 +270,27 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc
 ///
 /// While the function itself doesn't return a Result, it silently ignores any errors
 /// that occur when emitting the event to the socket.
-pub fn get_online_players(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>) {
+pub fn get_online_players(socket: SocketRef, players: Arc<RwLock<Vec<Player>>>, logger: Arc<HorizonLogger>) {
     info!("Responding with online players list");
-    let mut players = players.write().unwrap();
-    let online_players_json = serde_json::to_value(
-        players
-            .par_iter()
-            .map(|player| json!({ "id": player.socket.id }))
-            .collect::<Vec<_>>(),
-    )
-    .map_err(|e|{eprintln!("Failed to get json for online players: {}",e)});
-    debug!("Player Array as JSON: {:#?}", online_players_json);
-    socket.emit("onlinePlayers", &online_players_json).ok();
+    let players = players.read(); // previously write but it only requires read-only access
+
+    if let Some(players) = players.log(&logger, LogLevel::WARN, "I/O Error", "Acquiring ReadWriteLock failed ") {
+        let online_players_json = serde_json::to_value(
+            players
+                .par_iter()
+                .map(|player| json!({ "id": player.socket.id }))
+                .collect::<Vec<_>>(),
+        )
+        .map_err(|e|{eprintln!("Failed to get json for online players: {}",e)});
+        debug!("Player Array as JSON: {:#?}", online_players_json);
+        socket.emit("onlinePlayers", &online_players_json).ok();
+    } else {
+        let error_data: Value = json!({
+            "message": "Failed to read player data. Please try again later.",
+            "code": "LOCK_READ_FAILURE"
+        });
+        let _ = socket.emit("error", &error_data);
+    }
 }
 
 /// Retrieves and sends player locations and related information to a connected client.
@@ -306,52 +333,68 @@ struct PlayersResponse {
     players: Vec<serde_json::Value>
 }
 
-pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players: Arc<RwLock<Vec<Player>>>) {
+pub fn get_players_with_locations(socket: SocketRef, data: Data<Value>, players: Arc<RwLock<Vec<Player>>>, logger: Arc<HorizonLogger>) {
     println!("Responding with players and locations list");
-    let mut players = players.write().unwrap();
-   
-    println!("Received event with data: {:?}", data.0);
-    
-    let players_with_locations_json: Vec<serde_json::Value> = players
-    .par_iter() // Convert to parallel iterator faster searching
-    .map(|player| {
-        json!({
-            "Id": player.id,
-            "Root Position": player.transform.as_ref().and_then(|t| t.location.as_ref()),
-            "Root Rotation": player.transform.as_ref().and_then(|t| t.rotation.as_ref()),                
-            "Root Velocity": player.root_velocity,
-            "Control Rotation": player.controlRotation,
-//          "Move Action Value": player.moveActionValue,
-            "Trajectory Path": player.trajectory_path.as_ref().map(|path|
-                path.iter().take(10).map(|point| json!({
-                    "accumulatedSeconds": point.accumulated_seconds,
-                    "facing": point.facing,
-                    "position": point.position,
-                })).collect::<Vec<_>>()
-            ),
-            "KeyJoints": player.key_joints,
-            "AnimationState": player.animation_state,
-            "IsActive": player.is_active,
-            "LastUpdateTime": player.last_update.elapsed().as_secs_f64(),
-        })
-    })
-    .collect();
+    let players = players.read(); // Previously write now read
 
-    println!("Number of players: {}", players_with_locations_json.len());
-    
-    // Create the response with a "players" field
-    let response = PlayersResponse {
-        players: players_with_locations_json
-    };
-    
-    // Serialize the response
-    let response_json = serde_json::to_value(response).unwrap();
-    
-    println!("Sending players data: {:?}", response_json);
-    println!("JSON string being sent: {}", serde_json::to_string(&response_json).unwrap());
-    
-    // Send the data
-    socket.emit("playersWithLocations", &response_json).ok();
+    if let Some(players) = players.log(&logger, LogLevel::WARN, "I/O Error", "Acquiring ReadWrite Lock failed") {
+        println!("Received event with data: {:?}", data.0);
+
+        let players_with_locations_json: Vec<serde_json::Value> = players
+        .par_iter() // Convert to parallel iterator faster searching
+        .map(|player| {
+            json!({
+                "Id": player.id,
+                "Root Position": player.transform.as_ref().and_then(|t| t.location.as_ref()),
+                "Root Rotation": player.transform.as_ref().and_then(|t| t.rotation.as_ref()),
+                "Root Velocity": player.root_velocity,
+                "Control Rotation": player.controlRotation,
+    //          "Move Action Value": player.moveActionValue,
+                "Trajectory Path": player.trajectory_path.as_ref().map(|path|
+                    path.iter().take(10).map(|point| json!({
+                        "accumulatedSeconds": point.accumulated_seconds,
+                        "facing": point.facing,
+                        "position": point.position,
+                    })).collect::<Vec<_>>()
+                ),
+                "KeyJoints": player.key_joints,
+                "AnimationState": player.animation_state,
+                "IsActive": player.is_active,
+                "LastUpdateTime": player.last_update.elapsed().as_secs_f64(),
+            })
+        })
+        .collect();
+
+        println!("Number of players: {}", players_with_locations_json.len());
+
+        // Create the response with a "players" field
+        let response = PlayersResponse {
+            players: players_with_locations_json
+        };
+
+        // Serialize the response
+
+        if let Some(response_json) = serde_json::to_value(response).log(&logger, LogLevel::ERROR, "SERIALIZATION", "JSON Parsing Error") {
+            println!("Sending players data: {:?}", response_json);
+            println!("JSON string being sent: {}", serde_json::to_string(&response_json).unwrap()); // Should not fail. It's the inverse function of to_value
+
+            let _ = socket.emit("playersWithLocations", &response_json);
+        } else {
+            let error_data: Value = json!({
+                "message": "Failed parse json data",
+                "code": "Serialization error"
+            });
+
+            let _ = socket.emit("error", &error_data); // Take a look
+        }
+    } else {
+        let error_data: Value = json!({
+            "message": "Failed to read player data. Please try again later.",
+            "code": "LOCK_READ_FAILURE"
+        });
+
+        let _ = socket.emit("error", &error_data);
+    }
 }
 
 pub fn broadcast_message(data: Data<Value>, players: Arc<RwLock<Vec<Player>>>) {
@@ -379,23 +422,24 @@ fn player_walk_toggle(socket: SocketRef, data: Data<Value>) {
     socket.emit("playerWalkToggled", &true).expect("Failed to emit playerWalkToggled event");
 }
 
-pub async fn cleanup_inactive_players(players: Arc<RwLock<Vec<Player>>>) {
+pub async fn cleanup_inactive_players(players: Arc<RwLock<Vec<Player>>>, logger: Arc<HorizonLogger>) {
     let inactive_threshold = Duration::from_secs(60); // 1 minute
 
     loop {
         tokio::time::sleep(Duration::from_secs(30)).await; // Run every 30 seconds
 
-        let mut players = players.write().unwrap();
-        let now = Instant::now();
+        if let Some(mut players) = players.write().log(&logger, LogLevel::WARN, "CLEANUP", "Starting cleanup of inactive players") {
+            let now = Instant::now();
 
-        players.retain(|player| {
-            if !player.is_active && now.duration_since(player.last_update) > inactive_threshold {
-                println!("Removing inactive player: {}", player.socket.id);
-                false // Remove the player
-            } else {
-                true // Keep the player
-            }
-        });
+            players.retain(|player| {
+                if !player.is_active && now.duration_since(player.last_update) > inactive_threshold {
+                    println!("Removing inactive player: {}", player.socket.id);
+                    false // Remove the player
+                } else {
+                    true // Keep the player
+                }
+            });
+        }
     }
 }
 
@@ -505,4 +549,35 @@ fn parse_xy(parse: &Value) -> (f64, f64) {
 /// This function is used internally by other parsing functions to handle individual numeric values.
 fn parse_f64(n: &Value) -> Result<f64, std::io::Error> {
     n.as_f64().ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid f64 value"))
+}
+
+
+trait Logging<T>{
+    /// Logs an error from a `Result<T, E>` if it is `Err` using the provided `HorizonLogger`.
+    ///
+    /// # Arguments
+    /// * `logger` - The logger instance to use.
+    /// * `log_level` - The severity level for logging.
+    /// * `kind` - The component or context identifier.
+    /// * `msg` - The custom message to log.
+    ///
+    /// # Returns
+    /// * `Option<T>` - `Some(T)` if `Ok`, otherwise `None`.
+    fn log(self, logger: &HorizonLogger, log_level: LogLevel, kind: &str, msg: &str) -> Option<T>;
+}
+
+impl <T, E: Debug> Logging<T> for Result<T, E> {
+    fn log(self, logger: &HorizonLogger, log_level: LogLevel, kind: &str, msg: &str) -> Option<T> {
+        if let Err(err) = &self {
+            match log_level {
+                LogLevel::DEBUG => log_debug!(logger, kind, "{}: {:?}", msg, err),
+                LogLevel::INFO => log_info!(logger, kind, "{}: {:?}", msg, err),
+                LogLevel::WARN => log_warn!(logger, kind, "{}: {:?}", msg, err),
+                LogLevel::ERROR => log_error!(logger, kind, "{}: {:?}", msg, err),
+                LogLevel::CRITICAL => log_critical!(logger, kind, "{}: {:?}", msg, err),
+            }
+        }
+
+        self.ok()
+    }
 }
