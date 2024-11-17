@@ -188,3 +188,5 @@ voronoi_edges.txt
 
 *.db
 load_test.db-journal
+/deps
+/.cargo

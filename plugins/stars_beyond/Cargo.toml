@@ -1,5 +1,5 @@
 [package]
-name = "test_plugin"
+name = "stars_beyond_plugin"
 version = "0.1.0"
 edition = "2021"
 
