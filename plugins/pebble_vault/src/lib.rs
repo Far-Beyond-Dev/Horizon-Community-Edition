@@ -27,7 +27,7 @@ pub struct PebbleVaultCustomData {
     pub value: i32,
 }
 
-// Define the trait properly
+// Define both required traits
 pub trait PluginAPI {
     fn persist_to_disk(&self) -> Result<(), String>;
     fn get_region(&self, region_id: Uuid) -> Option<Arc<Mutex<VaultRegion<PebbleVaultCustomData>>>>;
@@ -42,16 +42,13 @@ pub trait PluginAPI {
 }
 
 pub trait PluginConstruct {
-    // If you want default implementations, mark them with 'default'
     fn new(plugins: HashMap<&'static str, LoadedPlugin>) -> Plugin;
 }
 
-// Implement constructor separately
+// Implement constructor
 impl PluginConstruct for Plugin {
     fn new(plugins: HashMap<&'static str, LoadedPlugin>) -> Plugin {
-
-        // Create a new instance of the plugin and return it, Pebblevault
-        // Has no fields, so we can just return a new empty instance.
+        println!("Initializing PebbleVault plugin");
         Plugin {}
     }
 }
