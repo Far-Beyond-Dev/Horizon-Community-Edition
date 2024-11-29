@@ -308,7 +308,7 @@ For troubleshooting tips and solutions to common problems, consult the [Troubles
 
 <a href="https://github.com/Stars-Beyond/Horizon-Community-Edition/stargazers/">
   <picture>
-    <source media="(prefers-color-scheme: light)" srcset="http://reporoster.com/stars/Stars-Beyond/Horizon-Community-Edition">
-    <img alt="stargazer-widget" src="https://reporoster.com/stars/dark/Far-Beyond-Dev/Horizon-Community-Edition">
+    <source media="(prefers-color-scheme: light)" srcset="http://reporoster.com/stars/Stars-Beyond/Horizon">
+    <img alt="stargazer-widget" src="https://reporoster.com/stars/dark/Far-Beyond-Dev/Horizon">
   </picture>
 </a>
