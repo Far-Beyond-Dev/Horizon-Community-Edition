@@ -1376,6 +1376,7 @@ checksum = "953ec861398dccce10c670dfeaf3ec4911ca479e9c02154b3a215178c5f566f2"
 name = "player_lib"
 version = "0.1.0"
 dependencies = [
+ "PebbleVault",
  "horizon-plugin-api",
  "horizon_data_types 0.4.0",
  "socketioxide",
