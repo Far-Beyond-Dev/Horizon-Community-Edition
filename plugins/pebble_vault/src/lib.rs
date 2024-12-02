@@ -48,7 +48,6 @@ pub trait PluginConstruct {
 // Implement constructor
 impl PluginConstruct for Plugin {
     fn new(plugins: HashMap<&'static str, LoadedPlugin>) -> Plugin {
-        println!("Initializing PebbleVault plugin");
         Plugin {}
     }
 }
