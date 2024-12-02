@@ -15,15 +15,6 @@ pub struct PluginManager {
     plugins: HashMap<String,(Pluginstate,Plugin)>
 }
 
-
-/// A struct to hold the loaded plugin instance
-/// Example:
-/// ```
-/// let plugins = load_plugins!(test_plugin);
-/// let my_test_plugin = get_plugin!(test_plugin, plugins);
-/// let result = my_test_plugin.thing();
-/// println!("{}", result);
-/// ```
 #[macro_export]
 macro_rules! load_plugins {
     ($($plugin:ident),* $(,)?) => {
