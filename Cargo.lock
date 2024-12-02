@@ -1335,20 +1335,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 
 [[package]]
-name = "pebblevault_plugin"
-version = "0.1.0"
-dependencies = [
- "PebbleVault",
- "async-trait",
- "horizon-plugin-api",
- "horizon_data_types 0.3.0",
- "horizon_logger",
- "once_cell",
- "serde",
- "uuid",
-]
-
-[[package]]
 name = "percent-encoding"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1390,7 +1376,6 @@ dependencies = [
  "horizon-plugin-api",
  "horizon_data_types 0.3.0",
  "pathdiff",
- "pebblevault_plugin",
  "player_lib",
  "socketioxide",
  "stars_beyond_plugin",
