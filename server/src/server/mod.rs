@@ -30,7 +30,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 pub mod config;
-mod event_rep;
+pub mod event_rep;
+pub mod vault_lib;
 
 // Server state management
 
