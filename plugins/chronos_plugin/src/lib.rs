@@ -1,6 +1,10 @@
-use std::sync::{RwLock, Arc, atomic::{AtomicBool, Ordering}};
+
+use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
+use parking_lot::RwLock;
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH, Duration};
+use  std::sync::OnceLock;
+use lazy_static::lazy_static;
 
 // Import the plugin API publicly to allow the API to make calls against this plugin
 pub use horizon_plugin_api::{Plugin, LoadedPlugin};
@@ -10,8 +14,22 @@ const MINUTES_PER_HOUR: i32 = 60;
 const HOURS_PER_DAY: i32 = 24;
 
 // Global state using static
-static mut TIME_STATE: Option<Arc<RwLock<TimeState>>> = None;
-static mut TIME_THREAD_RUNNING: Option<Arc<AtomicBool>> = None;
+//static mut TIME_STATE: Option<Arc<RwLock<TimeState>>> = None;
+
+
+lazy_static! {
+    static ref TIME_STATE: OnceLock<Arc<RwLock<TimeState>>> = OnceLock::new();
+    static ref TIME_THREAD_RUNNING: AtomicBool = AtomicBool::new(false);
+}
+
+fn time_state() -> Arc<RwLock<TimeState>> {
+    let timestate = TIME_STATE.get_or_init(|| {
+        Arc::new(RwLock::new(TimeState::new()))
+    });
+    return timestate.clone();
+}
+
+
 
 #[derive(Clone, Copy, Debug)]
 pub enum TimeMode {
@@ -29,6 +47,7 @@ struct TimeState {
 
 impl TimeState {
     fn new() -> Self {
+        println!("Creating new TimeState");
         Self {
             current_hour: 6, // Start at 6 AM
             current_minute: 0,
@@ -66,106 +85,84 @@ pub trait PluginAPI {
 // Implement the PluginAPI trait for Plugin
 impl PluginAPI for Plugin {
     fn start_time_server() {
-        println!("Chronos active: WARNING: This plugin is still in proof of concept stage and has the potential to leak resources.");
-        unsafe {
-            if TIME_STATE.is_none() {
-                TIME_STATE = Some(Arc::new(RwLock::new(TimeState::new())));
-                TIME_THREAD_RUNNING = Some(Arc::new(AtomicBool::new(true)));
-
-                if let (Some(time_state), Some(thread_running)) = 
-                    (TIME_STATE.as_ref(), TIME_THREAD_RUNNING.as_ref()) {
-                    let time_state = time_state.clone();
-                    let thread_running = thread_running.clone();
-                    
-                    std::thread::spawn(move || {
-                        while thread_running.load(Ordering::SeqCst) {
-                            let mut state = time_state.write().unwrap();
+        
+        if let Some(time_state) = TIME_STATE.get() {
+            let time_state = time_state.clone();
+            let thread_running = TIME_THREAD_RUNNING.load(Ordering::SeqCst);
+            
+            std::thread::spawn(move || {
+                while thread_running {
+                    let mut state = time_state.write();
+                    match state.mode {
+                        TimeMode::RealTime(multiplier) => {
+                            let elapsed_real_seconds = SystemTime::now()
+                                .duration_since(UNIX_EPOCH)
+                                .unwrap()
+                                .as_secs() - state.start_time;
+                                
+                            let elapsed_game_seconds = (elapsed_real_seconds as f64 * multiplier) as i32;
+                            let total_minutes = elapsed_game_seconds / 60;
                             
-                            match state.mode {
-                                TimeMode::RealTime(multiplier) => {
-                                    let elapsed_real_seconds = SystemTime::now()
-                                        .duration_since(UNIX_EPOCH)
-                                        .unwrap()
-                                        .as_secs() - state.start_time;
-                                        
-                                    let elapsed_game_seconds = (elapsed_real_seconds as f64 * multiplier) as i32;
-                                    let total_minutes = elapsed_game_seconds / 60;
-                                    
-                                    state.current_minute = total_minutes % MINUTES_PER_HOUR;
-                                    state.current_hour = (total_minutes / MINUTES_PER_HOUR) % HOURS_PER_DAY;
-                                },
-                                TimeMode::Virtual(ticks_per_second) => {
-                                    state.current_minute += 1;
-                                    if state.current_minute >= MINUTES_PER_HOUR {
-                                        state.current_minute = 0;
-                                        state.current_hour = (state.current_hour + 1) % HOURS_PER_DAY;
-                                    }
-                                    drop(state); // Release lock before sleeping
-                                    std::thread::sleep(Duration::from_secs_f64(1.0 / ticks_per_second));
-                                },
-                                TimeMode::Paused => {
-                                    drop(state); // Release lock before sleeping
-                                    std::thread::sleep(Duration::from_millis(100));
-                                }
+                            state.current_minute = total_minutes % MINUTES_PER_HOUR;
+                            state.current_hour = (total_minutes / MINUTES_PER_HOUR) % HOURS_PER_DAY;
+                        },
+                        TimeMode::Virtual(ticks_per_second) => {
+                            state.current_minute += 1;
+                            if state.current_minute >= MINUTES_PER_HOUR {
+                                state.current_minute = 0;
+                                state.current_hour = (state.current_hour + 1) % HOURS_PER_DAY;
                             }
+                            drop(state); // Release lock before sleeping
+                            std::thread::sleep(Duration::from_secs_f64(1.0 / ticks_per_second));
+                        },
+                        TimeMode::Paused => {
+                            drop(state); // Release lock before sleeping
+                            std::thread::sleep(Duration::from_millis(100));
                         }
-                    });
+                    }
                 }
-            }
+            });
         }
     }
 
     fn request_time(&self) -> (i32, i32) {
-        unsafe {
-            if let Some(time_state) = &TIME_STATE {
-                let state = time_state.read().unwrap();
-                (state.current_hour, state.current_minute)
-            } else {
-                (0, 0)
-            }
-        }
+        let binding = time_state();
+        let time_state = binding.read();
+        return (time_state.current_hour, time_state.current_minute);
     }
 
     fn set_time(&self, hour: i32, minute: i32) {
-        unsafe {
-            if let Some(time_state) = &TIME_STATE {
-                let mut state = time_state.write().unwrap();
-                state.current_hour = hour.clamp(0, HOURS_PER_DAY - 1);
-                state.current_minute = minute.clamp(0, MINUTES_PER_HOUR - 1);
-            }
+
+        let binding = time_state();
+        let mut time_state = binding.write();
+        time_state.current_hour = hour;
+        time_state.current_minute = minute;
+    }
+
+
+    fn get_time_mode(&self) -> TimeMode {
+        let time_state = time_state().read().mode;
+        match time_state {
+            TimeMode::RealTime(real_time) => TimeMode::RealTime(real_time),
+            TimeMode::Virtual(virt_time) => TimeMode::Virtual(virt_time),
+            TimeMode::Paused => TimeMode::Paused,
         }
     }
 
     fn set_time_mode(&self, mode: TimeMode) {
-        unsafe {
-            if let Some(time_state) = &TIME_STATE {
-                let mut state = time_state.write().unwrap();
-                state.mode = mode;
-                
-                if matches!(mode, TimeMode::RealTime(_)) {
-                    state.start_time = SystemTime::now()
-                        .duration_since(UNIX_EPOCH)
-                        .unwrap()
-                        .as_secs();
-                }
-            }
-        }
-    }
-
-    fn get_time_mode(&self) -> TimeMode {
-        unsafe {
-            if let Some(time_state) = &TIME_STATE {
-                let state = time_state.read().unwrap();
-                state.mode
-            } else {
-                TimeMode::Paused
-            }
-        }
+        let binding = time_state();
+        let mut time_state = binding.write();
+        time_state.mode = mode;
     }
 
     fn is_daytime(&self) -> bool {
         let (hour, _) = self.request_time();
-        hour >= 6 && hour < 18
+        match hour {
+            5..=8 => true,
+            9..=16 => true,
+            17..=20 => true,
+            _ => false,
+        }
     }
 
     fn get_time_of_day(&self) -> String {
