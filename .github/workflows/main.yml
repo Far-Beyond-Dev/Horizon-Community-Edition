@@ -52,8 +52,6 @@ jobs:
 #            prerelease: false
 
   build-release:
-    needs: [check-version, create-release]
-    if: needs.check-version.outputs.should_release == 'true'
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
