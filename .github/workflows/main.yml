@@ -86,26 +86,26 @@ jobs:
           command: build
           args: --release --target ${{ matrix.target }}
 
-      - name: Generate SHA256
-        shell: bash
-        run: |
-          binary_path="target/${{ matrix.target }}/release/horizon"
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            binary_path="target/${{ matrix.target }}/release/horizon.exe"
-          fi
-          
-          if [ ! -f "$binary_path" ]; then
-            echo "Binary not found at $binary_path"
-            ls -la target/
-            ls -la target/${{ matrix.target }}/release/
-            exit 1
-          fi
-          
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            sha256sum "$binary_path" > "$binary_path.sha256"
-          else
-            shasum -a 256 "$binary_path" > "$binary_path.sha256"
-          fi
+#      - name: Generate SHA256
+#        shell: bash
+#        run: |
+#          binary_path="target/${{ matrix.target }}/release/horizon"
+#          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+#            binary_path="target/${{ matrix.target }}/release/horizon.exe"
+#          fi
+#          
+#          if [ ! -f "$binary_path" ]; then
+#            echo "Binary not found at $binary_path"
+#            ls -la target/
+#            ls -la target/${{ matrix.target }}/release/
+#            exit 1
+#          fi
+#          
+#          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+#            sha256sum "$binary_path" > "$binary_path.sha256"
+#          else
+#            shasum -a 256 "$binary_path" > "$binary_path.sha256"
+#          fi
 
 #      - name: Upload Binary
 #        uses: actions/upload-release-asset@v1
