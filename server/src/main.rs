@@ -49,7 +49,7 @@ pub static LOGGER: Lazy<HorizonLogger> = Lazy::new(|| {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    collision::main();
+    //collision::main();
 
     let mut _profiler = Some(dhat::Profiler::new_heap());
     splash();
