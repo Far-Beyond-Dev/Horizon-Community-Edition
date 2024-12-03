@@ -66,6 +66,7 @@ pub trait PluginAPI {
 // Implement the PluginAPI trait for Plugin
 impl PluginAPI for Plugin {
     fn start_time_server() {
+        println!("Chronos active: WARNING: This plugin is still in proof of concept stage and has the potential to leak resources.");
         unsafe {
             if TIME_STATE.is_none() {
                 TIME_STATE = Some(Arc::new(RwLock::new(TimeState::new())));
