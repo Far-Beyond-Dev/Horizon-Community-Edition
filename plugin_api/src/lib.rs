@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-pub use horizon_plugin_api::{Plugin, Pluginstate, Version, get_plugin};
+pub use horizon_plugin_api::{Plugin, Pluginstate, Version, LoadedPlugin};
+use std::time::Duration;
 
 pub mod plugin_macro;
 pub mod plugin_imports;
@@ -20,16 +21,29 @@ macro_rules! load_plugins {
     ($($plugin:ident),* $(,)?) => {
         {
             let mut plugins = HashMap::new();
+            let mut timings = HashMap::new();
             $(
+                let start = std::time::Instant::now();
                 plugins.insert(
                     stringify!($plugin),
                     LoadedPlugin {
                         instance: <$plugin::Plugin as $plugin::PluginConstruct>::new(plugins.clone()),
                     }
                 );
+                timings.insert(stringify!($plugin), start.elapsed());
             )*
-            plugins
+            (plugins, timings)
         }
+    };
+}
+
+#[macro_export]
+macro_rules! get_plugin {
+    ($name:ident, $plugins:expr) => {
+        $plugins
+            .0.get(stringify!($name))
+            .map(|p| &p.instance as &dyn $name::PluginAPI)
+            .expect(&format!("Plugin {} not found", stringify!($name)))
     };
 }
 
@@ -55,10 +69,12 @@ impl PluginManager {
         self.plugins
     }
 
-    pub fn load_all(&self) {
+    pub fn load_all(&self) -> (HashMap<&'static str, LoadedPlugin>, HashMap<&'static str, Duration>) {
         let plugins = plugin_imports::load_plugins();
     
         let my_test_plugin = get_plugin!(test_plugin, plugins);
         let result = my_test_plugin.thing();
+
+        plugins
     }
 }

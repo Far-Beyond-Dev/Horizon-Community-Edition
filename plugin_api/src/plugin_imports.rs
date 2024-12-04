@@ -4,8 +4,10 @@
 use horizon_plugin_api::LoadedPlugin;
 use std::collections::HashMap;
 
+use std::time::Duration;
+
 // Invoke the macro with all discovered plugins
-pub fn load_plugins() -> HashMap<&'static str, LoadedPlugin> {
+pub fn load_plugins() -> (HashMap<&'static str, LoadedPlugin>, HashMap<&'static str, Duration>) {
     let plugins = crate::load_plugins!(
         chronos_plugin,
         player_lib,
