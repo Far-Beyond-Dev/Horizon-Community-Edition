@@ -4,12 +4,15 @@
 use horizon_plugin_api::LoadedPlugin;
 use std::collections::HashMap;
 
+pub use stars_beyond_plugin;
+pub use unreal_adapter_horizon;
+
+
 // Invoke the macro with all discovered plugins
 pub fn load_plugins() -> HashMap<&'static str, LoadedPlugin> {
     let plugins = crate::load_plugins!(
-        pebblevault_plugin,
         stars_beyond_plugin,
-        test_plugin
+        unreal_adapter_horizon
     );
     plugins
 }
