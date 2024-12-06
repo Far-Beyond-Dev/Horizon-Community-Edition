@@ -22,7 +22,6 @@ use horizon_data_types::Player;
 use horizon_logger::{log_critical, log_debug, log_error, log_info, log_warn};
 use horizon_plugin_api::LoadedPlugin;
 use parking_lot::RwLock;
-use player_lib::PluginAPI;
 use plugin_api::{Plugin, Pluginstate};
 use socketioxide::{
     extract::{AckSender, Data, SocketRef},
@@ -185,7 +184,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     let thread_plugins = target_thread.plugins.clone();
     let plugin_name = stringify!(unreal_adapter_horizon);
     println!("{:?}", thread_plugins);
-    let plugin = match thread_plugins.get(plugin_name) {
+    let plugin = match thread_plugins.get(&plugin_name) {
                 Some(plugin) => plugin,
             None => {
                 log_error!(LOGGER, "PLUGIN", "Plugin unreal_adapter_horizon not found");
