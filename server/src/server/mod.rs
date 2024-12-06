@@ -27,7 +27,7 @@ use socketioxide::{
     extract::{AckSender, Data, SocketRef},
     SocketIo,
 };
-use std::{collections::HashMap, os::windows::thread};
+use std::{collections::HashMap};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use uuid::Uuid;
@@ -156,7 +156,7 @@ async fn handle_socket_ack(Data(data): Data<serde_json::Value>, ack: AckSender) 
 
 fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     //socket.on("connect", |socket: SocketRef, _| {
-    //    log_info!(LOGGER, "SOCKET NET", "New connection from {}", socket.id);
+        log_info!(LOGGER, "SOCKET NET", "New connection from {}", socket.id);
     //});
 
     if let Err(e) = socket.emit("auth", &data) {
