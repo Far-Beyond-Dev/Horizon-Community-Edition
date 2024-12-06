@@ -183,7 +183,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
         .plugins
         .get(stringify!(unreal_adapter_horizon))
         .map(|p| &p.instance as &unreal_adapter_horizon::Plugin)
-        .expect(&format!("Plugin {} not found", stringify!(unreal_adapter_horizon)));
+        .unwrap();
     unreal_adapter.player_joined(socket, player_arc);
 }
 
