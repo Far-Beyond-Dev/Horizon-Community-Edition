@@ -179,12 +179,17 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
 
     let player_arc: Arc<parking_lot::RwLock<horizon_data_types::Player>> = Arc::new(parking_lot::RwLock::new(player));
     //let unreal_adapter = plugin_api::get_plugin!(player_lib, target_thread.plugins);
-    let unreal_adapter = target_thread
-        .plugins
-        .get(stringify!(unreal_adapter_horizon))
-        .map(|p| &p.instance as &unreal_adapter_horizon::Plugin)
-        .unwrap();
-    unreal_adapter.player_joined(socket, player_arc);
+    // let unreal_adapter = 
+    match target_thread
+    .plugins
+    .get(stringify!(unreal_adapter_horizon))
+    .map(|p| &p.instance as &unreal_adapter_horizon::Plugin) {
+        Some(plugin) => {
+            plugin.player_joined(socket, player_arc);
+        },
+        None => {panic!("plugin not found")},
+    }
+    // unreal_adapter.player_joined(socket, player_arc);
 }
 
 //-----------------------------------------------------------------------------
