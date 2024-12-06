@@ -1346,6 +1346,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "953ec861398dccce10c670dfeaf3ec4911ca479e9c02154b3a215178c5f566f2"
 
 [[package]]
+name = "player_lib"
+version = "0.1.0"
+dependencies = [
+ "PebbleVault",
+ "horizon-plugin-api",
+ "horizon_data_types",
+ "socketioxide",
+]
+
+[[package]]
 name = "plugin_api"
 version = "0.3.0"
 dependencies = [
@@ -1353,6 +1363,7 @@ dependencies = [
  "horizon-plugin-api",
  "horizon_data_types",
  "pathdiff",
+ "player_lib",
  "socketioxide",
  "stars_beyond_plugin",
  "tokio",
