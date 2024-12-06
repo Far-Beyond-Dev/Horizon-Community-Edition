@@ -180,31 +180,22 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     let player_arc: Arc<parking_lot::RwLock<horizon_data_types::Player>> = Arc::new(parking_lot::RwLock::new(player));
     //let unreal_adapter = plugin_api::get_plugin!(player_lib, target_thread.plugins);
     // let unreal_adapter = 
-    match target_thread.plugins.get(stringify!(unreal_adapter_horizon)) {
-        Some(plugin) => {
-            match &plugin.instance as &dyn Plugin {
-                plugin_instance => {
-                    match plugin_instance.downcast_ref::<unreal_adapter_horizon::Plugin>() {
-                        Some(unreal_plugin) => {
-                            unreal_plugin.player_joined(socket, player_arc);
-                        },
-                        None => {
-                            log_error!(LOGGER, "PLUGIN", "Failed to downcast plugin instance to unreal_adapter_horizon::Plugin");
-                            panic!("Failed to downcast plugin instance to unreal_adapter_horizon::Plugin");
-                        }
-                    }
-                },
-                _ => {
-                    log_error!(LOGGER, "PLUGIN", "Failed to get plugin instance as &dyn Plugin");
-                    panic!("Failed to get plugin instance as &dyn Plugin");
-                }
-            }
-        },
+    let thread_plugins = target_thread.plugins;
+    let plugin_name = match thread_plugins.get(stringify!(unreal_adapter_horizon)) {
+        Some(plugin) => plugin,
         None => {
             log_error!(LOGGER, "PLUGIN", "Plugin unreal_adapter_horizon not found");
-            panic!("Plugin unreal_adapter_horizon not found");
+            return;
         }
-    }
+    };
+    let casted_struct = match plugin_name.instance.downcast_ref::<unreal_adapter_horizon::Plugin>() {
+        Some(plugin) => plugin,
+        None => {
+            log_error!(LOGGER, "PLUGIN", "Failed to cast plugin to unreal_adapter_horizon::Plugin");
+            return;
+        }
+    };
+
     // unreal_adapter.player_joined(socket, player_arc);
 }
 
