@@ -182,8 +182,6 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     target_thread.add_player(player.clone());
 
     let player_arc: Arc<parking_lot::RwLock<horizon_data_types::Player>> = Arc::new(parking_lot::RwLock::new(player));
-    //let unreal_adapter = plugin_api::get_plugin!(player_lib, target_thread.plugins);
-    // let unreal_adapter = 
     let thread_plugins = target_thread.plugins.clone();
     let plugin = match thread_plugins.get(stringify!(unreal_adapter_horizon)) {
             Some(plugin) => plugin,

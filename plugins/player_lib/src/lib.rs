@@ -33,6 +33,7 @@ impl PluginConstruct for Plugin {
 // Implement the trait for Plugin
 impl PluginAPI for Plugin {
     fn player_joined(&self, socket: SocketRef, player: Arc<RwLock<horizon_data_types::Player>>) {
+        println!("player_lib");
         setup_listeners(socket, player);
     }
 }
