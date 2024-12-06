@@ -20,27 +20,25 @@ use axum::{routing::get, serve, Router};
 use config::ServerConfig;
 use horizon_data_types::Player;
 use horizon_logger::{log_critical, log_debug, log_error, log_info, log_warn};
+use horizon_plugin_api::LoadedPlugin;
 use parking_lot::RwLock;
 use plugin_api::{Plugin, Pluginstate};
-use horizon_plugin_api::LoadedPlugin;
 use socketioxide::{
     extract::{AckSender, Data, SocketRef},
     SocketIo,
 };
-use std::{collections::HashMap};
+use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 pub mod config;
 mod event_rep;
-use plugin_api::plugin_imports::*;
 use lazy_static::lazy_static;
-
+use plugin_api::plugin_imports::*;
 
 lazy_static! {
     static ref SERVER: Server = Server::new().unwrap();
 }
-
 
 // Server state management
 
@@ -83,7 +81,6 @@ impl HorizonServer {
             let id = threads.len() - 1;
             id
         };
-        
 
         Ok(thread_id)
     }
@@ -156,7 +153,7 @@ async fn handle_socket_ack(Data(data): Data<serde_json::Value>, ack: AckSender) 
 
 fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     //socket.on("connect", |socket: SocketRef, _| {
-        log_info!(LOGGER, "SOCKET NET", "New connection from {}", socket.id);
+    log_info!(LOGGER, "SOCKET NET", "New connection from {}", socket.id);
     //});
 
     if let Err(e) = socket.emit("auth", &data) {
@@ -170,23 +167,23 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     let server_instance = SERVER.get_instance();
     let server_instance_read = server_instance.read();
     let threads = server_instance_read.threads.read();
-    
+
     socket.on("message", handle_socket_message);
     socket.on("message-with-ack", handle_socket_ack);
 
-    let player = horizon_data_types::Player::new(
-            socket.clone(),
-            Uuid::new_v4()
-        );
-    
+    let player = horizon_data_types::Player::new(socket.clone(), Uuid::new_v4());
+
     let target_thread = Arc::clone(&threads[threadid]);
     target_thread.add_player(player.clone());
-    
+
     let player_arc: Arc<horizon_data_types::Player> = Arc::new(player);
-    let unreal_adapter = plugin_api::get_plugin!(unreal_adapter_horizon, target_thread.plugins);
-    unreal_adapter.player_joined(socket, player_arc);
-
-
+    //let unreal_adapter = plugin_api::get_plugin!(player_lib, target_thread.plugins);
+    let unreal_adapter = target_thread
+        .plugins
+        .get(stringify!(player_lib))
+        .map(|p| &p.instance as &dyn player_lib::Plugin::PluginAPI)
+        .expect(&format!("Plugin {} not found", stringify!(player_lib)));
+    // unreal_adapter.player_joined(socket, player_arc);
 }
 
 //-----------------------------------------------------------------------------
@@ -212,23 +209,24 @@ pub async fn start() -> anyhow::Result<()> {
 
     let handles = Arc::new(Mutex::new(Vec::new()));
     let server_instance = &SERVER.get_instance();
-    let spawn_futures: Vec<_> = (0..thread_count).map(|_| {
-        println!("Spawning thread");
+    let spawn_futures: Vec<_> = (0..thread_count)
+        .map(|_| {
+            println!("Spawning thread");
 
-        let handles = handles.clone();
-        async move {
-            if let Ok(thread_id) = server_instance.read().spawn_thread() {
-                println!("Attempting to obtain handles lock");
-                handles.lock().await.push(thread_id);
-                println!("Handle lock obtained");
+            let handles = handles.clone();
+            async move {
+                if let Ok(thread_id) = server_instance.read().spawn_thread() {
+                    println!("Attempting to obtain handles lock");
+                    handles.lock().await.push(thread_id);
+                    println!("Handle lock obtained");
 
-                println!("Thread spawned: {}", thread_id);
-            } else {
-                println!("Failed to spawn thread");
+                    println!("Thread spawned: {}", thread_id);
+                } else {
+                    println!("Failed to spawn thread");
+                }
             }
-        }
-    }).collect();
-
+        })
+        .collect();
 
     // Configure socket namespaces
     io.ns("/", on_connect);
