@@ -5,8 +5,8 @@ use horizon_plugin_api::LoadedPlugin;
 use std::collections::HashMap;
 
 pub use chronos_plugin;
-pub use stars_beyond_plugin;
 pub use player_lib;
+pub use stars_beyond_plugin;
 pub use unreal_adapter_horizon;
 
 
@@ -14,8 +14,8 @@ pub use unreal_adapter_horizon;
 pub fn load_plugins() -> HashMap<&'static str, LoadedPlugin> {
     let plugins = crate::load_plugins!(
         chronos_plugin,
-        stars_beyond_plugin,
         player_lib,
+        stars_beyond_plugin,
         unreal_adapter_horizon
     );
     plugins

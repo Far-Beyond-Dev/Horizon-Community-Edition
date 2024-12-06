@@ -10,7 +10,7 @@
 use horizon_data_types::Player;
 use socketioxide::extract::SocketRef;
 pub use horizon_plugin_api::{Plugin, Pluginstate, LoadedPlugin};
-use std::sync::RwLock;
+use parking_lot::RwLock;
 use std::sync::Arc;
 use std::collections::HashMap;
 

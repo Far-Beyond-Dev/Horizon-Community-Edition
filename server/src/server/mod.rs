@@ -22,6 +22,7 @@ use horizon_data_types::Player;
 use horizon_logger::{log_critical, log_debug, log_error, log_info, log_warn};
 use horizon_plugin_api::LoadedPlugin;
 use parking_lot::RwLock;
+use player_lib::PluginAPI;
 use plugin_api::{Plugin, Pluginstate};
 use socketioxide::{
     extract::{AckSender, Data, SocketRef},
@@ -176,14 +177,14 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     let target_thread = Arc::clone(&threads[threadid]);
     target_thread.add_player(player.clone());
 
-    let player_arc: Arc<horizon_data_types::Player> = Arc::new(player);
+    let player_arc: Arc<parking_lot::RwLock<horizon_data_types::Player>> = Arc::new(parking_lot::RwLock::new(player));
     //let unreal_adapter = plugin_api::get_plugin!(player_lib, target_thread.plugins);
     let unreal_adapter = target_thread
         .plugins
-        .get(stringify!(player_lib))
-        .map(|p| &p.instance as &dyn player_lib::Plugin::PluginAPI)
-        .expect(&format!("Plugin {} not found", stringify!(player_lib)));
-    // unreal_adapter.player_joined(socket, player_arc);
+        .get(stringify!(unreal_adapter_horizon))
+        .map(|p| &p.instance as &unreal_adapter_horizon::Plugin)
+        .expect(&format!("Plugin {} not found", stringify!(unreal_adapter_horizon)));
+    unreal_adapter.player_joined(socket, player_arc);
 }
 
 //-----------------------------------------------------------------------------

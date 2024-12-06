@@ -6,4 +6,5 @@ edition = "2021"
 [dependencies]
 horizon-plugin-api = "0.1.9"
 horizon_data_types = "0.4.0"
+parking_lot = "0.12.3"
 socketioxide = "0.15.1"
