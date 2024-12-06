@@ -184,14 +184,14 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     let thread_plugins = target_thread.plugins.clone();
     let plugin_name = stringify!(unreal_adapter_horizon);
     println!("{:?}", thread_plugins);
-    let plugin = match thread_plugins.get(&plugin_name) {
+    let plugin = match thread_plugins.get(plugin_name) {
                 Some(plugin) => plugin,
             None => {
                 log_error!(LOGGER, "PLUGIN", "Plugin unreal_adapter_horizon not found");
                 return;
             }
         };
-    let casted_struct = &plugin.instance;
+    let casted_struct: &unreal_adapter_horizon::Plugin = &plugin.instance as &unreal_adapter_horizon::Plugin;
 
     casted_struct.player_joined(socket, player_arc);
 }
