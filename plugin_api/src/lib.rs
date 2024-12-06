@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-pub use horizon_plugin_api::{Plugin, Pluginstate, Version, get_plugin};
+pub use horizon_plugin_api::{Plugin, Pluginstate, Version, get_plugin, LoadedPlugin};
 
 pub mod plugin_macro;
 pub mod plugin_imports;
@@ -11,6 +11,7 @@ const PLUGIN_API_VERSION: Version = Version {
     hotfix: 0
 };
 
+#[derive(Clone)]
 pub struct PluginManager {
     plugins: HashMap<String,(Pluginstate,Plugin)>
 }
@@ -22,12 +23,11 @@ macro_rules! load_plugins {
             let mut plugins = HashMap::new();
             $(
                 plugins.insert(
-                    stringify!($plugin),
-                    LoadedPlugin {
-                        instance: <$plugin::Plugin as $plugin::PluginConstruct>::new(plugins.clone()),
-                    }
+                    stringify!($plugin).to_string(),
+                    (Pluginstate::ACTIVE, <$plugin::Plugin as $plugin::PluginConstruct>::new(plugins.clone())),
                 );
             )*
+            
             plugins
         }
     };
@@ -55,10 +55,20 @@ impl PluginManager {
         self.plugins
     }
 
-    pub fn load_all(&self) {
-        let plugins = plugin_imports::load_plugins();
+    pub fn load_all(&mut self) ->  HashMap<String, LoadedPlugin> {
+        self.plugins = plugin_imports::load_plugins();
     
-        let my_test_plugin = get_plugin!(test_plugin, plugins);
-        let result = my_test_plugin.thing();
+        //let my_test_plugin = get_plugin!(test_plugin, plugins);
+        //let result = my_test_plugin.thing();
+
+        let mut loaded_plugins = HashMap::new();
+        for (name, (state, plugin)) in &self.plugins {
+            if *state == Pluginstate::ACTIVE {
+            loaded_plugins.insert(name.clone(), LoadedPlugin {
+                instance: plugin.clone(),
+            });
+            }
+        }
+        loaded_plugins
     }
 }

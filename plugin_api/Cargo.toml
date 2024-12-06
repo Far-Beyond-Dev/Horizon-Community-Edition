@@ -1,28 +1,29 @@
 [package]
 name = "plugin_api"
 version = "0.3.0"
-authors = ["Tristan Poland <redstonecrafter126@gmail.com>","Caznix <caznix01@gmail.com>"]
+authors = ["Tristan Poland <redstonecrafter126@gmail.com>"]
 description = "Horizon Plugins API"
 license = "MIT"
 edition = "2021"
 
 [build-dependencies]
 toml_edit = "0.22.22"
-pathdiff = "0.2.3"
+pathdiff = "0.2.2"
 
 [dependencies]
 async-trait = "0.1.83"
-horizon_data_types = "0.3.0"
+horizon_data_types = "0.4.0"
 tokio = { version = "1.41.1", features = ["rt", "net", "rt-multi-thread"] }
 uuid = "1.11.0"
 socketioxide = "0.15.0"
-horizon-plugin-api = "0.1.7"
+horizon-plugin-api = "0.1.11"
 #
 #
 #
 #
 ###### BEGIN AUTO-GENERATED PLUGIN DEPENDENCIES - DO NOT EDIT THIS SECTION ######
+chronos_plugin = { path = "../plugins/chronos_plugin", version = "0.1.0" }
 player_lib = { path = "../plugins/player_lib", version = "0.1.0" }
 stars_beyond_plugin = { path = "../plugins/stars_beyond", version = "0.1.0" }
-test_plugin = { path = "../plugins/test_plugin", version = "0.1.0" }
+unreal_adapter_horizon = { path = "../plugins/unreal_adapter_horizon", version = "0.1.0" }
 ###### END AUTO-GENERATED PLUGIN DEPENDENCIES ######

@@ -29,29 +29,31 @@ jobs:
             echo "should_release=false" >> $GITHUB_OUTPUT
           fi
 
-#  create-release:
-#      needs: check-version
-#      if: needs.check-version.outputs.should_release == 'true'
-#      runs-on: ubuntu-latest
-#      permissions:
-#        contents: write
-#      outputs:
-#        upload_url: ${{ steps.create_release.outputs.upload_url }}
-#      steps:
-#        - uses: actions/checkout@v3
+  create-release:
+      needs: check-version
+      if: needs.check-version.outputs.should_release == 'true'
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+      outputs:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+      steps:
+        - uses: actions/checkout@v3
 
-#        - name: Create Release
-#          id: create_release
-#          env:
-#            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          uses: softprops/action-gh-release@v1
-#          with:
-#            tag_name: v${{ needs.check-version.outputs.version }}
-#            name: Release v${{ needs.check-version.outputs.version }}
-#            draft: false
-#            prerelease: false
+        - name: Create Release
+          id: create_release
+          env:
+            GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+          uses: softprops/action-gh-release@v1
+          with:
+            tag_name: v${{ needs.check-version.outputs.version }}
+            name: Release v${{ needs.check-version.outputs.version }}
+            draft: false
+            prerelease: false
 
   build-release:
+    needs: [check-version, create-release]
+    if: needs.check-version.outputs.should_release == 'true'
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -86,43 +88,43 @@ jobs:
           command: build
           args: --release --target ${{ matrix.target }}
 
-#      - name: Generate SHA256
-#        shell: bash
-#        run: |
-#          binary_path="target/${{ matrix.target }}/release/horizon"
-#          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-#            binary_path="target/${{ matrix.target }}/release/horizon.exe"
-#          fi
-#          
-#          if [ ! -f "$binary_path" ]; then
-#            echo "Binary not found at $binary_path"
-#            ls -la target/
-#            ls -la target/${{ matrix.target }}/release/
-#            exit 1
-#          fi
-#          
-#          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-#            sha256sum "$binary_path" > "$binary_path.sha256"
-#          else
-#            shasum -a 256 "$binary_path" > "$binary_path.sha256"
-#          fi
+      - name: Generate SHA256
+        shell: bash
+        run: |
+          binary_path="target/${{ matrix.target }}/release/horizon"
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            binary_path="target/${{ matrix.target }}/release/horizon.exe"
+          fi
+          
+          if [ ! -f "$binary_path" ]; then
+            echo "Binary not found at $binary_path"
+            ls -la target/
+            ls -la target/${{ matrix.target }}/release/
+            exit 1
+          fi
+          
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            sha256sum "$binary_path" > "$binary_path.sha256"
+          else
+            shasum -a 256 "$binary_path" > "$binary_path.sha256"
+          fi
 
-#      - name: Upload Binary
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ needs.create-release.outputs.upload_url }}
-#          asset_path: ${{ matrix.bin_path }}
-#          asset_name: ${{ matrix.asset_name }}
-#          asset_content_type: application/octet-stream
+      - name: Upload Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ matrix.bin_path }}
+          asset_name: ${{ matrix.asset_name }}
+          asset_content_type: application/octet-stream
 
-#      - name: Upload SHA256
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ needs.create-release.outputs.upload_url }}
-#          asset_path: ${{ matrix.bin_path }}.sha256
-#          asset_name: ${{ matrix.asset_name }}.sha256
-#          asset_content_type: text/plain
+      - name: Upload SHA256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ matrix.bin_path }}.sha256
+          asset_name: ${{ matrix.asset_name }}.sha256
+          asset_content_type: text/plain
