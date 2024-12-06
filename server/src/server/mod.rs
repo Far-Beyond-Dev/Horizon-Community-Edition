@@ -194,7 +194,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
         };
     let casted_struct: &unreal_adapter_horizon::Plugin = &plugin.instance;
 
-    // unreal_adapter.player_joined(socket, player_arc);
+    casted_struct.player_joined(socket, player_arc);
 }
 
 //-----------------------------------------------------------------------------
