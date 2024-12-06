@@ -178,6 +178,8 @@ fn generate_imports_file(plugin_paths: &[(String, String, String)], out_dir: &Pa
     writeln!(file, "use std::collections::HashMap;\n")?;
     for (i, (name, _, _)) in plugin_paths.iter().enumerate() {
         write!(file, "pub use {};\n", name)?;
+        write!(file, "pub use {}::*;\n", name)?;
+        write!(file, "pub use {}::Plugin as {}_plugin;\n", name, name)?;
     }
     writeln!(file, "\n");
 
