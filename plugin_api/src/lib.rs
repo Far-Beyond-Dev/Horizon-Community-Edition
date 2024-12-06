@@ -11,6 +11,7 @@ const PLUGIN_API_VERSION: Version = Version {
     hotfix: 0
 };
 
+#[derive(Clone)]
 pub struct PluginManager {
     plugins: HashMap<String,(Pluginstate,Plugin)>
 }
@@ -22,12 +23,11 @@ macro_rules! load_plugins {
             let mut plugins = HashMap::new();
             $(
                 plugins.insert(
-                    stringify!($plugin),
-                    LoadedPlugin {
-                        instance: <$plugin::Plugin as $plugin::PluginConstruct>::new(plugins.clone()),
-                    }
+                    stringify!($plugin).to_string(),
+                    (Pluginstate::ACTIVE, <$plugin::Plugin as $plugin::PluginConstruct>::new(plugins.clone())),
                 );
             )*
+            
             plugins
         }
     };
@@ -55,8 +55,8 @@ impl PluginManager {
         self.plugins
     }
 
-    pub fn load_all(&self) ->  HashMap<String, LoadedPlugin> {
-        let plugins = plugin_imports::load_plugins();
+    pub fn load_all(&mut self) ->  HashMap<String, LoadedPlugin> {
+        self.plugins = plugin_imports::load_plugins();
     
         //let my_test_plugin = get_plugin!(test_plugin, plugins);
         //let result = my_test_plugin.thing();

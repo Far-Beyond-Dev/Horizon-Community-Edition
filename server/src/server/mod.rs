@@ -98,8 +98,12 @@ struct HorizonThread {
 
 impl HorizonThread {
     fn new() -> Self {
-        let plugin_manager = plugin_api::PluginManager::new();
+        let mut plugin_manager = plugin_api::PluginManager::new();
         let plugins = plugin_manager.load_all();
+
+        plugins.iter().for_each(|(name, plugin)| {
+            log_info!(LOGGER, "PLUGIN", "Loaded plugin: {}", name);
+        });
         Self {
             players: Mutex::new(Vec::new()),
             plugins,

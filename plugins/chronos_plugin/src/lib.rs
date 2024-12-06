@@ -1,5 +1,6 @@
 
 use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
+use horizon_plugin_api::Pluginstate;
 use parking_lot::RwLock;
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH, Duration};
@@ -61,12 +62,12 @@ impl TimeState {
 }
 
 pub trait PluginConstruct {
-    fn new(plugins: HashMap<&'static str, LoadedPlugin>) -> Plugin;    
+    fn new(plugins: HashMap<String, (Pluginstate, Plugin)>) -> Plugin;    
 }
 
 // Implement constructor for Plugin
 impl PluginConstruct for Plugin {
-    fn new(_plugins: HashMap<&'static str, LoadedPlugin>) -> Plugin {
+    fn new(plugins: HashMap<String, (Pluginstate, Plugin)>) -> Plugin {
         Self::start_time_server();
         Plugin {}
     }
