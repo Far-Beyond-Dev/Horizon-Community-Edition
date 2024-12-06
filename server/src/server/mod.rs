@@ -180,21 +180,15 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     let player_arc: Arc<parking_lot::RwLock<horizon_data_types::Player>> = Arc::new(parking_lot::RwLock::new(player));
     //let unreal_adapter = plugin_api::get_plugin!(player_lib, target_thread.plugins);
     // let unreal_adapter = 
-    let thread_plugins = target_thread.plugins;
-    let plugin_name = match thread_plugins.get(stringify!(unreal_adapter_horizon)) {
-        Some(plugin) => plugin,
-        None => {
-            log_error!(LOGGER, "PLUGIN", "Plugin unreal_adapter_horizon not found");
-            return;
-        }
-    };
-    let casted_struct = match plugin_name.instance.downcast_ref::<unreal_adapter_horizon::Plugin>() {
-        Some(plugin) => plugin,
-        None => {
-            log_error!(LOGGER, "PLUGIN", "Failed to cast plugin to unreal_adapter_horizon::Plugin");
-            return;
-        }
-    };
+    let thread_plugins = target_thread.plugins.clone();
+    let plugin = match thread_plugins.get(stringify!(unreal_adapter_horizon)) {
+            Some(plugin) => plugin,
+            None => {
+                log_error!(LOGGER, "PLUGIN", "Plugin unreal_adapter_horizon not found");
+                return;
+            }
+        };
+    let casted_struct = &plugin.instance as &unreal_adapter_horizon::Plugin;
 
     // unreal_adapter.player_joined(socket, player_arc);
 }
