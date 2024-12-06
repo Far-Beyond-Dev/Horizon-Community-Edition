@@ -29,7 +29,7 @@ PebbleVault = "0.6.1"
 uuid = "1.11.0"
 nalgebra = "0.33.2"
 rstar = "0.12.2"
-horizon-plugin-api = "0.1.12"
+horizon-plugin-api = "0.1.13"
 
 # ADD ANY CUSTOM DEPENDENCIES BELOW
 
