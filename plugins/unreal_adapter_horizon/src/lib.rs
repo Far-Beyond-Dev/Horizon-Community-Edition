@@ -35,7 +35,8 @@ impl PluginConstruct for Plugin {
 // Implement the trait for Plugin
 impl PluginAPI for Plugin {
     fn player_joined(&self, socket: SocketRef, player: Arc<Player>) {        
-        setup_listeners(socket, player);
+        setup_listeners(socket.clone(), player);
+        println!("Welcome Player {} to Unreal Engine Server!", socket.id.to_string());
     }
 }
 

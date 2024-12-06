@@ -34,6 +34,13 @@ use uuid::Uuid;
 pub mod config;
 mod event_rep;
 use plugin_api::plugin_imports::*;
+use lazy_static::lazy_static;
+
+
+lazy_static! {
+    static ref SERVER: Server = Server::new().unwrap();
+}
+
 
 // Server state management
 
@@ -145,7 +152,7 @@ async fn handle_socket_ack(Data(data): Data<serde_json::Value>, ack: AckSender) 
     }
 }
 
-fn on_connect(server: Server, socket: SocketRef, Data(data): Data<serde_json::Value>) {
+fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     log_info!(LOGGER, "SOCKET NET", "New connection from {}", socket.id);
 
     if let Err(e) = socket.emit("auth", &data) {
@@ -156,7 +163,7 @@ fn on_connect(server: Server, socket: SocketRef, Data(data): Data<serde_json::Va
     // TODO: Implement proper thread management via round robin
     let threadid = 0;
 
-    let server_instance = server.get_instance();
+    let server_instance = SERVER.get_instance();
     let server_instance_read = server_instance.read();
     let threads = server_instance_read.threads.read();
     
@@ -186,7 +193,7 @@ pub async fn start() -> anyhow::Result<()> {
 
     let (layer, io) = SocketIo::new_layer();
     // Initialize server state so we can spawn threads
-    let server = Server::new()?;
+
     let thread_count = config::SERVER_CONFIG
         .get()
         .map(|config| config.num_thread_pools)
@@ -198,7 +205,7 @@ pub async fn start() -> anyhow::Result<()> {
 
     let mut handles = vec![];
     let spawn_futures: Vec<_> = (0..thread_count).map(|_| {
-        let server_instance = server.get_instance();
+        let server_instance = SERVER.get_instance();
         {
             let mut value = handles.clone();
             async move {
@@ -210,8 +217,8 @@ pub async fn start() -> anyhow::Result<()> {
     }).collect();
 
     // Configure socket namespaces
-    // io.ns("/", on_connect);
-    // io.ns("/custom", on_connect);
+    io.ns("/", on_connect);
+    io.ns("/custom", on_connect);
     // Build the application with routes
     let app = Router::new()
         .route("/", get(|| async { "Horizon Server Running" }))
