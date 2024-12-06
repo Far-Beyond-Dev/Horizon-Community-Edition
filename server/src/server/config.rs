@@ -26,12 +26,10 @@ pub fn server_config() -> Result<Arc<ServerConfig>> {
     Ok(SERVER_CONFIG.get_or_init(|| Arc::new(config)).clone())
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct ServerConfig {
     pub players_per_pool: u32,
     pub num_thread_pools: u32,
-    pub address: String,
-    pub port: u16,
 }
 
 impl ServerConfig {
@@ -39,8 +37,6 @@ impl ServerConfig {
         Self {
             players_per_pool: 5000,
             num_thread_pools: 60,
-            address: "0.0.0.0".to_string(),
-            port: 3000,
         }
     }
     fn log_level() -> String {

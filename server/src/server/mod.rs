@@ -16,24 +16,31 @@
 
 use crate::LOGGER;
 use anyhow::{Context, Result};
-use axum::{routing::get, Router};
+use axum::{routing::get, serve, Router};
 use config::ServerConfig;
 use horizon_data_types::Player;
-use horizon_plugin_api::LoadedPlugin;
-use std::time::Duration;
 use horizon_logger::{log_critical, log_debug, log_error, log_info, log_warn};
 use parking_lot::RwLock;
 use plugin_api::{Plugin, Pluginstate};
+use horizon_plugin_api::LoadedPlugin;
 use socketioxide::{
     extract::{AckSender, Data, SocketRef},
     SocketIo,
 };
-use std::collections::HashMap;
+use std::{collections::HashMap};
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use uuid::Uuid;
 pub mod config;
-pub mod event_rep;
-pub mod vault_lib;
+mod event_rep;
+use plugin_api::plugin_imports::*;
+use lazy_static::lazy_static;
+
+
+lazy_static! {
+    static ref SERVER: Server = Server::new().unwrap();
+}
+
 
 // Server state management
 
@@ -41,9 +48,8 @@ pub mod vault_lib;
 // Horizon Server Struct
 //-----------------------------------------------------------------------------
 pub struct HorizonServer {
-    config: Arc<ServerConfig>,
+    config: ServerConfig,
     threads: RwLock<Vec<Arc<HorizonThread>>>,
-    total_timings: RwLock<HashMap<String, Duration>>,
 }
 
 struct Server {
@@ -64,29 +70,20 @@ impl Server {
 impl HorizonServer {
     fn new() -> Result<Self> {
         Ok(Self {
-            config: config::server_config().expect("Failed to load server config"),
+            config: *config::server_config()?,
             threads: RwLock::new(Vec::new()),
-            total_timings: RwLock::new(HashMap::new()),
         })
     }
 
     fn spawn_thread(&self) -> Result<usize> {
         let thread = HorizonThread::new();
-        let plugins_loaddata = thread.plugins_loaddata.clone();
         let thread_id = {
             let mut threads = self.threads.write();
             threads.push(thread.into());
-            threads.len() - 1
+            let id = threads.len() - 1;
+            id
         };
-
-        plugins_loaddata.0.iter().for_each(|(name, _)| {
-            plugins_loaddata.1.get(name).map(|duration| {
-            let mut total_timings = self.total_timings.write();
-            total_timings.entry(name.to_string())
-                .and_modify(|e| *e += *duration)
-                .or_insert(*duration);
-            });
-        });
+        
 
         Ok(thread_id)
     }
@@ -97,23 +94,20 @@ impl HorizonServer {
 //-----------------------------------------------------------------------------
 struct HorizonThread {
     players: Mutex<Vec<Player>>,
-    plugins_loaddata: (HashMap<&'static str, LoadedPlugin>, HashMap<&'static str, Duration>),
-    plugins: HashMap<std::string::String, (Pluginstate, Plugin)>,
+    plugins: HashMap<String, LoadedPlugin>,
     handle: tokio::task::JoinHandle<()>,
 }
 
 impl HorizonThread {
     fn new() -> Self {
         let plugin_manager = plugin_api::PluginManager::new();
-        let plugins_loaddata = &plugin_manager.load_all();
-        let plugins = plugin_manager.get_plugins();
+        let plugins = plugin_manager.load_all();
         Self {
             players: Mutex::new(Vec::new()),
-            plugins: plugins,
-            plugins_loaddata: plugins_loaddata.clone(),
+            plugins,
             handle: tokio::spawn(async move {
                 loop {
-                    tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+                    tokio::time::sleep(std::time::Duration::from_millis(10)).await;
                 }
             }),
         }
@@ -161,15 +155,38 @@ async fn handle_socket_ack(Data(data): Data<serde_json::Value>, ack: AckSender) 
 }
 
 fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
-    log_info!(LOGGER, "SOCKET NET", "New connection from {}", socket.id);
+    //socket.on("connect", |socket: SocketRef, _| {
+        log_info!(LOGGER, "SOCKET NET", "New connection from {}", socket.id);
+    //});
 
     if let Err(e) = socket.emit("auth", &data) {
         log_error!(LOGGER, "SOCKET NET", "Failed to send auth: {}", e);
         return;
     }
 
+    // TODO: Implement proper thread management via round robin
+    let threadid = 0;
+
+    let server_instance = SERVER.get_instance();
+    let server_instance_read = server_instance.read();
+    let threads = server_instance_read.threads.read();
+    
     socket.on("message", handle_socket_message);
     socket.on("message-with-ack", handle_socket_ack);
+
+    let player = horizon_data_types::Player::new(
+            socket.clone(),
+            Uuid::new_v4()
+        );
+    
+    let target_thread = Arc::clone(&threads[threadid]);
+    target_thread.add_player(player.clone());
+    
+    let player_arc: Arc<horizon_data_types::Player> = Arc::new(player);
+    let unreal_adapter = plugin_api::get_plugin!(unreal_adapter_horizon, target_thread.plugins);
+    unreal_adapter.player_joined(socket, player_arc);
+
+
 }
 
 //-----------------------------------------------------------------------------
@@ -179,61 +196,61 @@ pub async fn start() -> anyhow::Result<()> {
     let start_time = std::time::Instant::now();
 
     let (layer, io) = SocketIo::new_layer();
-    let server = Server::new()?;
+    // Initialize server state so we can spawn threads
+
     let thread_count = config::SERVER_CONFIG
         .get()
-        .map(|config: &Arc<ServerConfig>| config.num_thread_pools)
-        .unwrap();
+        .map(|config| config.num_thread_pools)
+        .unwrap_or_default();
 
-    let address = config::SERVER_CONFIG
-        .get()
-        .map(|config: &Arc<ServerConfig>| config.address.clone())
-        .unwrap();
+    let thread_count = 32;
 
-    let port = config::SERVER_CONFIG
-        .get()
-        .map(|config: &Arc<ServerConfig>| config.port)
-        .unwrap();
+    println!("Preparing to start {} threads", thread_count);
+    // Start 10 threads initially for handling player connections
 
-    // Create futures for spawning threads
-    let spawn_futures: Vec<_> = (0..thread_count)
-        .map(|_| {
-            let server_instance = server.get_instance();
-            async move {
-                server_instance.read().spawn_thread()
+    //let handles = Vec::new();
+
+    let handles = Arc::new(Mutex::new(Vec::new()));
+    let server_instance = &SERVER.get_instance();
+    let spawn_futures: Vec<_> = (0..thread_count).map(|_| {
+        println!("Spawning thread");
+
+        let handles = handles.clone();
+        async move {
+            if let Ok(thread_id) = server_instance.read().spawn_thread() {
+                println!("Attempting to obtain handles lock");
+                handles.lock().await.push(thread_id);
+                println!("Handle lock obtained");
+
+                println!("Thread spawned: {}", thread_id);
+            } else {
+                println!("Failed to spawn thread");
             }
-        })
-        .collect();
+        }
+    }).collect();
 
-    // Wait for all threads to complete spawning
-    let thread_results = futures::future::join_all(spawn_futures).await;
-    
-    // Now that all threads have completed, we can safely access timing data
-    {
-        let total_timings = server.instance.read().total_timings.read().clone();
-        total_timings.iter().for_each(|(name, duration)| {
-            log_info!(LOGGER, "SERVER", "Plugin {} took {:?}", name, duration);
-        });
-    }
+
+    // Configure socket namespaces
+    io.ns("/", on_connect);
+    io.ns("/custom", on_connect);
+    println!("Accepting socket connections");
+    // Build the application with routes
+    let app = Router::new()
+        .route("/", get(|| async { "Horizon Server Running" }))
+        .layer(layer);
+    // Start the server
+    let address = "0.0.0.0:3000";
+    log_info!(LOGGER, "SOCKET NET", "Starting server on {}", address);
+
+    futures::future::join_all(spawn_futures).await;
 
     log_info!(LOGGER, "SERVER", "Spawned {} threads", thread_count);
     let elapsed = start_time.elapsed();
     log_info!(LOGGER, "SERVER", "Server initialization took {:?}", elapsed);
 
-    // Configure socket namespaces and start server
-    io.ns("/", on_connect);
-    io.ns("/custom", on_connect);
-    
-    let app = Router::new()
-        .route("/", get(|| async { "Horizon Server Running" }))
-        .layer(layer);
-
-    let full_address = format!("{}:{}", address, port);
-    log_info!(LOGGER, "SOCKET NET", "Starting server on {}", full_address);
-
-    let listener = tokio::net::TcpListener::bind(&full_address)
+    let listener = tokio::net::TcpListener::bind(&address)
         .await
-        .context(format!("Failed to bind to {}", full_address))?;
+        .context(format!("Failed to bind to {}", address))?;
     axum::serve(listener, app)
         .await
         .context("Failed to start server")?;
