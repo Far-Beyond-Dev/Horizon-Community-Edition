@@ -16,10 +16,11 @@
 
 use crate::LOGGER;
 use anyhow::{Context, Result};
-use axum::{routing::get, Router};
+use axum::{routing::get, serve, Router};
 use config::ServerConfig;
 use horizon_data_types::Player;
 use horizon_logger::{log_critical, log_debug, log_error, log_info, log_warn};
+use horizon_plugin_api::LoadedPlugin;
 use parking_lot::RwLock;
 use plugin_api::{Plugin, Pluginstate};
 use socketioxide::{
@@ -29,8 +30,16 @@ use socketioxide::{
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use uuid::Uuid;
 pub mod config;
 mod event_rep;
+use lazy_static::lazy_static;
+use plugin_api::plugin_imports::*;
+
+
+lazy_static! {
+    static ref SERVER: Server = Server::new().unwrap();
+}
 
 // Server state management
 
@@ -70,7 +79,8 @@ impl HorizonServer {
         let thread_id = {
             let mut threads = self.threads.write();
             threads.push(thread.into());
-            threads.len() - 1
+            let id = threads.len() - 1;
+            id
         };
 
         Ok(thread_id)
@@ -82,21 +92,24 @@ impl HorizonServer {
 //-----------------------------------------------------------------------------
 struct HorizonThread {
     players: Mutex<Vec<Player>>,
-    plugins: HashMap<std::string::String, (Pluginstate, Plugin)>,
+    plugins: HashMap<String, LoadedPlugin>,
     handle: tokio::task::JoinHandle<()>,
 }
 
 impl HorizonThread {
     fn new() -> Self {
-        let plugin_manager = plugin_api::PluginManager::new();
-        plugin_manager.load_all();
-        let plugins = plugin_manager.get_plugins();
+        let mut plugin_manager = plugin_api::PluginManager::new();
+        let plugins = plugin_manager.load_all();
+
+        plugins.iter().for_each(|(name, plugin)| {
+            log_info!(LOGGER, "PLUGIN", "Loaded plugin: {}", name);
+        });
         Self {
             players: Mutex::new(Vec::new()),
-            plugins: plugins,
+            plugins,
             handle: tokio::spawn(async move {
                 loop {
-                    tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+                    tokio::time::sleep(std::time::Duration::from_millis(10)).await;
                 }
             }),
         }
@@ -144,15 +157,35 @@ async fn handle_socket_ack(Data(data): Data<serde_json::Value>, ack: AckSender) 
 }
 
 fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
+    //socket.on("connect", |socket: SocketRef, _| {
     log_info!(LOGGER, "SOCKET NET", "New connection from {}", socket.id);
+    //});
 
     if let Err(e) = socket.emit("auth", &data) {
         log_error!(LOGGER, "SOCKET NET", "Failed to send auth: {}", e);
         return;
     }
 
+    // TODO: Implement proper thread management via round robin
+    let threadid = 0;
+
+    let server_instance = SERVER.get_instance();
+    let server_instance_read = server_instance.read();
+    let threads = server_instance_read.threads.read();
+
     socket.on("message", handle_socket_message);
     socket.on("message-with-ack", handle_socket_ack);
+
+    let player = horizon_data_types::Player::new(socket.clone(), Uuid::new_v4());
+
+    let target_thread = Arc::clone(&threads[threadid]);
+    target_thread.add_player(player.clone());
+
+    let player_arc: Arc<horizon_data_types::Player> = Arc::new(player);
+
+    let casted_struct = plugin_api::get_plugin!(unreal_adapter_horizon, target_thread.plugins);
+
+    casted_struct.player_joined(socket, player_arc);
 }
 
 //-----------------------------------------------------------------------------
@@ -163,32 +196,44 @@ pub async fn start() -> anyhow::Result<()> {
 
     let (layer, io) = SocketIo::new_layer();
     // Initialize server state so we can spawn threads
-    let server = Server::new()?;
+
     let thread_count = config::SERVER_CONFIG
         .get()
         .map(|config| config.num_thread_pools)
-        .unwrap();
+        .unwrap_or_default();
 
+    let thread_count = 32;
+
+    println!("Preparing to start {} threads", thread_count);
     // Start 10 threads initially for handling player connections
-    let mut count = 0;
+
     //let handles = Vec::new();
 
-    let mut handles = vec![];
-    let spawn_futures: Vec<_> = (0..thread_count).map(|_| {
-        let server_instance = server.get_instance();
-        {
-            let mut value = handles.clone();
+    let handles = Arc::new(Mutex::new(Vec::new()));
+    let server_instance = &SERVER.get_instance();
+    let spawn_futures: Vec<_> = (0..thread_count)
+        .map(|_| {
+            println!("Spawning thread");
+
+            let handles = handles.clone();
             async move {
                 if let Ok(thread_id) = server_instance.read().spawn_thread() {
-                    value.push(thread_id);
+                    println!("Attempting to obtain handles lock");
+                    handles.lock().await.push(thread_id);
+                    println!("Handle lock obtained");
+
+                    println!("Thread spawned: {}", thread_id);
+                } else {
+                    println!("Failed to spawn thread");
                 }
             }
-        }
-    }).collect();
+        })
+        .collect();
 
     // Configure socket namespaces
     io.ns("/", on_connect);
     io.ns("/custom", on_connect);
+    println!("Accepting socket connections");
     // Build the application with routes
     let app = Router::new()
         .route("/", get(|| async { "Horizon Server Running" }))
@@ -198,6 +243,7 @@ pub async fn start() -> anyhow::Result<()> {
     log_info!(LOGGER, "SOCKET NET", "Starting server on {}", address);
 
     futures::future::join_all(spawn_futures).await;
+
     log_info!(LOGGER, "SERVER", "Spawned {} threads", thread_count);
     let elapsed = start_time.elapsed();
     log_info!(LOGGER, "SERVER", "Server initialization took {:?}", elapsed);

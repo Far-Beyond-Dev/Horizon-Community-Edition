@@ -2,26 +2,26 @@ use horizon_data_types::Player;
 use socketioxide::extract::SocketRef;
 pub use horizon_plugin_api::{Plugin, Pluginstate, LoadedPlugin};
 use socketioxide::packet::Str;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 use std::sync::Arc;
 use std::collections::HashMap;
 use PebbleVault;
 
 // Define the trait properly
 pub trait PluginAPI {    
-    fn player_joined(&self, socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>);   
+    fn player_joined(&self, socket: SocketRef, player: Arc<RwLock<horizon_data_types::Player>>);   
 }
 
 pub trait PluginConstruct {
     fn get_structs(&self) -> Vec<&str>;
     // If you want default implementations, mark them with 'default'
-    fn new(plugins: HashMap<&'static str, LoadedPlugin>) -> Plugin;
+    fn new(plugins: HashMap<String, (Pluginstate, Plugin)>) -> Plugin;
     
 }
 
 // Implement constructor separately
 impl PluginConstruct for Plugin {
-    fn new(plugins: HashMap<&'static str, LoadedPlugin>) -> Plugin {        
+    fn new(plugins: HashMap<String, (Pluginstate, Plugin)>) -> Plugin {        
         Plugin {}
     }
 
@@ -32,8 +32,9 @@ impl PluginConstruct for Plugin {
 
 // Implement the trait for Plugin
 impl PluginAPI for Plugin {
-    fn player_joined(&self, socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>) {
-        setup_listeners(socket, players);
+    fn player_joined(&self, socket: SocketRef, player: Arc<RwLock<horizon_data_types::Player>>) {
+        println!("player_lib");
+        setup_listeners(socket, player);
     }
 }
 
@@ -85,6 +86,6 @@ impl PlayerAPI for Player {
 
 
 
-fn setup_listeners(socket: SocketRef, players: Arc<RwLock<Vec<horizon_data_types::Player>>>) {
+fn setup_listeners(socket: SocketRef, players: Arc<RwLock<horizon_data_types::Player>>) {
     socket.on("foo", || println!("bar"));
 }
