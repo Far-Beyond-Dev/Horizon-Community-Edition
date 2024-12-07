@@ -80,7 +80,7 @@ impl PluginAPI for Plugin {
     /// # Examples
     ///
     /// ```
-    /// # use pebble_vault::PebbleVault;
+    /// # use PebbleVault::PebbleVault;
     /// # let pebble_vault = PebbleVault::new().unwrap();
     /// let center = [0.0, 0.0, 0.0];
     /// let radius = 1000.0;
@@ -112,7 +112,7 @@ impl PluginAPI for Plugin {
     /// # Examples
     ///
     /// ```
-    /// # use pebble_vault::PebbleVault;
+    /// # use PebbleVault::PebbleVault;
     /// # use uuid::Uuid;
     /// # let pebble_vault = PebbleVault::new().unwrap();
     /// # let region_id = pebble_vault.create_or_load_region([0.0, 0.0, 0.0], 1000.0).unwrap();
@@ -145,7 +145,7 @@ impl PluginAPI for Plugin {
     /// # Examples
     ///
     /// ```
-    /// # use pebble_vault::{PebbleVault, PebbleVaultCustomData};
+    /// # use PebbleVault::{PebbleVault, PebbleVaultCustomData};
     /// # use uuid::Uuid;
     /// # let pebble_vault = PebbleVault::new().unwrap();
     /// # let region_id = pebble_vault.create_or_load_region([0.0, 0.0, 0.0], 1000.0).unwrap();
@@ -177,7 +177,7 @@ impl PluginAPI for Plugin {
     /// # Examples
     ///
     /// ```
-    /// # use pebble_vault::{PebbleVault, PebbleVaultCustomData};
+    /// # use PebbleVault::{PebbleVault, PebbleVaultCustomData};
     /// # use uuid::Uuid;
     /// # let pebble_vault = PebbleVault::new().unwrap();
     /// # let region_id = pebble_vault.create_or_load_region([0.0, 0.0, 0.0], 1000.0).unwrap();
@@ -206,7 +206,7 @@ impl PluginAPI for Plugin {
     /// # Examples
     ///
     /// ```
-    /// # use pebble_vault::{PebbleVault, PebbleVaultCustomData};
+    /// # use PebbleVault::{PebbleVault, PebbleVaultCustomData};
     /// # use uuid::Uuid;
     /// # let pebble_vault = PebbleVault::new().unwrap();
     /// # let region_id = pebble_vault.create_or_load_region([0.0, 0.0, 0.0], 1000.0).unwrap();
@@ -238,7 +238,7 @@ impl PluginAPI for Plugin {
     /// # Examples
     ///
     /// ```
-    /// # use pebble_vault::{PebbleVault, PebbleVaultCustomData};
+    /// # use PebbleVault::{PebbleVault, PebbleVaultCustomData};
     /// # use uuid::Uuid;
     /// # let pebble_vault = PebbleVault::new().unwrap();
     /// # let region_id = pebble_vault.create_or_load_region([0.0, 0.0, 0.0], 1000.0).unwrap();
@@ -273,7 +273,7 @@ impl PluginAPI for Plugin {
     /// # Examples
     ///
     /// ```
-    /// # use pebble_vault::{PebbleVault, PebbleVaultCustomData};
+    /// # use PebbleVault::{PebbleVault, PebbleVaultCustomData};
     /// # use uuid::Uuid;
     /// # let pebble_vault = PebbleVault::new().unwrap();
     /// # let region1_id = pebble_vault.create_or_load_region([0.0, 0.0, 0.0], 1000.0).unwrap();
@@ -300,7 +300,7 @@ impl PluginAPI for Plugin {
     /// # Examples
     ///
     /// ```
-    /// # use pebble_vault::PebbleVault;
+    /// # use PebbleVault::PebbleVault;
     /// # let pebble_vault = PebbleVault::new().unwrap();
     /// pebble_vault.persist_to_disk().expect("Failed to persist data");
     /// println!("Data persisted to disk");
@@ -324,7 +324,7 @@ impl PluginAPI for Plugin {
     /// # Examples
     ///
     /// ```
-    /// # use pebble_vault::PebbleVault;
+    /// # use PebbleVault::PebbleVault;
     /// # use uuid::Uuid;
     /// # let pebble_vault = PebbleVault::new().unwrap();
     /// # let region_id = pebble_vault.create_or_load_region([0.0, 0.0, 0.0], 1000.0).unwrap();
