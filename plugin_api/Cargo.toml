@@ -16,7 +16,7 @@ horizon_data_types = "0.4.0"
 tokio = { version = "1.41.1", features = ["rt", "net", "rt-multi-thread"] }
 uuid = "1.11.0"
 socketioxide = "0.15.0"
-horizon-plugin-api = "0.1.11"
+horizon-plugin-api = "0.2.0"
 #
 #
 #

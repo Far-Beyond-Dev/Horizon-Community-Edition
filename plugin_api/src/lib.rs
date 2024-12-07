@@ -1,7 +1,6 @@
 use std::collections::HashMap;
-pub use horizon_plugin_api::{Plugin, Pluginstate, Version, get_plugin, LoadedPlugin};
+pub use horizon_plugin_api::{Plugin, Pluginstate, Version, get_plugin, get_type_from_plugin, LoadedPlugin};
 
-pub mod plugin_macro;
 pub mod plugin_imports;
 
 // Define the current plugin version
