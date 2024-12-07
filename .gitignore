@@ -190,3 +190,5 @@ voronoi_edges.txt
 load_test.db-journal
 /deps
 /.cargo
+
+.DS_Store
