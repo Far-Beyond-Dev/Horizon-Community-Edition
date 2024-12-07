@@ -36,7 +36,6 @@ mod event_rep;
 use lazy_static::lazy_static;
 use plugin_api::plugin_imports::*;
 
-
 lazy_static! {
     static ref SERVER: Server = Server::new().unwrap();
 }
@@ -183,9 +182,9 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
 
     let player_arc: Arc<horizon_data_types::Player> = Arc::new(player);
 
-    let casted_struct = plugin_api::get_plugin!(unreal_adapter_horizon, target_thread.plugins);
+    // let casted_struct = plugin_api::get_plugin!(unreal_adapter_horizon, target_thread.plugins);
 
-    casted_struct.player_joined(socket, player_arc);
+    // casted_struct.player_joined(socket, player_arc);
 }
 
 //-----------------------------------------------------------------------------
