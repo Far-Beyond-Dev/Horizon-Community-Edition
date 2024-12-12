@@ -13,6 +13,9 @@ pub use player_lib::Plugin as player_lib_plugin;
 pub use stars_beyond_plugin;
 pub use stars_beyond_plugin::*;
 pub use stars_beyond_plugin::Plugin as stars_beyond_plugin_plugin;
+pub use unreal_adapter;
+pub use unreal_adapter::*;
+pub use unreal_adapter::Plugin as unreal_adapter_plugin;
 pub use unreal_adapter_horizon;
 pub use unreal_adapter_horizon::*;
 pub use unreal_adapter_horizon::Plugin as unreal_adapter_horizon_plugin;
@@ -24,6 +27,7 @@ pub fn load_plugins() -> HashMap<String, (Pluginstate, Plugin)> {
         chronos_plugin,
         player_lib,
         stars_beyond_plugin,
+        unreal_adapter,
         unreal_adapter_horizon
     );
     plugins
