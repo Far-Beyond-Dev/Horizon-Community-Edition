@@ -180,7 +180,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     let player = horizon_data_types::Player::new(socket.clone(), Uuid::new_v4());
 
     let target_thread = Arc::clone(&threads[threadid]);
-    target_thread.add_player(player.clone());
+    let _ = target_thread.add_player(player.clone());
 
     #[allow(unused_variables)]
     let player_arc: Arc<horizon_data_types::Player> = Arc::new(player);

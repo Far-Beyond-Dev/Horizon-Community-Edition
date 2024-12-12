@@ -35,7 +35,7 @@ use horizon_logger::{HorizonLogger, log_info, log_debug, log_warn, log_error, lo
 
 mod server;
 mod splash;
-mod collision;
+//mod collision;
 
 //------------------------------------------------------------------------------
 // Global Logger Configuration
