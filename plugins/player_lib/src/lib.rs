@@ -1,11 +1,9 @@
 use horizon_data_types::Player;
 use socketioxide::extract::SocketRef;
 pub use horizon_plugin_api::{Plugin, Pluginstate, LoadedPlugin};
-use socketioxide::packet::Str;
 use parking_lot::RwLock;
 use std::sync::Arc;
 use std::collections::HashMap;
-use PebbleVault;
 
 // Define the trait properly
 pub trait PluginAPI {    
@@ -21,6 +19,7 @@ pub trait PluginConstruct {
 
 // Implement constructor separately
 impl PluginConstruct for Plugin {
+    #[allow(unused_variables)]
     fn new(plugins: HashMap<String, (Pluginstate, Plugin)>) -> Plugin {        
         Plugin {}
     }
@@ -42,6 +41,7 @@ impl PluginAPI for Plugin {
 // Plugin Implementation
 //-----------------------------------------------------------------------------
 
+#[allow(unused_variables, dead_code)]
 trait PlayerAPI {
     fn player_move(&mut self, x: f64, y: f64, z: f64, socket: SocketRef);
     fn set_spawn(&mut self, x: f64, y: f64, z: f64, socket: SocketRef);
@@ -52,30 +52,36 @@ trait PlayerAPI {
 }
 
 impl PlayerAPI for Player {
+    #[allow(unused_variables)]
     fn player_move(&mut self, x: f64, y: f64, z: f64, socket: SocketRef) {
         self.transform.as_mut().expect("Failed to access location").location.expect("failed to access axis").x = x;
         self.transform.as_mut().expect("Failed to access location").location.expect("failed to access axis").y = y;
         self.transform.as_mut().expect("Failed to access location").location.expect("failed to access axis").z = z;
     }
 
+    #[allow(unused_variables)]
     fn set_spawn(&mut self, x: f64, y: f64, z: f64, socket: SocketRef) {
     //    self.spawn.as_mut().expect("Failed to access spawn").location.expect("failed to access axis").x = x;
     //    self.spawn.as_mut().expect("Failed to access spawn").location.expect("failed to access axis").y = y;
     //    self.spawn.as_mut().expect("Failed to access spawn").location.expect("failed to access axis").z = z;
     }
 
+    #[allow(unused_variables)]
     fn kill(&mut self, socket: SocketRef) {
     //    Send to death screen
     }
 
+    #[allow(unused_variables)]
     fn respawn(&mut self, socket: SocketRef) {
     //    Send to spawn
     }
 
+    #[allow(unused_variables)]
     fn set_health(&mut self, health: f64, socket: SocketRef) {
     //    self.health = health;
     }
 
+    #[allow(unused_variables)]
     fn modify_health(&mut self, health: f64, socket: SocketRef) {
     //    self.health += health;
     }
@@ -85,7 +91,7 @@ impl PlayerAPI for Player {
 
 
 
-
+#[allow(unused_variables)]
 fn setup_listeners(socket: SocketRef, players: Arc<RwLock<horizon_data_types::Player>>) {
     socket.on("foo", || println!("bar"));
 }

@@ -16,13 +16,12 @@
 
 use crate::LOGGER;
 use anyhow::{Context, Result};
-use axum::{routing::get, serve, Router};
+use axum::{routing::get, Router};
 use config::ServerConfig;
 use horizon_data_types::Player;
-use horizon_logger::{log_critical, log_debug, log_error, log_info, log_warn};
+use horizon_logger::{log_debug, log_error, log_info};
 use horizon_plugin_api::LoadedPlugin;
 use parking_lot::RwLock;
-use plugin_api::{Plugin, Pluginstate};
 use socketioxide::{
     extract::{AckSender, Data, SocketRef},
     SocketIo,
@@ -32,9 +31,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 pub mod config;
-mod event_rep;
 use lazy_static::lazy_static;
-use plugin_api::plugin_imports::*;
 
 lazy_static! {
     static ref SERVER: Server = Server::new().unwrap();
@@ -45,6 +42,8 @@ lazy_static! {
 //-----------------------------------------------------------------------------
 // Horizon Server Struct
 //-----------------------------------------------------------------------------
+
+#[allow(dead_code)]
 pub struct HorizonServer {
     config: ServerConfig,
     threads: RwLock<Vec<Arc<HorizonThread>>>,
@@ -89,6 +88,7 @@ impl HorizonServer {
 //-----------------------------------------------------------------------------
 // Horizon Thread Structhorizon_plugin_api::Plugin
 //-----------------------------------------------------------------------------
+#[allow(dead_code)]
 struct HorizonThread {
     players: Mutex<Vec<Player>>,
     plugins: HashMap<String, LoadedPlugin>,
@@ -100,6 +100,7 @@ impl HorizonThread {
         let mut plugin_manager = plugin_api::PluginManager::new();
         let plugins = plugin_manager.load_all();
 
+        #[allow(unused_variables)]
         plugins.iter().for_each(|(name, plugin)| {
             log_info!(LOGGER, "PLUGIN", "Loaded plugin: {}", name);
         });
@@ -114,6 +115,7 @@ impl HorizonThread {
         }
     }
 
+    #[allow(dead_code)]
     fn id(&self) -> usize {
         self.players
             .try_lock()
@@ -180,6 +182,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<serde_json::Value>) {
     let target_thread = Arc::clone(&threads[threadid]);
     target_thread.add_player(player.clone());
 
+    #[allow(unused_variables)]
     let player_arc: Arc<horizon_data_types::Player> = Arc::new(player);
 
     // let casted_struct = plugin_api::get_plugin!(unreal_adapter_horizon, target_thread.plugins);
@@ -196,6 +199,7 @@ pub async fn start() -> anyhow::Result<()> {
     let (layer, io) = SocketIo::new_layer();
     // Initialize server state so we can spawn threads
 
+    #[allow(unused_variables)]
     let thread_count = config::SERVER_CONFIG
         .get()
         .map(|config| config.num_thread_pools)

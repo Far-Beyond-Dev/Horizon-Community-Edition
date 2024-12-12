@@ -1,5 +1,4 @@
 use anyhow::{Context, Result};
-use env_logger::Logger;
 use horizon_logger::log_warn;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -39,6 +38,8 @@ impl ServerConfig {
             num_thread_pools: 60,
         }
     }
+
+    #[allow(dead_code)]
     fn log_level() -> String {
         String::from("info")
     }
