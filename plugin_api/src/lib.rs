@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 pub use horizon_plugin_api::{Plugin, Pluginstate, Version, get_plugin, LoadedPlugin};
+pub use plugin_imports;
 
 pub mod plugin_macro;
-pub mod plugin_imports;
 
 // Define the current plugin version
 const PLUGIN_API_VERSION: Version = Version {
