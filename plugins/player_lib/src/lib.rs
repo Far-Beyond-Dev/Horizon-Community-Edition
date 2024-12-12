@@ -141,9 +141,4 @@ impl Character {
 }
 
 fn setup_listeners(socket: SocketRef, player: Arc<RwLock<Player>>) {
-    let player = player.clone();
-    socket.on("player_joined", move |data| {
-        let mut player = player.write();
-        player.name = data["name"].as_str().unwrap().to_string();
-    });
 }
