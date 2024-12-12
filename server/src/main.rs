@@ -25,13 +25,17 @@
 static CTRL_C_HANDLER: Once = Once::new();
 use std::sync::Once;
 use once_cell::sync::Lazy;
-use server::{config::server_config, start};
 use splash::splash;
 use anyhow::{Context, Result};
+
+#[allow(unused_imports)]
+use server::{config::server_config, start};
+#[allow(unused_imports)]
 use horizon_logger::{HorizonLogger, log_info, log_debug, log_warn, log_error, log_critical};
+
 mod server;
 mod splash;
-mod collision;
+//mod collision;
 
 //------------------------------------------------------------------------------
 // Global Logger Configuration
@@ -52,8 +56,6 @@ async fn main() -> Result<()> {
     let config_init_time = std::time::Instant::now();
     //let server_config: std::sync::Arc<server::config::ServerConfig> = server_config().context("Failed to obtain server config")?;
     log_info!(LOGGER, "INIT", "Server config loaded in {:#?}", config_init_time.elapsed());
-
-    let init_time = std::time::Instant::now();
 
     // Start the server
     server::start().await.context("Failed to start server")?;
