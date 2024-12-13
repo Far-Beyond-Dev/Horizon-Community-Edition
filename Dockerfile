@@ -7,7 +7,7 @@
 # Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
 
 ARG RUST_VERSION=1.82.0
-ARG APP_NAME=horizon-server
+ARG APP_NAME=horizon
 
 ################################################################################
 # Create a stage for building the application.
@@ -27,17 +27,17 @@ RUN apk add --no-cache clang lld musl-dev git
 # Leverage a bind mount to the src directory to avoid having to copy the
 # source code into the container. Once built, copy the executable to an
 # output directory before the cache mounted /app/target is unmounted.
-RUN --mount=type=bind,source=./server/src,target=/app/server/src \
-    --mount=type=bind,source=./plugin_api,target=/app/plugin_api,readonly=false \
-    --mount=type=bind,source=./plugins,target=/app/plugins \
-    --mount=type=bind,source=./server/server_config.json,target=/app/server/server_config.json \
-    --mount=type=bind,source=./server/Cargo.toml,target=/app/server/Cargo.toml \
+RUN --mount=type=bind,source=src,target=src \
+    --mount=type=bind,source=plugin-api,target=plugin-api,readonly=false \
+    --mount=type=bind,source=plugins,target=plugins \
+    --mount=type=bind,source=config.yml,target=config.yml    \
+    --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
+    --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
-    cd ./server && cargo build --release
-
-RUN cp /app/server/target/release/horizon-server /bin/horizon-server
+cargo build --locked --release && \
+cp ./target/release/$APP_NAME /bin/server
 
 ################################################################################
 # Create a new stage for running the application that contains the minimal
@@ -65,10 +65,10 @@ RUN adduser \
 USER appuser
 
 # Copy the executable from the "build" stage.
-COPY --from=build /bin/$APP_NAME /bin/
+COPY --from=build /bin/server /bin/
 
 # Expose the port that the application listens on.
 EXPOSE 3000
 
 # What the container should run when it is started.
-CMD ["/bin/horizon-server"]
+CMD ["/bin/server"]
